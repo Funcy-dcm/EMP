@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Res/Play_hover.png</file>
+        <file>Res/Stop.png</file>
+        <file>Res/Pause.png</file>
+        <file>Res/Play.png</file>
+    </qresource>
+</RCC>

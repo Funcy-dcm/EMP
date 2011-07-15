@@ -1,0 +1,92 @@
+/* Simple Style */
+QWidget {
+    background-color: #000000/*1F1F11*/;
+}
+
+QPushButton {
+    min-height: 24px;	
+    min-width: 48px;
+    background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
+				stop:1 #E9E9E9,
+				stop:0.6 #1F1F21,
+				stop:0.3 #555555, 
+				stop:0.1 #858587 );
+    color: white;
+    border: 1px solid #858587;
+    border-radius:4px;	
+	/*image: url(images/control_pause_blue.png);*/
+} 
+
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
+				stop:1 #FFFFFF,
+				stop:0.6 #009900,
+				stop:0.3 #00AA00, 
+				stop:0.1 #00FF00 );
+	color: white;			
+    border: 1px solid #00FF00;	
+}
+
+QPushButton:pressed {
+    background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
+				stop:1 rgba(255, 255, 255, 120),
+				stop:0.6 rgba(0, 153, 0, 120),
+				stop:0.3 rgba(0, 170, 0, 120), 
+				stop:0.1 rgba(0, 255, 0, 120) );
+	color: white;			
+    border: 1px solid #00FF00;
+}
+
+QPushButton:checked {
+    background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
+				stop:0.1 rgba(62, 62, 255, 180),
+				stop:0.3 rgba(0, 0, 174, 180),
+				stop:0.6 rgba(0, 0, 113, 180), 
+				stop:1 rgba(188, 225, 245, 180) );
+    border: 1px solid #0000AE;	
+}
+
+QPushButton:checked:hover {
+    background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
+				stop:1 #BCE1F5,
+				stop:0.6 #000071,
+				stop:0.3 #0000AE, 
+				stop:0.1 #3E3EFF );
+}
+
+QSlider::groove:horizontal {
+	border: 2px solid #999999;
+	height: 12px;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #222222/*#c4c4c4*/);
+	margin: 2px 0;
+	border-radius:4px;
+}
+
+QSlider::handle:horizontal {
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #00FF00);
+	width: 6px;
+	margin: 0px;
+	border-width: 2px;
+	border-radius: 3px;
+}
+
+QSlider::sub-page:horizontal {
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #00FF00);
+	margin: 4px 0px;
+	border-width: 2px; 
+	border-radius: 3px;
+}
+
+QLabel {
+	/*background: #000000*/
+	color: #B1B1B1;
+	font: normal 12px "Verdana";
+}
+/*
+#pcmdPlay {
+		image: url(:/Project1.png);
+}
+
+#pcmdPlay:hover {
+		image: url(:/Project2.png);
+}*/
