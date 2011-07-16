@@ -49,6 +49,8 @@ public slots:
     void moveWindowToCenter();
     void initVideoWindow();
     void slotOpen();
+    void rewind();
+    void forward();
     void setVolume(int);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
@@ -60,7 +62,7 @@ public slots:
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
-//    void showContextMenu(const QPoint &);
+    void showContextMenu(const QPoint &);
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void keyPressEvent(QKeyEvent *pe);
@@ -71,8 +73,8 @@ private:
     QPixmap volumeIcon;
     QPixmap mutedIcon;
     QMenu *fileMenu;
-    QPushButton *pcmdPlay;
-    QPushButton *pcmdStop;
+    QPushButton *playButton;
+    QPushButton *stopButton;
     QPushButton *rewindButton;
     QPushButton *forwardButton;
     Phonon::SeekSlider *slider;
