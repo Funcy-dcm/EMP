@@ -1,10 +1,10 @@
 TEMPLATE     = app
-HEADERS	     = MediaPlayer.h
-SOURCES	     = MediaPlayer.cpp main.cpp
+HEADERS	     = EMP.h
+SOURCES	     = EMP.cpp main.cpp
 QT           += phonon
-win32:TARGET = ../MediaPlayer
+win32:TARGET = ../EMP
 
 RESOURCES += \
-    MediaPlayer.qrc
+    EMP.qrc
 
-RC_FILE = MediaPlayerApp.rc
+RC_FILE = EMPApp.rc

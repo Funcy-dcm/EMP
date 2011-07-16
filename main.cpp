@@ -8,12 +8,12 @@
 */
 
 #include <QtGui>
-#include "MediaPlayer.h"
+#include "EMP.h"
 
 // ----------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-//    Q_INIT_RESOURCE(mediaplayer);
+//    Q_INIT_RESOURCE(EMP);
 
     QApplication app(argc, argv);
     app.setApplicationName("EMP");
@@ -22,8 +22,8 @@ int main(int argc, char** argv)
     QString fileString = app.arguments().value(1);
     MediaPlayer  mediaPlayer(fileString);
 
-    QString dirString = app.applicationDirPath(); /*QDir::currentPath();*/
-    fileString = dirString + "/Style/MediaPlayer.qss";
+    QString dirString = app.applicationDirPath();
+    fileString = dirString + "/Style/EMP.qss";
     QFile file(fileString);
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());

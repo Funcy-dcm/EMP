@@ -8,7 +8,7 @@
 */
 
 #include <QtGui>
-#include "MediaPlayer.h"
+#include "EMP.h"
 
 class MediaVideoWidget : public Phonon::VideoWidget
 {
@@ -113,6 +113,7 @@ private:
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
+    m_settings("EMP Team", "EMP"),
     playButton(0),
     m_AudioOutput(Phonon::VideoCategory),
     m_videoWidget(new MediaVideoWidget(this))
@@ -208,7 +209,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     connect(pcmdOpen, SIGNAL(clicked()), this, SLOT(slotOpen()));
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
-    connect(stopButton, SIGNAL(clicked()), &m_pmedia, SLOT(stop()));
+    connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
 //    connect(volume, SIGNAL(valueChanged(int)), this, SLOT(setVolume(int)));
@@ -219,6 +220,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(&m_pmedia, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
     connect(&m_pmedia, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
 //    connect(&m_pmedia, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
+    connect(&m_pmedia, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged1(bool)));
 
     m_pmedia.setTickInterval(250);
 
@@ -230,11 +232,22 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     m_audioOutputPath = Phonon::createPath(&m_pmedia, &m_AudioOutput);
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
+    readSettings();
+
     if (!filePath.isEmpty())
         setFile(filePath);
     resize(minimumSizeHint());
 
     moveWindowToCenter();
+
+}
+
+void MediaPlayer::seekableChanged1(bool b)
+{
+    if (b) {
+        m_pmedia.stop();
+        moveWindowToCenter();
+    }
 }
 
 void MediaPlayer::moveWindowToCenter()
@@ -252,7 +265,68 @@ void MediaPlayer::moveWindowToCenter()
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
 {
-    m_pmedia.stop();
+    if (m_pmedia.hasVideo()) {
+        bool findOk = 0;
+        for (int i = 0; i < MAX_FILE_POS; ++i) {
+            if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
+                filePos[i] = m_pmedia.currentTime();
+                findOk = 1;
+                break;
+            }
+        }
+
+        if (!findOk) {
+            for (int i = MAX_FILE_POS-1; i > 0 ; --i) {
+                fileNameP[i] = fileNameP[i-1];
+                filePos[i] = filePos[i-1];
+            }
+            fileNameP[0] = m_pmedia.currentSource().fileName();
+            filePos[0] = m_pmedia.currentTime();
+        }
+
+        if (m_pmedia.currentTime() == m_pmedia.totalTime()) {
+            for (int i = 0; i < MAX_FILE_POS; ++i) {
+                if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
+                    filePos[i] = 0;
+                    break;
+                }
+            }
+        }
+    }
+    if (m_pmedia.state() != Phonon::StoppedState) m_pmedia.stop();
+    writeSettings();
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::readSettings()
+{
+    QString key, key_value;
+    m_settings.beginGroup("/Settings");
+
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        key = "/File Name " + QString::number(i);
+        fileNameP[i] = m_settings.value(key, "").toString();
+        key_value = "/File Position " + QString::number(i);
+        filePos[i] = m_settings.value(key_value, 0).toInt();
+    }
+
+    m_settings.endGroup();
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::writeSettings()
+{
+    QString key, key_value;
+    m_settings.beginGroup("/Settings");
+
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        key = "/File Name " + QString::number(i);
+        m_settings.setValue(key, fileNameP[i]);
+        key_value = "/File Position " + QString::number(i);
+        m_settings.setValue(key_value, (qlonglong)filePos[i]);
+    }
+
+    m_settings.endGroup();
 }
 
 /*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)
@@ -288,7 +362,7 @@ void MediaPlayer::slotOpen()
         setFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
             m_pmedia.enqueue(Phonon::MediaSource(fileNames[i]));
-        m_pmedia.play();
+//        m_pmedia.play();
     }
 }
 
@@ -321,7 +395,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
         }
     }
     forwardButton->setEnabled(m_pmedia.queue().size() > 0);
-    m_pmedia.play();
+//    m_pmedia.play();
 }
 
 
@@ -362,6 +436,18 @@ void MediaPlayer::playPause()
     }
 }
 
+void MediaPlayer::stop()
+{
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
+            fileNameP[i] = "";
+            filePos[i] = 0;
+            break;
+        }
+    }
+    m_pmedia.stop();
+}
+
 void MediaPlayer::setVolume(int volume)
 {
     Q_UNUSED(volume);
@@ -376,7 +462,7 @@ void MediaPlayer::setVolume(int volume)
 
 void MediaPlayer::setFile(const QString &fileName)
 {
-    setWindowTitle(fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1));
+//    setWindowTitle(fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1));
     m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
     m_pmedia.play();
 }
@@ -397,6 +483,16 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             resize(sizeHint());
         } else
             resize(minimumSize());
+        //
+        for (int i = 0; i < MAX_FILE_POS; ++i) {
+            if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
+                if (m_pmedia.isSeekable())
+                    m_pmedia.seek(filePos[i]);
+                break;
+            }
+        }
+        moveWindowToCenter();
+        //
     }
 
 
@@ -424,8 +520,10 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::PlayingState:
             playButton->setEnabled(true);
             playButton->setIcon(pauseIcon);
-            if (m_pmedia.hasVideo())
-                m_videoWindow.show();
+//            if (m_pmedia.hasVideo())
+//                m_videoWindow.show();
+
+
             // Fall through
         case Phonon::BufferingState:
             rewindButton->setEnabled(true);
@@ -476,9 +574,9 @@ void MediaPlayer::forward()
 {
     QList<Phonon::MediaSource> queue = m_pmedia.queue();
     if (queue.size() > 0) {
-        m_pmedia.setCurrentSource(queue[0]);
+//        m_pmedia.setCurrentSource(queue[0]);
+        setFile(queue[0].fileName());
         forwardButton->setEnabled(queue.size() > 1);
-        m_pmedia.play();
     }
 }
 
