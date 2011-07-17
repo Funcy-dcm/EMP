@@ -31,7 +31,6 @@ int main(int argc, char** argv)
     qApp->setStyleSheet(strCSS);
 
     mediaPlayer.show(); 
-
     return app.exec();
 }
 

@@ -56,7 +56,6 @@ public slots:
     void slotOpen();
     void rewind();
     void forward();
-    void setVolume(int);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
@@ -64,13 +63,13 @@ public slots:
     void setFile(const QString &text);
     void playPause();
     void stop();
+    void updateInfo();
     void updateTime();
     void seekableChanged1(bool);
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
     void showContextMenu(const QPoint &);
-
 
 protected:
     virtual void closeEvent(QCloseEvent*);
@@ -83,34 +82,22 @@ private:
 
     QIcon playIcon;
     QIcon pauseIcon;
-    QPixmap volumeIcon;
-    QPixmap mutedIcon;
     QMenu *fileMenu;
+    QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
     QPushButton *rewindButton;
     QPushButton *forwardButton;
     Phonon::SeekSlider *slider;
-    QLabel *volumeLabel;
+    QLabel *nameLabel;
     QLabel *timeLabel;
-    QLabel *progressLabel;
     Phonon::VolumeSlider *volume;
-    QSlider *m_hueSlider;
-    QSlider *m_satSlider;
-    QSlider *m_contSlider;
-    QLabel *info;
-    long duration;
-    QHash <QString, QWidget*> propertyControllers;
-    Phonon::Effect *nextEffect;
-    QDialog *settingsDialog;
-
 
     QWidget m_videoWindow;
     Phonon::MediaObject m_pmedia;
     Phonon::AudioOutput m_AudioOutput;
     Phonon::VideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
-
 
 };
 #endif  //_MediaPlayer_h_

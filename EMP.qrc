@@ -3,5 +3,13 @@
         <file>Res/Pause.png</file>
         <file>Res/Play.png</file>
         <file>Res/Stop.png</file>
+        <file>Res/Rewind.png</file>
+        <file>Res/Forward.png</file>
+        <file>Res/Pause1.png</file>
+        <file>Res/Play1.png</file>
+        <file>Res/Stop1.png</file>
+        <file>Res/Forward1.png</file>
+        <file>Res/Rewind1.png</file>
+        <file>Res/Open.png</file>
     </qresource>
 </RCC>
