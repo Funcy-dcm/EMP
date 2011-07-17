@@ -28,14 +28,15 @@ public:
 protected:
     void mouseDoubleClickEvent(QMouseEvent *e)
     {
-        Phonon::VideoWidget::mouseDoubleClickEvent(e);
+
         setFullScreen(!isFullScreen());
+        Phonon::VideoWidget::mouseDoubleClickEvent(e);
     }
 
     void mousePressEvent(QMouseEvent *e)
     {
-        Phonon::VideoWidget::mousePressEvent(e);
-        m_player->playPause();
+//        m_player->playPause();
+//        Phonon::VideoWidget::mousePressEvent(e);
     }
 
     void keyPressEvent(QKeyEvent *e)
