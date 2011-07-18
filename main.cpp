@@ -13,8 +13,6 @@
 // ----------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    QString fileString;
-
     Q_INIT_RESOURCE(EMP);
 
     QApplication app(argc, argv);
@@ -22,12 +20,7 @@ int main(int argc, char** argv)
     app.setQuitOnLastWindowClosed(true);
 
     QString dirString = app.applicationDirPath();
-
-    QTranslator translator;
-    translator.load("de.qm", dirString + QString("/Langs"));
-    app.installTranslator(&translator);
-
-    fileString = dirString + "/Style/EMP.qss";
+    QString fileString = dirString + "/Style/EMP.qss";
     QFile file(fileString);
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());

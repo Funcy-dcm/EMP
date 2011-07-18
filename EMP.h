@@ -15,7 +15,8 @@
 #include <QtCore/QTimerEvent>
 #include <QtGui/QShowEvent>
 #include <QtGui/QIcon>
-#include <QtCore/QHash>
+#include <QtCore/QBasicTimer>
+#include <QtGui/QAction>
 #include <QSettings>
 
 #include <phonon/mediaobject.h>
@@ -30,7 +31,6 @@
 #include <phonon/effectparameter.h>
 
 QT_BEGIN_NAMESPACE
-class QThread;
 class QPushButton;
 class QLabel;
 class QSlider;
@@ -40,6 +40,36 @@ QT_END_NAMESPACE
 
 #define MAX_FILE_POS    20
 
+class MediaPlayer;
+
+class MediaVideoWidget : public Phonon::VideoWidget
+{
+    Q_OBJECT
+
+public:
+    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
+
+public slots:
+    // Over-riding non-virtual Phonon::VideoWidget slot
+    void setFullScreen(bool);
+
+signals:
+    void fullScreenChanged(bool);
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
+    void keyPressEvent(QKeyEvent *e);
+    bool event(QEvent *e);
+    void timerEvent(QTimerEvent *e);
+    void dropEvent(QDropEvent *e);
+    void dragEnterEvent(QDragEnterEvent *e);
+
+private:
+    MediaPlayer *m_player;
+    QBasicTimer m_timer;
+    QAction m_action;
+};
 
 // ======================================================================
 class MediaPlayer : public QWidget {
@@ -66,6 +96,7 @@ public slots:
     void updateInfo();
     void updateTime();
     void seekableChanged1(bool);
+    void hasVideoChanged(bool);
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
@@ -76,8 +107,16 @@ protected:
     virtual void keyPressEvent(QKeyEvent *pe);
 
 private:
+    QString lang;
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
+
+//    QString openStr;
+    QString playStr;
+    QString pauseStr;
+//    QString stopStr;
+//    QString rewindStr;
+//    QString forwardStr;
 
     QIcon playIcon;
     QIcon pauseIcon;

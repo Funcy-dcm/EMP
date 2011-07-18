@@ -10,106 +10,106 @@
 #include <QtGui>
 #include "EMP.h"
 
-class MediaVideoWidget : public Phonon::VideoWidget
+MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
+    Phonon::VideoWidget(parent), m_player(player), m_action(this)
 {
-public:
-    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0) :
-          Phonon::VideoWidget(parent), m_player(player), m_action(this)
-    {
-        m_action.setCheckable(true);
-        m_action.setChecked(false);
-        m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
-        m_action.setShortcutContext(Qt::WindowShortcut);
-        connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
-        addAction(&m_action);
-        setAcceptDrops(true);
-    }
+    m_action.setCheckable(true);
+    m_action.setChecked(false);
+    m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
+    m_action.setShortcutContext(Qt::WindowShortcut);
+    connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
+    addAction(&m_action);
+    setAcceptDrops(true);
+}
 
-protected:
-    void mouseDoubleClickEvent(QMouseEvent *e)
-    {
-        setFullScreen(!isFullScreen());
-        Phonon::VideoWidget::mouseDoubleClickEvent(e);
-    }
+void MediaVideoWidget::setFullScreen(bool enabled)
+{
+    Phonon::VideoWidget::setFullScreen(enabled);
+    emit fullScreenChanged(enabled);
+}
 
-    void mousePressEvent(QMouseEvent *e)
-    {
-        m_player->playPause();
-        Phonon::VideoWidget::mousePressEvent(e);
-    }
+void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    Phonon::VideoWidget::mouseDoubleClickEvent(e);
+    setFullScreen(!isFullScreen());
+}
 
-    void keyPressEvent(QKeyEvent *e)
-    {
-        if (e->key() == Qt::Key_Space && !e->modifiers()) {
+void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
+{
+    Phonon::VideoWidget::mousePressEvent(e);
+    m_player->playPause();
+}
+
+void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
+{
+    if (!e->modifiers()) {
+        if (e->key() == Qt::Key_Space) {
             m_player->playPause();
             e->accept();
             return;
-        } else if (e->key() == Qt::Key_Escape && !e->modifiers()) {
+        } else if (e->key() == Qt::Key_Escape) {
             setFullScreen(false);
             m_player->playPause();
             e->accept();
             return;
-        } else if (e->key() == Qt::Key_F11 && !e->modifiers()) {
+        } else if (e->key() == Qt::Key_F11) {
             setFullScreen(!isFullScreen());
             e->accept();
             return;
         }
-        Phonon::VideoWidget::keyPressEvent(e);
     }
+    Phonon::VideoWidget::keyPressEvent(e);
+}
 
-    bool event(QEvent *e)
-    {
-        switch(e->type()) {
-        case QEvent::Close:
-            //we just ignore the cose events on the video widget
-            //this prevents ALT+F4 from having an effect in fullscreen mode
-            e->ignore();
-            return true;
-        case QEvent::MouseMove:
-            setCursor(Qt::PointingHandCursor);
-            //fall through
-        case QEvent::WindowStateChange:
-            {
-                //we just update the state of the checkbox, in case it wasn't already
-                m_action.setChecked(windowState() & Qt::WindowFullScreen);
-                const Qt::WindowFlags flags = m_player->windowFlags();
-                if (windowState() & Qt::WindowFullScreen) {
-                    m_timer.start(1000, this);
-                } else {
-                    m_timer.stop();
-                    setCursor(Qt::PointingHandCursor);
-                }
+bool MediaVideoWidget::event(QEvent *e)
+{
+    switch(e->type()) {
+    case QEvent::Close:
+        //we just ignore the cose events on the video widget
+        //this prevents ALT+F4 from having an effect in fullscreen mode
+        e->ignore();
+        return true;
+    case QEvent::MouseMove:
+        setCursor(Qt::PointingHandCursor);
+        //fall through
+    case QEvent::WindowStateChange:
+        {
+            //we just update the state of the checkbox, in case it wasn't already
+            m_action.setChecked(windowState() & Qt::WindowFullScreen);
+            const Qt::WindowFlags flags = m_player->windowFlags();
+            if (windowState() & Qt::WindowFullScreen) {
+                m_timer.start(1000, this);
+            } else {
+                m_timer.stop();
+                setCursor(Qt::PointingHandCursor);
             }
-            break;
-        default:
-            break;
         }
-        return Phonon::VideoWidget::event(e);
+        break;
+    default:
+        break;
     }
+    return Phonon::VideoWidget::event(e);
+}
 
-    void timerEvent(QTimerEvent *e)
-    {
-        if (e->timerId() == m_timer.timerId()) {
-            //let's store the cursor shape
-            setCursor(Qt::BlankCursor);
-        }
-        Phonon::VideoWidget::timerEvent(e);
+void MediaVideoWidget::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == m_timer.timerId()) {
+        //let's store the cursor shape
+        setCursor(Qt::BlankCursor);
     }
+    Phonon::VideoWidget::timerEvent(e);
+}
 
-    void dropEvent(QDropEvent *e)
-    {
-        m_player->handleDrop(e);
-    }
+void MediaVideoWidget::dropEvent(QDropEvent *e)
+{
+    m_player->handleDrop(e);
+}
 
-    void dragEnterEvent(QDragEnterEvent *e) {
-        if (e->mimeData()->hasUrls())
-            e->acceptProposedAction();
-    }
-private:
-    MediaPlayer *m_player;
-    QBasicTimer m_timer;
-    QAction m_action;
-};
+void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
+    if (e->mimeData()->hasUrls())
+        e->acceptProposedAction();
+}
+
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
@@ -119,6 +119,19 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     m_videoWidget(new MediaVideoWidget(this))
 {
     setWindowTitle("EMP");
+
+    readSettings();
+
+    QTranslator translator;
+    translator.load(lang, qApp->applicationDirPath() + QString("/Langs"));
+    qApp->installTranslator(&translator);
+
+//    openStr = tr("Open");
+    playStr = tr("Play");
+    pauseStr = tr("Pause");
+//    stopStr = tr("Stop");
+//    rewindStr = tr("Previous");
+//    forwardStr = tr("Next");
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -145,13 +158,13 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playIcon = QIcon(":/Res/Play1.png");
     pauseIcon = QIcon(":/Res/Pause1.png");
     playButton->setIcon(playIcon);
-    playButton->setObjectName("playButton");
+//    playButton->setObjectName("playButton");
     stopButton->setIcon(QIcon(":/Res/Stop1.png"));
     rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
     forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
 
     openButton->setToolTip(tr("Open"));
-    playButton->setToolTip(tr("Play"));
+    playButton->setToolTip(playStr);
     stopButton->setToolTip(tr("Stop"));
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
@@ -236,6 +249,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(&m_pmedia, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
 //    connect(&m_pmedia, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
     connect(&m_pmedia, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged1(bool)));
+    connect(&m_pmedia, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
     m_pmedia.setTickInterval(250);
 
@@ -247,8 +261,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     m_audioOutputPath = Phonon::createPath(&m_pmedia, &m_AudioOutput);
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
-    readSettings();
-
     if (!filePath.isEmpty())
         setFile(filePath);
     resize(minimumSizeHint());
@@ -257,25 +269,55 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
 }
 
-void MediaPlayer::seekableChanged1(bool b)
-{
-    if (b) {
-//        m_pmedia.stop();
-//        moveWindowToCenter();
-    }
-}
-
-void MediaPlayer::moveWindowToCenter()
-{
-    QRect frect = frameGeometry();
-    frect.moveCenter(QDesktopWidget().availableGeometry().center());
-    move(frect.topLeft());
-}
-
 // ----------------------------------------------------------------------
 /*virtual*/ MediaPlayer::~MediaPlayer()
 {
 
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::readSettings()
+{
+    QString key, key_value;
+
+    QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+
+    m_settings->beginGroup("/Settings");
+    lang = m_settings->value("/Lang", "en.qm").toString();
+    m_settings->endGroup();
+
+    m_settings->beginGroup("/FilePosition");
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        key = "/FileName" + QString::number(i);
+        fileNameP[i] = m_settings->value(key, "").toString();
+        key_value = "/FilePosition" + QString::number(i);
+        filePos[i] = m_settings->value(key_value, 0).toInt();
+    }
+    m_settings->endGroup();
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::writeSettings()
+{
+    QString key, key_value;
+
+    QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+
+    m_settings->beginGroup("/Settings");
+//    lang = "ru.qm";
+    m_settings->setValue("/Lang", lang);
+    m_settings->endGroup();
+
+    m_settings->beginGroup("/FilePosition");
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        key = "/FileName" + QString::number(i);
+        m_settings->setValue(key, fileNameP[i]);
+        key_value = "/FilePosition" + QString::number(i);
+        m_settings->setValue(key_value, (qlonglong)filePos[i]);
+    }
+    m_settings->endGroup();
 }
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
@@ -312,58 +354,35 @@ void MediaPlayer::moveWindowToCenter()
     writeSettings();
 }
 
-// ----------------------------------------------------------------------
-void MediaPlayer::readSettings()
-{
-    QString key, key_value;
-
-    QString AppFileName = qApp->applicationDirPath()+"/emp.ini";
-    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
-
-    m_settings->beginGroup("/Settings");
-
-    for (int i = 0; i < MAX_FILE_POS; ++i) {
-        key = "/File Name " + QString::number(i);
-        fileNameP[i] = m_settings->value(key, "").toString();
-        key_value = "/File Position " + QString::number(i);
-        filePos[i] = m_settings->value(key_value, 0).toInt();
-    }
-
-    m_settings->endGroup();
-}
-
-// ----------------------------------------------------------------------
-void MediaPlayer::writeSettings()
-{
-    QString key, key_value;
-
-    QString AppFileName = qApp->applicationDirPath()+"/emp.ini";
-    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
-
-    m_settings->beginGroup("/Settings");
-
-    for (int i = 0; i < MAX_FILE_POS; ++i) {
-        key = "/File Name " + QString::number(i);
-        m_settings->setValue(key, fileNameP[i]);
-        key_value = "/File Position " + QString::number(i);
-        m_settings->setValue(key_value, (qlonglong)filePos[i]);
-    }
-
-    m_settings->endGroup();
-}
-
 /*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)
 {
-    if (pe->key() == Qt::Key_Space && !pe->modifiers()) {
-        playPause();
-        pe->accept();
-        return;
-    } else if (pe->key() == Qt::Key_F11 && !pe->modifiers() && m_pmedia.hasVideo()) {
-      m_videoWidget->setFullScreen(!isFullScreen());
-      pe->accept();
-      return;
+    if (!pe->modifiers()) {
+        if (pe->key() == Qt::Key_Space) {
+            playPause();
+            pe->accept();
+            return;
+        } else if (pe->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
+          m_videoWidget->setFullScreen(!isFullScreen());
+          pe->accept();
+          return;
+        }
     }
     QWidget::keyPressEvent(pe);
+}
+
+void MediaPlayer::seekableChanged1(bool b)
+{
+    if (b) {
+//        m_pmedia.stop();
+//        moveWindowToCenter();
+    }
+}
+
+void MediaPlayer::moveWindowToCenter()
+{
+    QRect frect = frameGeometry();
+    frect.moveCenter(QDesktopWidget().availableGeometry().center());
+    move(frect.topLeft());
 }
 
 void MediaPlayer::initVideoWindow()
@@ -419,7 +438,6 @@ void MediaPlayer::handleDrop(QDropEvent *e)
     forwardButton->setEnabled(m_pmedia.queue().size() > 0);
 }
 
-
 void MediaPlayer::dropEvent(QDropEvent *e)
 {
     if (e->mimeData()->hasUrls() && e->proposedAction() != Qt::LinkAction) {
@@ -430,12 +448,10 @@ void MediaPlayer::dropEvent(QDropEvent *e)
     }
 }
 
-
 void MediaPlayer::dragEnterEvent(QDragEnterEvent *e)
 {
     dragMoveEvent(e);
 }
-
 
 void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
 {
@@ -479,7 +495,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
-        m_videoWindow.setVisible(m_pmedia.hasVideo());
+//        m_videoWindow.setVisible(m_pmedia.hasVideo());
         QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
         QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
         if (m_pmedia.hasVideo()){
@@ -502,7 +518,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         //
     }
 
-
     switch (newstate) {
         case Phonon::ErrorState:
             QMessageBox::warning(this, "Phonon Mediaplayer", m_pmedia.errorString(), QMessageBox::Close);
@@ -513,10 +528,10 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 m_pmedia.pause();
             }
             break;
-        case Phonon::PausedState:
         case Phonon::StoppedState:
+        case Phonon::PausedState: 
             playButton->setIcon(playIcon);
-            playButton->setToolTip(tr("Play"));
+            playButton->setToolTip(playStr);
             if (m_pmedia.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
@@ -524,11 +539,16 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             }
+            if (m_pmedia.currentTime() == m_pmedia.totalTime()) {
+                m_videoWidget->setFullScreen(false);
+            }
             break;
         case Phonon::PlayingState:
             playButton->setEnabled(true);
-            playButton->setToolTip(tr("Pause"));
+            playButton->setToolTip(pauseStr);
             playButton->setIcon(pauseIcon);
+            if (m_pmedia.hasVideo())
+                m_videoWindow.show();
         case Phonon::BufferingState:
             rewindButton->setEnabled(true);
             break;
@@ -590,6 +610,11 @@ void MediaPlayer::forward()
         setFile(queue[0].fileName());
         forwardButton->setEnabled(queue.size() > 1);
     }
+}
+
+void MediaPlayer::hasVideoChanged(bool bHasVideo)
+{
+    m_videoWindow.setVisible(bHasVideo);
 }
 
 void MediaPlayer::showContextMenu(const QPoint &p)

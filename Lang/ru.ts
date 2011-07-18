@@ -4,33 +4,32 @@
 <context>
     <name>MediaPlayer</name>
     <message>
-        <location filename="../EMP.cpp" line="153"/>
+        <location filename="../EMP.cpp" line="166"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="154"/>
-        <location filename="../EMP.cpp" line="519"/>
+        <location filename="../EMP.cpp" line="130"/>
         <source>Play</source>
         <translation>Воспроизвести</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="155"/>
+        <location filename="../EMP.cpp" line="168"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="156"/>
+        <location filename="../EMP.cpp" line="169"/>
         <source>Previous</source>
         <translation>Предыдущий файл</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="157"/>
+        <location filename="../EMP.cpp" line="170"/>
         <source>Next</source>
         <translation>Следущий файл</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="530"/>
+        <location filename="../EMP.cpp" line="131"/>
         <source>Pause</source>
         <translation>Пауза</translation>
     </message>
