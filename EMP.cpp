@@ -28,15 +28,14 @@ public:
 protected:
     void mouseDoubleClickEvent(QMouseEvent *e)
     {
-
         setFullScreen(!isFullScreen());
         Phonon::VideoWidget::mouseDoubleClickEvent(e);
     }
 
     void mousePressEvent(QMouseEvent *e)
     {
-//        m_player->playPause();
-//        Phonon::VideoWidget::mousePressEvent(e);
+        m_player->playPause();
+        Phonon::VideoWidget::mousePressEvent(e);
     }
 
     void keyPressEvent(QKeyEvent *e)
@@ -67,7 +66,7 @@ protected:
             e->ignore();
             return true;
         case QEvent::MouseMove:
-            unsetCursor();
+            setCursor(Qt::PointingHandCursor);
             //fall through
         case QEvent::WindowStateChange:
             {
@@ -78,7 +77,7 @@ protected:
                     m_timer.start(1000, this);
                 } else {
                     m_timer.stop();
-                    unsetCursor();
+                    setCursor(Qt::PointingHandCursor);
                 }
             }
             break;
@@ -114,7 +113,7 @@ private:
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
-    m_settings("EMP Team", "EMP"),
+    /*m_settings("EMP Team", "EMP"),*/
     playButton(0),
     m_AudioOutput(Phonon::VideoCategory),
     m_videoWidget(new MediaVideoWidget(this))
@@ -135,10 +134,12 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     slider = new Phonon::SeekSlider(this);
     slider->setMediaObject(&m_pmedia);
+    slider->setCursor(Qt::PointingHandCursor);
 
     volume = new Phonon::VolumeSlider(this);
     volume->setAudioOutput(&m_AudioOutput);
-    volume->setFixedWidth(80);
+    volume->setFixedWidth(100);
+    volume->setCursor(Qt::PointingHandCursor);
 
     openButton->setIcon(QIcon(":/Res/Open.png"));
     playIcon = QIcon(":/Res/Play1.png");
@@ -160,6 +161,12 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     stopButton->setFocusPolicy(Qt::NoFocus);
     rewindButton->setFocusPolicy(Qt::NoFocus);
     forwardButton->setFocusPolicy(Qt::NoFocus);
+
+    openButton->setCursor(Qt::PointingHandCursor);
+    playButton->setCursor(Qt::PointingHandCursor);
+    stopButton->setCursor(Qt::PointingHandCursor);
+    rewindButton->setCursor(Qt::PointingHandCursor);
+    forwardButton->setCursor(Qt::PointingHandCursor);
 
     timeLabel->setAlignment(Qt::AlignRight);
 //    timeLabel->setMinimumHeight(10);
@@ -253,8 +260,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 void MediaPlayer::seekableChanged1(bool b)
 {
     if (b) {
-        m_pmedia.stop();
-        moveWindowToCenter();
+//        m_pmedia.stop();
+//        moveWindowToCenter();
     }
 }
 
@@ -309,32 +316,40 @@ void MediaPlayer::moveWindowToCenter()
 void MediaPlayer::readSettings()
 {
     QString key, key_value;
-    m_settings.beginGroup("/Settings");
+
+    QString AppFileName = qApp->applicationDirPath()+"/emp.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+
+    m_settings->beginGroup("/Settings");
 
     for (int i = 0; i < MAX_FILE_POS; ++i) {
         key = "/File Name " + QString::number(i);
-        fileNameP[i] = m_settings.value(key, "").toString();
+        fileNameP[i] = m_settings->value(key, "").toString();
         key_value = "/File Position " + QString::number(i);
-        filePos[i] = m_settings.value(key_value, 0).toInt();
+        filePos[i] = m_settings->value(key_value, 0).toInt();
     }
 
-    m_settings.endGroup();
+    m_settings->endGroup();
 }
 
 // ----------------------------------------------------------------------
 void MediaPlayer::writeSettings()
 {
     QString key, key_value;
-    m_settings.beginGroup("/Settings");
+
+    QString AppFileName = qApp->applicationDirPath()+"/emp.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+
+    m_settings->beginGroup("/Settings");
 
     for (int i = 0; i < MAX_FILE_POS; ++i) {
         key = "/File Name " + QString::number(i);
-        m_settings.setValue(key, fileNameP[i]);
+        m_settings->setValue(key, fileNameP[i]);
         key_value = "/File Position " + QString::number(i);
-        m_settings.setValue(key_value, (qlonglong)filePos[i]);
+        m_settings->setValue(key_value, (qlonglong)filePos[i]);
     }
 
-    m_settings.endGroup();
+    m_settings->endGroup();
 }
 
 /*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)

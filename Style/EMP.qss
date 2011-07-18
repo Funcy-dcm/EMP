@@ -80,7 +80,7 @@ QSlider::sub-page:horizontal {
 QLabel {
 	/*background: #000000*/
 	color: #B1B1B1;
-	font: normal 12px "Verdana";
+	font: normal 14px "Verdana";
 }
 /*
 #pcmdPlay {

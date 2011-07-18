@@ -13,7 +13,7 @@
 // ----------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-//    Q_INIT_RESOURCE(EMP);
+    Q_INIT_RESOURCE(EMP);
 
     QApplication app(argc, argv);
     app.setApplicationName("EMP");
@@ -27,7 +27,6 @@ int main(int argc, char** argv)
     QFile file(fileString);
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());
-
     qApp->setStyleSheet(strCSS);
 
     mediaPlayer.show(); 

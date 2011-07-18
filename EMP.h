@@ -76,7 +76,6 @@ protected:
     virtual void keyPressEvent(QKeyEvent *pe);
 
 private:
-    QSettings  m_settings;
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
 
