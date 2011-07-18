@@ -1,0 +1,27 @@
+<!DOCTYPE QPH>
+<QPH sourcelanguage="en_GB" language="de_DE">
+<phrase>
+    <source>Stop</source>
+    <target>Stop</target>
+</phrase>
+<phrase>
+    <source>Previous</source>
+    <target>Letzte Datei</target>
+</phrase>
+<phrase>
+    <source>Next</source>
+    <target>Nächste Datei</target>
+</phrase>
+<phrase>
+    <source>Pause</source>
+    <target>Pause</target>
+</phrase>
+<phrase>
+    <source>Open</source>
+    <target>Geöffnet</target>
+</phrase>
+<phrase>
+    <source>Play</source>
+    <target>Wiedergabe</target>
+</phrase>
+</QPH>

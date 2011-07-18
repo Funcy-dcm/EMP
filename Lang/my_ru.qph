@@ -1,0 +1,27 @@
+<!DOCTYPE QPH>
+<QPH sourcelanguage="en_GB" language="ru_RU">
+<phrase>
+    <source>Pause</source>
+    <target>Пауза</target>
+</phrase>
+<phrase>
+    <source>Next</source>
+    <target>Следущий файл</target>
+</phrase>
+<phrase>
+    <source>Open</source>
+    <target>Открыть</target>
+</phrase>
+<phrase>
+    <source>Play</source>
+    <target>Воспроизвести</target>
+</phrase>
+<phrase>
+    <source>Stop</source>
+    <target>Остановить</target>
+</phrase>
+<phrase>
+    <source>Previous</source>
+    <target>Предыдущий файл</target>
+</phrase>
+</QPH>

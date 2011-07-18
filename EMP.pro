@@ -8,3 +8,7 @@ RESOURCES += \
     EMP.qrc
 
 RC_FILE = EMPApp.rc
+
+TRANSLATIONS    = Lang/ru.ts \
+                  Lang/en.ts \
+                  Lang/de.ts \
