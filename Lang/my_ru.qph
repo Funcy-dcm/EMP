@@ -24,4 +24,8 @@
     <source>Previous</source>
     <target>Предыдущий файл</target>
 </phrase>
+<phrase>
+    <source>Volume</source>
+    <target>Громкость</target>
+</phrase>
 </QPH>

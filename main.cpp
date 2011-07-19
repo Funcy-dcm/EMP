@@ -10,6 +10,16 @@
 #include <QtGui>
 #include "EMP.h"
 
+void LoadLang (QString &lang){
+    QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+    QString strLocalLang = QLocale::system().name();
+
+    m_settings->beginGroup("/Settings");
+    lang = m_settings->value("/Lang", strLocalLang).toString();
+    m_settings->endGroup();
+}
+
 // ----------------------------------------------------------------------
 int main(int argc, char** argv)
 {
@@ -25,6 +35,12 @@ int main(int argc, char** argv)
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());
     qApp->setStyleSheet(strCSS);
+
+    QString lang;
+    LoadLang(lang);
+    QTranslator translator;
+    translator.load(lang, qApp->applicationDirPath() + QString("/Langs"));
+    qApp->installTranslator(&translator);
 
     fileString = app.arguments().value(1);
     MediaPlayer  mediaPlayer(fileString);

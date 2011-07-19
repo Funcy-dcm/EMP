@@ -113,7 +113,6 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
-    /*m_settings("EMP Team", "EMP"),*/
     playButton(0),
     m_AudioOutput(Phonon::VideoCategory),
     m_videoWidget(new MediaVideoWidget(this))
@@ -121,17 +120,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     setWindowTitle("EMP");
 
     readSettings();
-
-    QTranslator translator;
-    translator.load(lang, qApp->applicationDirPath() + QString("/Langs"));
-    qApp->installTranslator(&translator);
-
-//    openStr = tr("Open");
-    playStr = tr("Play");
-    pauseStr = tr("Pause");
-//    stopStr = tr("Stop");
-//    rewindStr = tr("Previous");
-//    forwardStr = tr("Next");
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -153,18 +141,19 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     volume->setAudioOutput(&m_AudioOutput);
     volume->setFixedWidth(100);
     volume->setCursor(Qt::PointingHandCursor);
+    qApp->installEventFilter( this );
 
     openButton->setIcon(QIcon(":/Res/Open.png"));
     playIcon = QIcon(":/Res/Play1.png");
     pauseIcon = QIcon(":/Res/Pause1.png");
     playButton->setIcon(playIcon);
-//    playButton->setObjectName("playButton");
+    playButton->setObjectName("playButton");
     stopButton->setIcon(QIcon(":/Res/Stop1.png"));
     rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
     forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
 
     openButton->setToolTip(tr("Open"));
-    playButton->setToolTip(playStr);
+    playButton->setToolTip(tr("Play"));
     stopButton->setToolTip(tr("Stop"));
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
@@ -283,8 +272,9 @@ void MediaPlayer::readSettings()
     QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
     QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
 
+    QString strLocalLang = QLocale::system().name();
     m_settings->beginGroup("/Settings");
-    lang = m_settings->value("/Lang", "en.qm").toString();
+    lang = m_settings->value("/Lang", strLocalLang).toString();
     m_settings->endGroup();
 
     m_settings->beginGroup("/FilePosition");
@@ -306,7 +296,6 @@ void MediaPlayer::writeSettings()
     QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
 
     m_settings->beginGroup("/Settings");
-//    lang = "ru.qm";
     m_settings->setValue("/Lang", lang);
     m_settings->endGroup();
 
@@ -368,6 +357,18 @@ void MediaPlayer::writeSettings()
         }
     }
     QWidget::keyPressEvent(pe);
+}
+
+/*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
+{
+    if (pe->type() == QEvent::ToolTip) {
+        if (pobj == volume) {
+            QString vol = tr("Volume") + " [" + QString::number(qreal(m_AudioOutput.volume()*100.0f)) + "%]";
+            volume->setToolTip(vol);
+//            return true;
+        }
+    }
+    return false;
 }
 
 void MediaPlayer::seekableChanged1(bool b)
@@ -531,7 +532,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::StoppedState:
         case Phonon::PausedState: 
             playButton->setIcon(playIcon);
-            playButton->setToolTip(playStr);
+            playButton->setToolTip(tr("Play"));
             if (m_pmedia.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
@@ -545,8 +546,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             break;
         case Phonon::PlayingState:
             playButton->setEnabled(true);
-            playButton->setToolTip(pauseStr);
             playButton->setIcon(pauseIcon);
+            playButton->setToolTip(tr("Pause"));
             if (m_pmedia.hasVideo())
                 m_videoWindow.show();
         case Phonon::BufferingState:

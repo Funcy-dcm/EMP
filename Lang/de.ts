@@ -4,7 +4,7 @@
 <context>
     <name>MediaPlayer</name>
     <message>
-        <location filename="../EMP.cpp" line="166"/>
+        <location filename="../EMP.cpp" line="168"/>
         <source>Open</source>
         <translation>Geöffnet</translation>
     </message>
@@ -14,17 +14,22 @@
         <translation>Wiedergabe</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="168"/>
+        <location filename="../EMP.cpp" line="135"/>
+        <source>Volume</source>
+        <translation>Lautstärke</translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="170"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="169"/>
+        <location filename="../EMP.cpp" line="171"/>
         <source>Previous</source>
         <translation>Letzte Datei</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="170"/>
+        <location filename="../EMP.cpp" line="172"/>
         <source>Next</source>
         <translation>Nächste Datei</translation>
     </message>

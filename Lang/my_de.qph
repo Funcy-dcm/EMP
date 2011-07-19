@@ -24,4 +24,8 @@
     <source>Play</source>
     <target>Wiedergabe</target>
 </phrase>
+<phrase>
+    <source>Volume</source>
+    <target>Lautstärke</target>
+</phrase>
 </QPH>

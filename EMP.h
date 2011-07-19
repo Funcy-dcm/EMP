@@ -79,44 +79,38 @@ public:
     virtual ~MediaPlayer();
     void writeSettings();
     void readSettings ();
-
-public slots:
-    void moveWindowToCenter();
     void initVideoWindow();
-    void slotOpen();
-    void rewind();
-    void forward();
+    void setFile(const QString &text);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
     void handleDrop(QDropEvent *e);
-    void setFile(const QString &text);
+
+public slots:
+    void moveWindowToCenter();
+    void slotOpen();
     void playPause();
     void stop();
+    void rewind();
+    void forward();
     void updateInfo();
     void updateTime();
-    void seekableChanged1(bool);
-    void hasVideoChanged(bool);
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
+    void seekableChanged1(bool);
+    void hasVideoChanged(bool);
     void showContextMenu(const QPoint &);
 
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void keyPressEvent(QKeyEvent *pe);
+    bool eventFilter(QObject*, QEvent*);
 
 private:
     QString lang;
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
-
-//    QString openStr;
-    QString playStr;
-    QString pauseStr;
-//    QString stopStr;
-//    QString rewindStr;
-//    QString forwardStr;
 
     QIcon playIcon;
     QIcon pauseIcon;
