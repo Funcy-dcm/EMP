@@ -64,11 +64,11 @@ void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
 bool MediaVideoWidget::event(QEvent *e)
 {
     switch(e->type()) {
-//    case QEvent::Close:
+    case QEvent::Close:
         //we just ignore the cose events on the video widget
         //this prevents ALT+F4 from having an effect in fullscreen mode
-//        e->ignore();
-//        return true;
+        e->ignore();
+        return true;
     case QEvent::MouseMove:
         setCursor(Qt::PointingHandCursor);
         //fall through
@@ -76,7 +76,7 @@ bool MediaVideoWidget::event(QEvent *e)
         {
             //we just update the state of the checkbox, in case it wasn't already
             m_action.setChecked(windowState() & Qt::WindowFullScreen);
-            const Qt::WindowFlags flags = m_player->windowFlags();
+//            const Qt::WindowFlags flags = m_player->windowFlags();
             if (windowState() & Qt::WindowFullScreen) {
                 m_timer.start(1000, this);
             } else {
@@ -141,7 +141,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     volume->setAudioOutput(&m_AudioOutput);
     volume->setFixedWidth(100);
     volume->setCursor(Qt::PointingHandCursor);
-    qApp->installEventFilter( this );
 
     openButton->setIcon(QIcon(":/Res/Open.png"));
     playIcon = QIcon(":/Res/Play1.png");
@@ -230,7 +229,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(&m_pmedia, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
     connect(&m_pmedia, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
 //    connect(&m_pmedia, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
-    connect(&m_pmedia, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged1(bool)));
+    connect(&m_AudioOutput, SIGNAL(volumeChanged(qreal)), this, SLOT(volumeChanged(qreal)));
     connect(&m_pmedia, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
     m_pmedia.setTickInterval(250);
@@ -249,6 +248,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     moveWindowToCenter();
 
+    qApp->installEventFilter( this );
 }
 
 // ----------------------------------------------------------------------
@@ -364,9 +364,8 @@ void MediaPlayer::writeSettings()
     }
     if (pe->type() == QEvent::MouseButtonPress) {
         if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
-            if (pobj == volume) {
-                nameLabel->setText("fileName");
-                m_timer.start(5000, this);
+            if (pobj->parent() == slider) {
+
             }
         }
 
@@ -382,12 +381,11 @@ void MediaPlayer::timerEvent(QTimerEvent *pe)
     QWidget::timerEvent(pe);
 }
 
-void MediaPlayer::seekableChanged1(bool b)
+void MediaPlayer::volumeChanged(qreal v)
 {
-    if (b) {
-//        m_pmedia.stop();
-//        moveWindowToCenter();
-    }
+    QString vol = tr("Volume") + " [" + QString::number(qreal(v*100.0f)) + "%]";
+    nameLabel->setText(vol);
+    m_timer.start(5000, this);
 }
 
 void MediaPlayer::moveWindowToCenter()
@@ -590,19 +588,27 @@ void MediaPlayer::updateTime()
         int min = sec/60;
         int hour = min/60;
         int msec = pos;
-
         QTime playTime(hour%60, min%60, sec%60, msec%1000);
+
+        long nPos = len - pos;
+        sec = nPos/1000;
+        min = sec/60;
+        hour = min/60;
+        msec = nPos;
+        QTime nPlayTime(hour%60, min%60, sec%60, msec%1000);
+
         sec = len / 1000;
         min = sec / 60;
         hour = min / 60;
         msec = len;
-
         QTime stopTime(hour%60, min%60, sec%60, msec%1000);
+
         QString timeFormat = "m:ss";
         if (hour > 0)
             timeFormat = "h:mm:ss";
         timeString = playTime.toString(timeFormat);
         if (len)
+            timeString += " (-" + nPlayTime.toString(timeFormat) + ")";
             timeString += " / " + stopTime.toString(timeFormat);
     }
     timeLabel->setText(timeString);
@@ -613,7 +619,6 @@ void MediaPlayer::rewind()
     m_pmedia.setTickInterval(50);
     m_pmedia.seek(0);
 }
-
 
 void MediaPlayer::forward()
 {

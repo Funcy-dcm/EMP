@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     QString lang;
     LoadLang(lang);
     QTranslator translator;
-    translator.load(lang, qApp->applicationDirPath() + QString("/Langs"));
+    translator.load(lang, qApp->applicationDirPath() + QString("/lang"));
     qApp->installTranslator(&translator);
 
     fileString = app.arguments().value(1);
