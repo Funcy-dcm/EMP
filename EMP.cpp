@@ -64,11 +64,11 @@ void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
 bool MediaVideoWidget::event(QEvent *e)
 {
     switch(e->type()) {
-    case QEvent::Close:
+//    case QEvent::Close:
         //we just ignore the cose events on the video widget
         //this prevents ALT+F4 from having an effect in fullscreen mode
-        e->ignore();
-        return true;
+//        e->ignore();
+//        return true;
     case QEvent::MouseMove:
         setCursor(Qt::PointingHandCursor);
         //fall through
@@ -171,13 +171,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     forwardButton->setCursor(Qt::PointingHandCursor);
 
     timeLabel->setAlignment(Qt::AlignRight);
-//    timeLabel->setMinimumHeight(10);
-    /*timeLabel->setAutoFillBackground(true);
-    QPalette pal = timeLabel->palette();
-    pal.setColor(QPalette::Background, Qt::black);
-    pal.setColor(QPalette::WindowText, Qt::white);
-    timeLabel->setPalette(pal);*/
-
     nameLabel->setAlignment(Qt::AlignLeft);
 
     //Layout setup
@@ -365,10 +358,28 @@ void MediaPlayer::writeSettings()
         if (pobj == volume) {
             QString vol = tr("Volume") + " [" + QString::number(qreal(m_AudioOutput.volume()*100.0f)) + "%]";
             volume->setToolTip(vol);
+//            QApplication::sendEvent(pobj, pe);
 //            return true;
         }
     }
+    if (pe->type() == QEvent::MouseButtonPress) {
+        if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
+            if (pobj == volume) {
+                nameLabel->setText("fileName");
+                m_timer.start(5000, this);
+            }
+        }
+
+    }
     return false;
+}
+
+void MediaPlayer::timerEvent(QTimerEvent *pe)
+{
+    if (pe->timerId() == m_timer.timerId()) {
+        updateInfo();
+    }
+    QWidget::timerEvent(pe);
 }
 
 void MediaPlayer::seekableChanged1(bool b)

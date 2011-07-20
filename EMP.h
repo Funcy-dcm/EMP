@@ -106,6 +106,7 @@ protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void keyPressEvent(QKeyEvent *pe);
     bool eventFilter(QObject*, QEvent*);
+    void timerEvent(QTimerEvent *pe);
 
 private:
     QString lang;
@@ -130,6 +131,8 @@ private:
     Phonon::AudioOutput m_AudioOutput;
     Phonon::VideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
+
+    QBasicTimer m_timer;
 
 };
 #endif  //_MediaPlayer_h_
