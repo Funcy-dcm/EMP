@@ -71,6 +71,7 @@ bool MediaVideoWidget::event(QEvent *e)
         return true;
     case QEvent::MouseMove:
         setCursor(Qt::PointingHandCursor);
+//        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
         //fall through
     case QEvent::WindowStateChange:
         {
@@ -207,7 +208,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelLayout->addLayout(phbxLayout2);
     buttonPanelLayout->addLayout(phbxLayout);
 
-    QWidget *buttonPanelWidget = new QWidget(this);
+    buttonPanelWidget = new QWidget(this);
     buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     buttonPanelWidget->setLayout(buttonPanelLayout);
     pvbxLayout->addWidget(buttonPanelWidget);
@@ -344,9 +345,10 @@ void MediaPlayer::writeSettings()
             pe->accept();
             return;
         } else if (pe->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
-          m_videoWidget->setFullScreen(!isFullScreen());
-          pe->accept();
-          return;
+            m_videoWidget->setFullScreen(!isFullScreen());
+//            buttonPanelWidget->setVisible(true);
+            pe->accept();
+            return;
         }
     }
     QWidget::keyPressEvent(pe);
@@ -506,8 +508,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     if (oldstate == Phonon::LoadingState) {
 //        m_videoWindow.setVisible(m_pmedia.hasVideo());
-        QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
-        QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
+//        QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
+//        QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
         if (m_pmedia.hasVideo()){
             // Flush event que so that sizeHint takes the
             // recently shown/hidden m_videoWindow into account:
@@ -557,8 +559,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             playButton->setEnabled(true);
             playButton->setIcon(pauseIcon);
             playButton->setToolTip(tr("Pause"));
-            if (m_pmedia.hasVideo())
-                m_videoWindow.show();
+//            if (m_pmedia.hasVideo())
+//                m_videoWindow.show();
         case Phonon::BufferingState:
             rewindButton->setEnabled(true);
             break;

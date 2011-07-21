@@ -86,6 +86,8 @@ public:
     void dropEvent(QDropEvent *e);
     void handleDrop(QDropEvent *e);
 
+    QWidget *buttonPanelWidget;
+
 public slots:
     void moveWindowToCenter();
     void slotOpen();
