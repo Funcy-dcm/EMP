@@ -9,7 +9,19 @@
 
 #include <QtGui>
 #include "EMP.h"
+/*
+class MLabel : public QLabel
+{
+public:
+    MLabel(QWidget *p = 0) : QLabel(p)
+    {
 
+        //Transparency
+        setWindowOpacity(0.8);
+
+    }
+}
+*/
 MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     Phonon::VideoWidget(parent), m_player(player), m_action(this)
 {
@@ -43,11 +55,7 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
 {
     if (!e->modifiers()) {
-        if (e->key() == Qt::Key_Space) {
-            m_player->playPause();
-            e->accept();
-            return;
-        } else if (e->key() == Qt::Key_Escape) {
+        if (e->key() == Qt::Key_Escape) {
             setFullScreen(false);
             m_player->playPause();
             e->accept();
@@ -64,11 +72,11 @@ void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
 bool MediaVideoWidget::event(QEvent *e)
 {
     switch(e->type()) {
-    case QEvent::Close:
+    /*case QEvent::Close:
         //we just ignore the cose events on the video widget
         //this prevents ALT+F4 from having an effect in fullscreen mode
         e->ignore();
-        return true;
+        return true;*/
     case QEvent::MouseMove:
         setCursor(Qt::PointingHandCursor);
 //        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
@@ -163,6 +171,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     stopButton->setFocusPolicy(Qt::NoFocus);
     rewindButton->setFocusPolicy(Qt::NoFocus);
     forwardButton->setFocusPolicy(Qt::NoFocus);
+    volume->setFocusPolicy(Qt::NoFocus);
+    slider->setFocusPolicy(Qt::NoFocus);
 
     openButton->setCursor(Qt::PointingHandCursor);
     playButton->setCursor(Qt::PointingHandCursor);
@@ -339,7 +349,7 @@ void MediaPlayer::writeSettings()
 
 /*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)
 {
-    if (!pe->modifiers()) {
+    /*if (!pe->modifiers()) {
         if (pe->key() == Qt::Key_Space) {
             playPause();
             pe->accept();
@@ -349,29 +359,74 @@ void MediaPlayer::writeSettings()
 //            buttonPanelWidget->setVisible(true);
             pe->accept();
             return;
+        } else if (pe->key() == Qt::Key_Left) {
+            if (m_pmedia.isSeekable()) {
+                long pos = m_pmedia.currentTime() - 15000;
+                if (pos) m_pmedia.seek(pos);
+                else m_pmedia.seek(0);
+            }
+            pe->accept();
+            return;
+        } else if (pe->key() == Qt::Key_Right) {
+            if (m_pmedia.isSeekable()) {
+                long pos = m_pmedia.currentTime() + 15000;
+                m_pmedia.seek(pos);
+            }
+            pe->accept();
+            return;
         }
     }
-    QWidget::keyPressEvent(pe);
+    QWidget::keyPressEvent(pe);*/
 }
 
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
 {
+    if (pe->type() == QEvent::Close) {
+        close();
+        return false;
+    }
+
     if (pe->type() == QEvent::ToolTip) {
         if (pobj == volume) {
             QString vol = tr("Volume") + " [" + QString::number(qreal(m_AudioOutput.volume()*100.0f)) + "%]";
             volume->setToolTip(vol);
-//            QApplication::sendEvent(pobj, pe);
-//            return true;
         }
     }
-    if (pe->type() == QEvent::MouseButtonPress) {
-        if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
-            if (pobj->parent() == slider) {
 
+    if (pe->type() == QEvent::KeyPress) {
+        if (!((QKeyEvent*)pe)->modifiers()) {
+            if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
+                playPause();
+                return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
+                m_videoWidget->setFullScreen(!isFullScreen());
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+                if (m_pmedia.isSeekable()) {
+                    long pos = m_pmedia.currentTime() - 15000;
+                    if (pos > 0) m_pmedia.seek(pos);
+                    else m_pmedia.seek(0);
+                }
+                return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+                if (m_pmedia.isSeekable()) {
+                    long pos = m_pmedia.currentTime() + 15000;
+                    if (pos < m_pmedia.totalTime()) m_pmedia.seek(pos);
+                }
+                return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Up) {
+                qreal vol = m_AudioOutput.volume() + 0.05;
+                if (vol <= 1) m_AudioOutput.setVolume(vol);
+                else m_AudioOutput.setVolume(1);
+                return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
+                qreal vol = m_AudioOutput.volume() - 0.05;
+                if (vol >= 0.01) m_AudioOutput.setVolume(vol);
+                else m_AudioOutput.setVolume(0);
+                return true;
             }
         }
-
     }
+
     return false;
 }
 
