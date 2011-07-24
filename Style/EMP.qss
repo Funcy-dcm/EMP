@@ -1,6 +1,7 @@
 /* Simple Style */
 QWidget {
-    background-color: #000000/*1F1F11*/;
+	color: #B1B1B1;
+    background-color: #202020/*1F1F11*/;
 }
 
 QPushButton {
@@ -79,9 +80,26 @@ QSlider::sub-page:horizontal {
 
 QLabel {
 	/*background: #000000*/
-	color: #B1B1B1;
+	/*color: #B1B1B1;*/
 	font: normal 14px "Verdana";
 }
+
+#playList {
+	/*color: #B1B1B1;*/ 
+	font: normal 14px "Verdana";
+}
+
+#playList::item:selected {
+	color: #FFFFFF;
+	border: 1px solid #999999;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #222222);
+ }
+
+#playList::item:hover {
+	/*color: #000000;*/
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a0a0a0, stop:1 #323232);
+ }
+
 /*
 #pcmdPlay {
 		image: url(:/Project1.png);
