@@ -10,7 +10,7 @@
 #ifndef _MediaPlayer_h_
 #define _MediaPlayer_h_
 
-#include <QtGui/QWidget>
+#include <QtGui/QMainWindow>
 #include <QtGui/QApplication>
 #include <QtCore/QTimerEvent>
 #include <QtGui/QShowEvent>
@@ -48,6 +48,7 @@ class MediaVideoWidget : public Phonon::VideoWidget
 
 public:
     MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
+    QLabel *tLabel;
 
 public slots:
     // Over-riding non-virtual Phonon::VideoWidget slot
@@ -72,7 +73,7 @@ private:
 };
 
 // ======================================================================
-class MediaPlayer : public QWidget {
+class MediaPlayer : public QMainWindow {
     Q_OBJECT
 public:
     MediaPlayer(const QString &fileName);

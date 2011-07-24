@@ -32,6 +32,38 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
     addAction(&m_action);
     setAcceptDrops(true);
+
+/*
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+    tLabel = new QLabel(this);
+    tLabel->setAttribute(Qt::WA_NoSystemBackground);
+    tLabel->setAttribute(Qt::WA_TranslucentBackground);
+//    tLabel->setBackgroundRole(QPalette::NoRole);
+//    tLabel->setAlignment(Qt::AlignHCenter);
+    tLabel->setText("Text111111111111111111111111111111111111111111");
+    tLabel->setObjectName("tLabel");
+
+//    tLabel->setFixedHeight(20);
+
+    tLabel->setMinimumWidth(100);
+
+    tLabel->setWindowOpacity(0.5);
+//    setWindowOpacity(0.5);
+
+
+//    tLabel->setGeometry(0,0,width(), height());
+    tLabel->setSizePolicy( QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+    tLabel->resize(width(), 20);
+//    tLabel->move(50, 50);
+
+//    QLabel *nLabel = new QLabel(this);
+//    QPixmap pixmap(nLabel->size());
+//    pixmap.fill(Qt::transparent);
+//    nLabel->render(&pixmap,QPoint(),QRegion(), DrawChildren);
+//    tLabel->setMask(pixmap.mask());
+*/
+
 }
 
 void MediaVideoWidget::setFullScreen(bool enabled)
@@ -133,20 +165,22 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    openButton    = new QPushButton(this);
-    playButton    = new QPushButton(this);
-    stopButton    = new QPushButton(this);
-    rewindButton  = new QPushButton(this);
-    forwardButton = new QPushButton(this);
+    QWidget *wgt = new QWidget;
 
-    nameLabel  = new QLabel(this);
-    timeLabel  = new QLabel(this);
+    openButton    = new QPushButton(wgt);
+    playButton    = new QPushButton(wgt);
+    stopButton    = new QPushButton(wgt);
+    rewindButton  = new QPushButton(wgt);
+    forwardButton = new QPushButton(wgt);
 
-    slider = new Phonon::SeekSlider(this);
+    nameLabel  = new QLabel(wgt);
+    timeLabel  = new QLabel(wgt);
+
+    slider = new Phonon::SeekSlider(wgt);
     slider->setMediaObject(&m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
 
-    volume = new Phonon::VolumeSlider(this);
+    volume = new Phonon::VolumeSlider(wgt);
     volume->setAudioOutput(&m_AudioOutput);
     volume->setFixedWidth(100);
     volume->setCursor(Qt::PointingHandCursor);
@@ -183,6 +217,26 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
+    QStringList *list = new QStringList;
+    list += QString("1");
+    QStringListModel *model = new QStringListModel;
+    model->setStringList(list);
+    QModelIndex index = model->index(0, 0);
+    model->setData(index, "111", Qt::DisplayRole);
+//    model->setStringList(QStringList() << "Item1" << "Item2" << "Item3");
+
+    QListView *playList = new QListView;
+    playList->setModel(model);
+    playList->setObjectName("playList");
+    playList->setFocusPolicy(Qt::NoFocus);
+    playList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QDockWidget *playListDoc = new QDockWidget;
+//    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    playListDoc->setWidget(playList);
+    playListDoc->setMinimumWidth(100);
+    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+
     //Layout setup
     QHBoxLayout* phbxLayout = new QHBoxLayout;
     phbxLayout->addWidget(openButton);
@@ -203,9 +257,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     phbxLayout3->addSpacing(20);
     phbxLayout3->addWidget(timeLabel);
 
-    QVBoxLayout* pvbxLayout = new QVBoxLayout(this);
-    pvbxLayout->setMargin(0);
-    pvbxLayout->setSpacing(0);
+    QVBoxLayout* pvbxLayout = new QVBoxLayout(wgt);
+    pvbxLayout->setMargin(0); pvbxLayout->setSpacing(0);
 
     initVideoWindow();
     pvbxLayout->addWidget(&m_videoWindow);
@@ -221,11 +274,17 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelWidget = new QWidget(this);
     buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     buttonPanelWidget->setLayout(buttonPanelLayout);
-    pvbxLayout->addWidget(buttonPanelWidget);
+//    pvbxLayout->addWidget(buttonPanelWidget);
     QHBoxLayout *labelLayout = new QHBoxLayout();
     pvbxLayout->addLayout(labelLayout);
 
-    setLayout(pvbxLayout);
+    wgt->setLayout(pvbxLayout);
+
+    QStatusBar *controlPanel = new QStatusBar;
+    controlPanel->addPermanentWidget(buttonPanelWidget, 1);
+    controlPanel->setContentsMargins(0, 0, 0, 0);
+    controlPanel->setWindowFlags(Qt::FramelessWindowHint);
+    controlPanel->setSizeGripEnabled(false);
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(slotOpen()));
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
@@ -253,6 +312,10 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     m_audioOutputPath = Phonon::createPath(&m_pmedia, &m_AudioOutput);
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
+    setCentralWidget(wgt);
+    setStatusBar(controlPanel);
+    addDockWidget(Qt::RightDockWidgetArea, playListDoc);
+
     if (!filePath.isEmpty())
         setFile(filePath);
     resize(minimumSizeHint());
@@ -260,6 +323,13 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     moveWindowToCenter();
 
     qApp->installEventFilter( this );
+
+//    m_videoWindow.setWindowOpacity(0.5);
+//    m_videoWindow.setAttribute(Qt::WA_TranslucentBackground);
+//    setAttribute(Qt::WA_NoSystemBackground);
+//    setAttribute(Qt::WA_TranslucentBackground);
+//    buttonPanelWidget->setAttribute(Qt::WA_TranslucentBackground);
+//    buttonPanelWidget->setWindowFlags(Qt::FramelessWindowHint);
 }
 
 // ----------------------------------------------------------------------
@@ -382,8 +452,10 @@ void MediaPlayer::writeSettings()
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
 {
     if (pe->type() == QEvent::Close) {
-        close();
-        return false;
+        if (pobj == m_videoWidget) {
+            close();
+            return false;
+        }
     }
 
     if (pe->type() == QEvent::ToolTip) {
@@ -458,7 +530,7 @@ void MediaPlayer::initVideoWindow()
     videoLayout->addWidget(m_videoWidget);
     videoLayout->setContentsMargins(0, 0, 0, 0);
     m_videoWindow.setLayout(videoLayout);
-    m_videoWindow.setMinimumSize(100, 100);
+    m_videoWindow.setMinimumSize(200, 100);
 }
 
 // ----------------------------------------------------------------------
