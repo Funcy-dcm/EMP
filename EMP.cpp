@@ -228,11 +228,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QDockWidget *playListDoc = new QDockWidget;
-    playListDoc->setWindowTitle("PLAYLIST");
+    playListDoc->setWindowTitle("< PLAYLIST >");
     playListDoc->setFont(QFont("Verdana", 10, QFont::Bold, true));
     playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
-    playListDoc->setMinimumWidth(100);
+    playListDoc->setMinimumWidth(160);
     playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
     //Layout setup
