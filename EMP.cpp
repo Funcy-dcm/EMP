@@ -217,23 +217,21 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
-    QStringList *list = new QStringList;
-    list += QString("1");
-    QStringListModel *model = new QStringListModel;
-    model->setStringList(list);
-    QModelIndex index = model->index(0, 0);
-    model->setData(index, "111", Qt::DisplayRole);
-//    model->setStringList(QStringList() << "Item1" << "Item2" << "Item3");
+    playList = new QStringList;
+    model = new QStringListModel(*playList);
 
-    QListView *playList = new QListView;
-    playList->setModel(model);
-    playList->setObjectName("playList");
-    playList->setFocusPolicy(Qt::NoFocus);
-    playList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    playListView = new QListView;
+    playListView->setModel(model);
+    playListView->setObjectName("playList");
+    playListView->setFocusPolicy(Qt::NoFocus);
+    playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QDockWidget *playListDoc = new QDockWidget;
-//    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    playListDoc->setWidget(playList);
+    playListDoc->setWindowTitle("PLAYLIST");
+    playListDoc->setFont(QFont("Verdana", 10, QFont::Bold, true));
+    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    playListDoc->setWidget(playListView);
     playListDoc->setMinimumWidth(100);
     playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
@@ -267,8 +265,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     QVBoxLayout *buttonPanelLayout = new QVBoxLayout();
     buttonPanelLayout->setMargin(5);
     buttonPanelLayout->setSpacing(5);
-    buttonPanelLayout->addLayout(phbxLayout3);
     buttonPanelLayout->addLayout(phbxLayout2);
+    buttonPanelLayout->addLayout(phbxLayout3);
     buttonPanelLayout->addLayout(phbxLayout);
 
     buttonPanelWidget = new QWidget(this);
@@ -316,8 +314,10 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     setStatusBar(controlPanel);
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
 
-    if (!filePath.isEmpty())
+    if (!filePath.isEmpty()){
+        addFile(filePath);
         setFile(filePath);
+    }
     resize(minimumSizeHint());
 
     moveWindowToCenter();
@@ -540,9 +540,12 @@ void MediaPlayer::slotOpen()
     m_pmedia.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];
+        addFile(fileName);
         setFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
-            m_pmedia.enqueue(Phonon::MediaSource(fileNames[i]));
+          addFile(fileNames[i]);
+//        for (int i=1; i<fileNames.size(); i++)
+//            m_pmedia.enqueue(Phonon::MediaSource(fileNames[i]));
     }
 }
 
@@ -563,14 +566,20 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                 dir.setFilter(QDir::Files);
                 QStringList entries = dir.entryList();
                 if (entries.size() > 0) {
+                    addFile(fileName + QDir::separator() +  entries[0]);
                     setFile(fileName + QDir::separator() +  entries[0]);
-                    for (int i=1; i< entries.size(); ++i)
-                        m_pmedia.enqueue(fileName + QDir::separator() + entries[i]);
+                    for (int i=1; i<entries.size(); i++)
+                      addFile(fileName + QDir::separator() + entries[i]);
+/*                    for (int i=1; i< entries.size(); ++i)
+                        m_pmedia.enqueue(fileName + QDir::separator() + entries[i])*/;
                 }
             } else {
+                addFile(fileName);
                 setFile(fileName);
                 for (int i=1; i<urls.size(); i++)
-                    m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
+                  addFile(urls[i].toLocalFile());
+//                for (int i=1; i<urls.size(); i++)
+//                    m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
             }
         }
     }
@@ -627,6 +636,19 @@ void MediaPlayer::stop()
 void MediaPlayer::setFile(const QString &fileName)
 {
     m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
+}
+
+void MediaPlayer::addFile(QString fileName)
+{
+    QString Name = fileName;
+    int t = Name.lastIndexOf('\\');
+    if (t < 0) t = Name.lastIndexOf('/');
+    Name = Name.right(Name.length() - t - 1);
+    playList->append(fileName);
+    int row = model->rowCount();
+    model->insertRows(row, 1);
+    QModelIndex index = model->index(row);
+    model->setData(index, Name, Qt::DisplayRole);
 }
 
 void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)

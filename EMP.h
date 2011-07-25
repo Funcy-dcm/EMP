@@ -17,6 +17,8 @@
 #include <QtGui/QIcon>
 #include <QtCore/QBasicTimer>
 #include <QtGui/QAction>
+#include <QtGui/QStringListModel>
+#include <QtGui/QListView>
 #include <QSettings>
 
 #include <phonon/mediaobject.h>
@@ -82,6 +84,7 @@ public:
     void readSettings ();
     void initVideoWindow();
     void setFile(const QString &text);
+    void addFile(QString fileName);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
@@ -115,6 +118,10 @@ private:
     QString lang;
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
+
+    QStringList *playList;
+    QStringListModel *model;
+    QListView *playListView;
 
     QIcon playIcon;
     QIcon pauseIcon;
