@@ -28,4 +28,8 @@
     <source>Volume</source>
     <target>Громкость</target>
 </phrase>
+<phrase>
+    <source>Playlist (show/hide)</source>
+    <target>Показать/спрятать плейлист</target>
+</phrase>
 </QPH>
