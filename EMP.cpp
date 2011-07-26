@@ -172,6 +172,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     stopButton    = new QPushButton(wgt);
     rewindButton  = new QPushButton(wgt);
     forwardButton = new QPushButton(wgt);
+    playlistButton = new QPushButton(wgt);
 
     nameLabel  = new QLabel(wgt);
     timeLabel  = new QLabel(wgt);
@@ -193,18 +194,21 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     stopButton->setIcon(QIcon(":/Res/Stop1.png"));
     rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
     forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
+    playlistButton->setIcon(QIcon(":/res/Playlist1.png"));
 
     openButton->setToolTip(tr("Open"));
     playButton->setToolTip(tr("Play"));
     stopButton->setToolTip(tr("Stop"));
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
+    playlistButton->setToolTip(tr("Playlist (show/hide)"));
 
     openButton->setFocusPolicy(Qt::NoFocus);
     playButton->setFocusPolicy(Qt::NoFocus);
     stopButton->setFocusPolicy(Qt::NoFocus);
     rewindButton->setFocusPolicy(Qt::NoFocus);
     forwardButton->setFocusPolicy(Qt::NoFocus);
+    playlistButton->setFocusPolicy(Qt::NoFocus);
     volume->setFocusPolicy(Qt::NoFocus);
     slider->setFocusPolicy(Qt::NoFocus);
 
@@ -213,6 +217,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     stopButton->setCursor(Qt::PointingHandCursor);
     rewindButton->setCursor(Qt::PointingHandCursor);
     forwardButton->setCursor(Qt::PointingHandCursor);
+    playlistButton->setCursor(Qt::PointingHandCursor);
 
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
@@ -226,14 +231,14 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    playListView->setMinimumWidth(160);
+    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
-    QDockWidget *playListDoc = new QDockWidget;
-    playListDoc->setWindowTitle("< PLAYLIST >");
-    playListDoc->setFont(QFont("Verdana", 10, QFont::Bold, true));
+    playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
-    playListDoc->setMinimumWidth(160);
-    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    playListDoc->setMinimumWidth(150);
+//    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
     //Layout setup
     QHBoxLayout* phbxLayout = new QHBoxLayout;
@@ -243,9 +248,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     phbxLayout->addWidget(stopButton);
     phbxLayout->addWidget(rewindButton);
     phbxLayout->addWidget(forwardButton);
-    phbxLayout->addSpacing(10);
+//    phbxLayout->addSpacing(10);
     phbxLayout->addStretch();
     phbxLayout->addWidget(volume);
+    phbxLayout->addSpacing(10);
+    phbxLayout->addWidget(playlistButton);
 
     QHBoxLayout* phbxLayout2 = new QHBoxLayout;
     phbxLayout2->addWidget(slider);
@@ -289,6 +296,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
+    connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
 
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
@@ -631,6 +639,15 @@ void MediaPlayer::stop()
         }
     }
     m_pmedia.stop();
+}
+
+void MediaPlayer::playlistShow()
+{
+    if (playListDoc->isVisible()) {
+        playListDoc->hide();
+    } else {
+        playListDoc->show();
+    }
 }
 
 void MediaPlayer::setFile(const QString &fileName)

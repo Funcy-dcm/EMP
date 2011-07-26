@@ -11,5 +11,7 @@
         <file>Res/Forward1.png</file>
         <file>Res/Rewind1.png</file>
         <file>Res/Open.png</file>
+        <file>res/Playlist.png</file>
+        <file>res/Playlist1.png</file>
     </qresource>
 </RCC>

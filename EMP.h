@@ -99,6 +99,7 @@ public slots:
     void stop();
     void rewind();
     void forward();
+    void playlistShow();
     void updateInfo();
     void updateTime();
 
@@ -122,6 +123,7 @@ private:
     QStringList *playList;
     QStringListModel *model;
     QListView *playListView;
+    QDockWidget *playListDoc;
 
     QIcon playIcon;
     QIcon pauseIcon;
@@ -131,6 +133,7 @@ private:
     QPushButton *stopButton;
     QPushButton *rewindButton;
     QPushButton *forwardButton;
+    QPushButton *playlistButton;
     Phonon::SeekSlider *slider;
     QLabel *nameLabel;
     QLabel *timeLabel;

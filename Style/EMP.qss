@@ -14,7 +14,7 @@ QPushButton {
 				stop:0.1 #858587 );
     color: white;
     border: 1px solid #858587;
-    border-radius:4px;	
+    border-radius: 4px;	
 	/*image: url(images/control_pause_blue.png);*/
 } 
 
@@ -60,7 +60,7 @@ QSlider::groove:horizontal {
 	height: 12px;
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #222222/*#c4c4c4*/);
 	margin: 2px 0;
-	border-radius:4px;
+	border-radius: 4px;
 }
 
 QSlider::handle:horizontal {
@@ -79,14 +79,14 @@ QSlider::sub-page:horizontal {
 }
 
 QLabel {
-	/*background: #000000*/
-	/*color: #B1B1B1;*/
-	font: normal 14px "Verdana";
+	font: normal 14px "Arial";
 }
 
 #playList {
-	/*color: #B1B1B1;*/ 
-	font: normal 14px "Verdana";
+	border: 1px solid #606060;
+	font: normal 14px "Arial";
+	border-radius: 4px;
+	padding: 2px;
 }
 
 #playList::item:selected {
@@ -100,24 +100,28 @@ QLabel {
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a0a0a0, stop:1 #323232);
 }
   
+QDockWidget {
+	/*color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #616161, stop:1 #B1B1B1);*/
+	font: bold 12px "Tahoma";
+}	
+  
 QDockWidget::title {
 	text-align: center;
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #606060, stop:1 #323232);
 }
 
 QScrollBar:vertical {
-	border: 1px solid #323232;
-	background: #161616;
+	border: 1px solid #606060;
+	background: #000000/*161616*/;
 	width: 12px;
-	margin: 8px 0;
-	border-radius:4px;
+	margin: 4px 0 4px 0;
+	border-radius: 4px;
 }
 
 QScrollBar::handle:vertical {
 	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a0FFa0, stop:1 #00FF00);
 	min-height: 12px;
 	margin: 12px 1px 12px 1px;
-	/*border-width: 2px;*/
 	border-radius: 2px;
 }
 
