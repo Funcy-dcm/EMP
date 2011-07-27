@@ -17,7 +17,7 @@
 #include <QtGui/QIcon>
 #include <QtCore/QBasicTimer>
 #include <QtGui/QAction>
-#include <QtGui/QStringListModel>
+#include <QStandardItemModel>
 #include <QtGui/QListView>
 #include <QSettings>
 
@@ -120,8 +120,7 @@ private:
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
 
-    QStringList *playList;
-    QStringListModel *model;
+    QStandardItemModel *model;
     QListView *playListView;
     QDockWidget *playListDoc;
 

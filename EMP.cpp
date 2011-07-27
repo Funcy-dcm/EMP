@@ -222,8 +222,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
-    playList = new QStringList;
-    model = new QStringListModel(*playList);
+    model = new QStandardItemModel(0, 4);
 
     playListView = new QListView;
     playListView->setModel(model);
@@ -661,11 +660,32 @@ void MediaPlayer::addFile(QString fileName)
     int t = Name.lastIndexOf('\\');
     if (t < 0) t = Name.lastIndexOf('/');
     Name = Name.right(Name.length() - t - 1);
-    playList->append(fileName);
+
     int row = model->rowCount();
     model->insertRows(row, 1);
-    QModelIndex index = model->index(row);
-    model->setData(index, Name, Qt::DisplayRole);
+    QModelIndex index = model->index(row, 0);
+    model->setData(index, Name);
+    index = model->index(row, 1);
+    model->setData(index, fileName);
+
+    long len = 0;
+
+    index = model->index(row, 1);
+    model->setData(index, fileName);
+
+    QString timeString;
+    int sec = len/1000;
+    int min = sec/60;
+    int hour = min/60;
+    int msec = len;
+    QTime mTime(hour%60, min%60, sec%60, msec%1000);
+    QString timeFormat = "h:mm:ss";
+    timeString = mTime.toString(timeFormat);
+    index = model->index(row, 2);
+    model->setData(index, timeString);
+
+    row = model->rowCount();
+    row = 1;
 }
 
 void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)

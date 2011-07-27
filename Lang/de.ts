@@ -39,7 +39,7 @@
     <message>
         <location filename="../EMP.cpp" line="204"/>
         <source>Playlist (show/hide)</source>
-        <translation type="unfinished"></translation>
+        <translation>Wiedergabeliste (anzeigen/verstecken)</translation>
     </message>
     <message>
         <location filename="../EMP.cpp" line="727"/>
