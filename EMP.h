@@ -18,7 +18,7 @@
 #include <QtCore/QBasicTimer>
 #include <QtGui/QAction>
 #include <QStandardItemModel>
-#include <QtGui/QListView>
+#include <QtGui/QTableView>
 #include <QSettings>
 
 #include <phonon/mediaobject.h>
@@ -121,7 +121,7 @@ private:
     long filePos[MAX_FILE_POS];
 
     QStandardItemModel *model;
-    QListView *playListView;
+    QTableView *playListView;
     QDockWidget *playListDoc;
 
     QIcon playIcon;

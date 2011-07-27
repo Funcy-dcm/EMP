@@ -222,21 +222,33 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
-    model = new QStandardItemModel(0, 4);
+    model = new QStandardItemModel(0, 3);
 
-    playListView = new QListView;
+    playListView = new QTableView;
     playListView->setModel(model);
     playListView->setObjectName("playList");
+    playListView->setColumnHidden(1, true);
+    playListView->horizontalHeader()->hide();
+    playListView->verticalHeader()->hide();
+    playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
+
+    playListView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+    playListView->setShowGrid(false);
+    playListView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    playListView->setWordWrap(false);
+
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     playListView->setMinimumWidth(160);
-    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+//    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
     playListDoc->setMinimumWidth(150);
+//    playListDoc->setContentsMargins(0,0,0,0);
 //    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
     //Layout setup
