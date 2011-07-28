@@ -89,9 +89,9 @@ QLabel {
 }
 
 #playList::item:selected {
-	color: #FFFFFF;
+	color: #B1B1B1;
 	/*border: 1px solid #999999;*/
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a6a6a6, stop:1 #424242);
+	background: #424242;/*qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #424242);*/
 }
 
 #playList::item:hover {
@@ -100,6 +100,7 @@ QLabel {
 }
   
 QDockWidget {
+	color: #000000;
 	/*color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #616161, stop:1 #B1B1B1);*/
 	font: bold 12px "Tahoma";
 }	

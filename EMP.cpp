@@ -222,18 +222,20 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
-    model = new QStandardItemModel(0, 3);
+    model = new QStandardItemModel(0, 4);
 
     playListView = new QTableView;
     playListView->setModel(model);
     playListView->setObjectName("playList");
-    playListView->setColumnHidden(1, true);
+    playListView->setColumnHidden(0, true);
+    playListView->setColumnHidden(3, true);
     playListView->horizontalHeader()->hide();
     playListView->verticalHeader()->hide();
     playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
-    playListView->setSelectionMode(QAbstractItemView::MultiSelection);
+    playListView->setSelectionMode(QAbstractItemView::ContiguousSelection);
 
-    playListView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
     playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
     playListView->setShowGrid(false);
 //    playListView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
@@ -677,16 +679,18 @@ void MediaPlayer::addFile(QString fileName)
 
     int row = model->rowCount();
     model->insertRows(row, 1);
-    QModelIndex index = model->index(row, 0);
-    model->setData(index, Name);
-    index = model->index(row, 1);
-    model->setData(index, fileName);
+    QModelIndex index = model->index(row, 0);               // 0
+    model->setData(index, QString::number(row));
+
+    index = model->index(row, 1);                           // 1
+    model->setData(index, fileName, Qt::StatusTipRole);
+    model->setData(index, QString::number(row+1) + ". " + Name, Qt::DisplayRole);
+    if (row == 0) {
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100, 120), Qt::SolidPattern), Qt::BackgroundRole);
+    }
 
     long len = 0;
-
-    index = model->index(row, 1);
-    model->setData(index, fileName);
-
     QString timeString;
     int sec = len/1000;
     int min = sec/60;
@@ -695,11 +699,15 @@ void MediaPlayer::addFile(QString fileName)
     QTime mTime(hour%60, min%60, sec%60, msec%1000);
     QString timeFormat = "h:mm:ss";
     timeString = mTime.toString(timeFormat);
-    index = model->index(row, 2);
+    index = model->index(row, 2);                           // 2
     model->setData(index, timeString);
+    if (row == 0) {
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100, 120), Qt::SolidPattern), Qt::BackgroundRole);
+    }
 
-    row = model->rowCount();
-    row = 1;
+    index = model->index(row, 3);                           // 3
+    model->setData(index, fileName);
 }
 
 void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
