@@ -231,12 +231,14 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->horizontalHeader()->hide();
     playListView->verticalHeader()->hide();
     playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
+    playListView->setSelectionMode(QAbstractItemView::MultiSelection);
 
     playListView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
     playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
     playListView->setShowGrid(false);
-    playListView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    playListView->setWordWrap(false);
+//    playListView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    playListView->verticalHeader()->setDefaultSectionSize ( playListView->verticalHeader()->minimumSectionSize () );
+//    playListView->setWordWrap(false);
 
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);

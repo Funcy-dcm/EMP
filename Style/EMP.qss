@@ -11,9 +11,9 @@ QPushButton {
 				stop:1 #E9E9E9,
 				stop:0.6 #1F1F21,
 				stop:0.3 #555555, 
-				stop:0.1 #858587 );
+				stop:0.1 #858585 );
     color: white;
-    border: 1px solid #858587;
+    border: 1px solid #999999;
     border-radius: 4px;	
 	/*image: url(images/control_pause_blue.png);*/
 } 
@@ -56,26 +56,25 @@ QPushButton:checked:hover {
 }
 
 QSlider::groove:horizontal {
-	border: 2px solid #999999;
+	border: 1px solid #999999;
 	height: 12px;
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #222222/*#c4c4c4*/);
-	margin: 2px 0;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #606060, stop:1 #202020);
+	margin: 2px 0px;
 	border-radius: 4px;
 }
 
 QSlider::handle:horizontal {
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #00FF00);
-	width: 6px;
-	margin: 0px;
-	border-width: 2px;
+	/*border: 1px solid #999999;*/
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b0FFb0, stop:1 #00FF00);
+	width: 12px;
+	margin: 1px;
 	border-radius: 3px;
 }
 
 QSlider::sub-page:horizontal {
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #00FF00);
-	margin: 4px 0px;
-	border-width: 2px; 
-	border-radius: 3px;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d0d0d0, stop:1 #505050);
+	margin: 4px 2px;
+	border-radius: 2px;
 }
 
 QLabel {
@@ -83,7 +82,7 @@ QLabel {
 }
 
 #playList {
-	border: 1px solid #606060;
+	border: 1px solid #999999;
 	font: normal 14px "Arial";
 	border-radius: 4px;
 	padding: 2px;
@@ -92,7 +91,7 @@ QLabel {
 #playList::item:selected {
 	color: #FFFFFF;
 	/*border: 1px solid #999999;*/
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #222222);
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a6a6a6, stop:1 #424242);
 }
 
 #playList::item:hover {
@@ -107,11 +106,16 @@ QDockWidget {
   
 QDockWidget::title {
 	text-align: center;
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #606060, stop:1 #323232);
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #808080, stop:1 #424242);
 }
 
+ QMainWindow::separator {
+     /*background: yellow;*/
+     /*width: 1px;*/ /* когда вертикальный */
+ }
+
 QScrollBar:vertical {
-	border: 1px solid #606060;
+	border: 1px solid #999999;
 	background: #000000/*161616*/;
 	width: 12px;
 	margin: 4px 0 4px 0;
@@ -119,14 +123,14 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a0FFa0, stop:1 #00FF00);
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #b0FFb0, stop:1 #00FF00);
 	min-height: 12px;
 	margin: 12px 1px 12px 1px;
 	border-radius: 2px;
 }
 
 QScrollBar::add-line:vertical {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a6a6a6, stop:0.4 #323232);
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a6a6a6, stop:0.4 #424242);
 	height: 8px;
 	margin: 2px;
 	subcontrol-position: bottom;
@@ -135,7 +139,7 @@ QScrollBar::add-line:vertical {
 }
 
 QScrollBar::sub-line:vertical {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a6a6a6, stop:0.4 #323232);
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #a6a6a6, stop:0.4 #424242);
 	height: 8px;
 	margin: 2px;
 	subcontrol-position: top;
