@@ -1,7 +1,7 @@
 /* Simple Style */
 QWidget {
 	color: #B1B1B1;
-    background-color: #202020/*1F1F11*/;
+    background-color: #202020;
 }
 
 QPushButton {
@@ -11,7 +11,7 @@ QPushButton {
 				stop:1 #E9E9E9,
 				stop:0.6 #1F1F21,
 				stop:0.3 #555555, 
-				stop:0.1 #858585 );
+				stop:0.1 #858585);
     color: white;
     border: 1px solid #999999;
     border-radius: 4px;	
@@ -23,7 +23,7 @@ QPushButton:hover {
 				stop:1 #FFFFFF,
 				stop:0.6 #009900,
 				stop:0.3 #00AA00, 
-				stop:0.1 #00FF00 );
+				stop:0.1 #00FF00);
 	color: white;			
     border: 1px solid #00FF00;	
 }
@@ -33,7 +33,7 @@ QPushButton:pressed {
 				stop:1 rgba(255, 255, 255, 120),
 				stop:0.6 rgba(0, 153, 0, 120),
 				stop:0.3 rgba(0, 170, 0, 120), 
-				stop:0.1 rgba(0, 255, 0, 120) );
+				stop:0.1 rgba(0, 255, 0, 120));
 	color: white;			
     border: 1px solid #00FF00;
 }
@@ -43,7 +43,7 @@ QPushButton:checked {
 				stop:0.1 rgba(62, 62, 255, 180),
 				stop:0.3 rgba(0, 0, 174, 180),
 				stop:0.6 rgba(0, 0, 113, 180), 
-				stop:1 rgba(188, 225, 245, 180) );
+				stop:1 rgba(188, 225, 245, 180));
     border: 1px solid #0000AE;	
 }
 
@@ -52,7 +52,7 @@ QPushButton:checked:hover {
 				stop:1 #BCE1F5,
 				stop:0.6 #000071,
 				stop:0.3 #0000AE, 
-				stop:0.1 #3E3EFF );
+				stop:0.1 #3E3EFF);
 }
 
 QSlider::groove:horizontal {
@@ -107,7 +107,7 @@ QDockWidget {
   
 QDockWidget::title {
 	text-align: center;
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #808080, stop:1 #424242);
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b0b0b0, stop:1 #626262);
 }
 
  QMainWindow::separator {

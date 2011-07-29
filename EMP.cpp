@@ -249,9 +249,9 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 //    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     playListDoc = new QDockWidget("PLAYLIST", this);
-    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+//    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
-    playListDoc->setMinimumWidth(150);
+//    playListDoc->setMinimumWidth(150);
 //    playListDoc->setContentsMargins(0,0,0,0);
 //    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
@@ -336,10 +336,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     setCentralWidget(wgt);
     setStatusBar(controlPanel);
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
+    playListDoc->hide();
 
     if (!filePath.isEmpty()){
-        addFile(filePath);
         setFile(filePath);
+        addFile(filePath);
     }
     resize(minimumSizeHint());
 
@@ -560,11 +561,12 @@ void MediaPlayer::initVideoWindow()
 void MediaPlayer::slotOpen()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this);
-    m_pmedia.clearQueue();
     if (fileNames.size() > 0) {
+        m_pmedia.clearQueue();
+        model->clear();
         QString fileName = fileNames[0];
-        addFile(fileName);
         setFile(fileName);
+        addFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
           addFile(fileNames[i]);
 //        for (int i=1; i<fileNames.size(); i++)
@@ -589,16 +591,16 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                 dir.setFilter(QDir::Files);
                 QStringList entries = dir.entryList();
                 if (entries.size() > 0) {
-                    addFile(fileName + QDir::separator() +  entries[0]);
                     setFile(fileName + QDir::separator() +  entries[0]);
+                    addFile(fileName + QDir::separator() +  entries[0]);
                     for (int i=1; i<entries.size(); i++)
                       addFile(fileName + QDir::separator() + entries[i]);
 /*                    for (int i=1; i< entries.size(); ++i)
                         m_pmedia.enqueue(fileName + QDir::separator() + entries[i])*/;
                 }
             } else {
-                addFile(fileName);
                 setFile(fileName);
+                addFile(fileName);
                 for (int i=1; i<urls.size(); i++)
                   addFile(urls[i].toLocalFile());
 //                for (int i=1; i<urls.size(); i++)
@@ -667,7 +669,8 @@ void MediaPlayer::playlistShow()
 
 void MediaPlayer::setFile(const QString &fileName)
 {
-    m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
+    if (model->rowCount() == 0)
+        m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
 }
 
 void MediaPlayer::addFile(QString fileName)
@@ -683,11 +686,10 @@ void MediaPlayer::addFile(QString fileName)
     model->setData(index, QString::number(row));
 
     index = model->index(row, 1);                           // 1
-    model->setData(index, fileName, Qt::StatusTipRole);
     model->setData(index, QString::number(row+1) + ". " + Name, Qt::DisplayRole);
     if (row == 0) {
         model->setData(index, Qt::white, Qt::TextColorRole);
-        model->setData(index, QBrush(QColor(100, 100, 100, 120), Qt::SolidPattern), Qt::BackgroundRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
     }
 
     long len = 0;
@@ -703,7 +705,7 @@ void MediaPlayer::addFile(QString fileName)
     model->setData(index, timeString);
     if (row == 0) {
         model->setData(index, Qt::white, Qt::TextColorRole);
-        model->setData(index, QBrush(QColor(100, 100, 100, 120), Qt::SolidPattern), Qt::BackgroundRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
     }
 
     index = model->index(row, 3);                           // 3
@@ -716,13 +718,23 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     if (oldstate == Phonon::LoadingState) {
 //        m_videoWindow.setVisible(m_pmedia.hasVideo());
-//        QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
-//        QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
         if (m_pmedia.hasVideo()){
             // Flush event que so that sizeHint takes the
             // recently shown/hidden m_videoWindow into account:
             qApp->processEvents();
-            resize(sizeHint());
+            int frameWidth = this->frameSize().width() - this->size().width();
+            int frameHeight = this->frameSize().height() - this->size().height();
+            int newWidth = m_videoWindow.sizeHint().width() + frameWidth;
+            int newHeight = m_videoWindow.sizeHint().height() + buttonPanelWidget->height() +
+                    buttonPanelWidget->pos().y() + 2 + frameHeight;
+            if (playListDoc->isVisible()) newWidth += playListDoc->width();
+
+            QRect videoHintRect = QRect(QPoint(0, 0), QSize(newWidth, newHeight));
+            QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
+
+            resize(newVideoRect.width()- frameWidth, newVideoRect.height() - frameHeight);
+
+//            m_videoWindow.setGeometry(newVideoRect);
         } else
             resize(minimumSize());
         //
