@@ -160,28 +160,32 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 {
     setWindowTitle("EMP");
 
-    readSettings();
-
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QWidget *wgt = new QWidget;
 
+    buttonPanelWidget = new QWidget(this);
     openButton    = new QPushButton(wgt);
     playButton    = new QPushButton(wgt);
     stopButton    = new QPushButton(wgt);
     rewindButton  = new QPushButton(wgt);
     forwardButton = new QPushButton(wgt);
     playlistButton = new QPushButton(wgt);
-
     nameLabel  = new QLabel(wgt);
     timeLabel  = new QLabel(wgt);
-
     slider = new Phonon::SeekSlider(wgt);
+    volume = new Phonon::VolumeSlider(wgt);
+
+    playListDoc = new QDockWidget("PLAYLIST", this);
+    model = new QStandardItemModel(0, 4);
+    playListView = new QTableView;
+
+    readSettings();
+
     slider->setMediaObject(&m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
 
-    volume = new Phonon::VolumeSlider(wgt);
     volume->setAudioOutput(&m_AudioOutput);
     volume->setFixedWidth(100);
     volume->setCursor(Qt::PointingHandCursor);
@@ -222,9 +226,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel->setAlignment(Qt::AlignRight);
     nameLabel->setAlignment(Qt::AlignLeft);
 
-    model = new QStandardItemModel(0, 4);
 
-    playListView = new QTableView;
     playListView->setModel(model);
     playListView->setObjectName("playList");
     playListView->setColumnHidden(0, true);
@@ -248,7 +250,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->setMinimumWidth(160);
 //    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    playListDoc = new QDockWidget("PLAYLIST", this);
+
 //    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
 //    playListDoc->setMinimumWidth(150);
@@ -291,7 +293,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelLayout->addLayout(phbxLayout3);
     buttonPanelLayout->addLayout(phbxLayout);
 
-    buttonPanelWidget = new QWidget(this);
     buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     buttonPanelWidget->setLayout(buttonPanelLayout);
 //    pvbxLayout->addWidget(buttonPanelWidget);
@@ -335,8 +336,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     setCentralWidget(wgt);
     setStatusBar(controlPanel);
-    addDockWidget(Qt::RightDockWidgetArea, playListDoc);
-    playListDoc->hide();
 
     if (!filePath.isEmpty()){
         setFile(filePath);
@@ -383,6 +382,19 @@ void MediaPlayer::readSettings()
         filePos[i] = m_settings->value(key_value, 0).toInt();
     }
     m_settings->endGroup();
+
+    m_settings->beginGroup("/Playlist");
+    int visible = m_settings->value("/Visible", 0).toInt();
+    int posX = m_settings->value("/Posx", playListDoc->pos().x()).toInt();
+    int posY = m_settings->value("/Posy", playListDoc->pos().y()).toInt();
+    int newWidth = m_settings->value("/Width", playListDoc->width()).toInt();
+    int newHeight = m_settings->value("/Height", playListDoc->height()).toInt();
+    int dwArea = m_settings->value("/DockWidgetArea", Qt::RightDockWidgetArea).toInt();
+    m_settings->endGroup();
+    if (visible) playListDoc->show();
+    else playListDoc->hide();
+    addDockWidget((Qt::DockWidgetArea)dwArea, playListDoc);
+    playListDoc->setGeometry(QRect(QPoint(posX, posY), QSize(newWidth, newHeight)));
 }
 
 // ----------------------------------------------------------------------
@@ -404,6 +416,16 @@ void MediaPlayer::writeSettings()
         key_value = "/FilePosition" + QString::number(i);
         m_settings->setValue(key_value, (qlonglong)filePos[i]);
     }
+    m_settings->endGroup();
+
+    m_settings->beginGroup("/Playlist");
+    m_settings->setValue("/Visible", playListDoc->isVisible() ? 1 : 0);
+    m_settings->setValue("/Posx", playListDoc->pos().x());
+    m_settings->setValue("/Posy", playListDoc->pos().y());
+    m_settings->setValue("/Width", playListDoc->width());
+    m_settings->setValue("/Height", playListDoc->height());
+    m_settings->setValue("/DockWidgetArea", (int)dockWidgetArea(playListDoc));
+    int t = (int)dockWidgetArea(playListDoc);
     m_settings->endGroup();
 }
 
