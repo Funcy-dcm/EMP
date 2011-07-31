@@ -111,6 +111,7 @@ private slots:
 
 protected:
     virtual void closeEvent(QCloseEvent*);
+    virtual void showEvent(QShowEvent*);
     virtual void keyPressEvent(QKeyEvent *pe);
     bool eventFilter(QObject*, QEvent*);
     void timerEvent(QTimerEvent *pe);

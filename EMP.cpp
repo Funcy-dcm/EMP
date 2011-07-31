@@ -336,6 +336,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     setCentralWidget(wgt);
     setStatusBar(controlPanel);
+//    addDockWidget(Qt::RightDockWidgetArea, playListDoc);
 
     if (!filePath.isEmpty()){
         setFile(filePath);
@@ -382,19 +383,6 @@ void MediaPlayer::readSettings()
         filePos[i] = m_settings->value(key_value, 0).toInt();
     }
     m_settings->endGroup();
-
-    m_settings->beginGroup("/Playlist");
-    int visible = m_settings->value("/Visible", 0).toInt();
-    int posX = m_settings->value("/Posx", playListDoc->pos().x()).toInt();
-    int posY = m_settings->value("/Posy", playListDoc->pos().y()).toInt();
-    int newWidth = m_settings->value("/Width", playListDoc->width()).toInt();
-    int newHeight = m_settings->value("/Height", playListDoc->height()).toInt();
-    int dwArea = m_settings->value("/DockWidgetArea", Qt::RightDockWidgetArea).toInt();
-    m_settings->endGroup();
-    if (visible) playListDoc->show();
-    else playListDoc->hide();
-    addDockWidget((Qt::DockWidgetArea)dwArea, playListDoc);
-    playListDoc->setGeometry(QRect(QPoint(posX, posY), QSize(newWidth, newHeight)));
 }
 
 // ----------------------------------------------------------------------
@@ -461,6 +449,25 @@ void MediaPlayer::writeSettings()
     }
     if (m_pmedia.state() != Phonon::StoppedState) m_pmedia.stop();
     writeSettings();
+}
+
+/*virtual*/ void MediaPlayer::showEvent(QShowEvent*)
+{
+    QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
+    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
+    m_settings->beginGroup("/Playlist");
+    int visible = m_settings->value("/Visible", 0).toInt();
+    int posX = m_settings->value("/Posx", playListDoc->pos().x()).toInt();
+    int posY = m_settings->value("/Posy", playListDoc->pos().y()).toInt();
+    int newWidth = m_settings->value("/Width", playListDoc->width()).toInt();
+    int newHeight = m_settings->value("/Height", playListDoc->height()).toInt();
+    int dwArea = m_settings->value("/DockWidgetArea", Qt::RightDockWidgetArea).toInt();
+    m_settings->endGroup();
+    addDockWidget((Qt::DockWidgetArea)dwArea, playListDoc);
+    playListDoc->setGeometry(QRect(QPoint(posX, posY), QSize(80, newHeight)));
+    if (visible) playListDoc->show();
+    else playListDoc->hide();
+
 }
 
 /*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)
