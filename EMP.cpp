@@ -611,8 +611,8 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                 addFile(fileName);
                 for (int i=1; i<urls.size(); i++)
                   addFile(urls[i].toLocalFile());
-//                for (int i=1; i<urls.size(); i++)
-//                    m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
+                for (int i=1; i<urls.size(); i++)
+                    m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
             }
         }
     }
@@ -730,7 +730,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             // Flush event que so that sizeHint takes the
             // recently shown/hidden m_videoWindow into account:
             qApp->processEvents();
-            QPoint posCOld = geometry().center();
+            QPoint posCOld = frameGeometry().center();
             QSize frame;
             QSize newSize;
             frame.setWidth(frameSize().width() - size().width());
@@ -741,11 +741,11 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             if (playListDoc->isVisible()) newSize.setWidth(newSize.width() + playListDoc->width());
 
             QRect videoHintRect = QRect(QPoint(0, 0), newSize);
-            QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
+            QRect newVideoRect = QApplication::desktop()->availableGeometry(0).intersected(videoHintRect);
 
             QPoint posNew;
-            posNew.setX(posCOld.x() - newVideoRect.width()/2);
-            posNew.setY(posCOld.y() - newVideoRect.height()/2);
+            posNew.setX(posCOld.x() - (newVideoRect.width()- frame.width())/2);
+            posNew.setY(posCOld.y() - (newVideoRect.height() - frame.height())/2);
             if (posNew.x() < 0) posNew.setX(0);
             else if ((posNew.x() + newVideoRect.width()) >
                      QApplication::desktop()->availableGeometry(0).width()) {
@@ -759,14 +759,11 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                             newVideoRect.height());
             }
 
-            setGeometry(posNew.x(), posNew.y(),
-                        newVideoRect.width()- frame.width(),
-                        newVideoRect.height() - frame.height());
+            resize(newVideoRect.width()- frame.width(), newVideoRect.height() - frame.height());
             move(posNew);
 
-        } else
-            resize(minimumSize());
-        //
+        } else resize(minimumSize());
+
         for (int i = 0; i < MAX_FILE_POS; ++i) {
             if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
                 if (m_pmedia.isSeekable())
@@ -774,9 +771,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 break;
             }
         }
-//        moveWindowToCenter();
         m_pmedia.play();
-        //
     }
 
     switch (newstate) {
@@ -824,8 +819,10 @@ void MediaPlayer::updateInfo()
     QString fileName = m_pmedia.currentSource().fileName();
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
     fileName = fileName.left(fileName.lastIndexOf('.'));
-
     nameLabel->setText(fileName);
+
+    m_videoWindow.setVisible(m_pmedia.hasVideo());
+    if (!m_pmedia.hasVideo()) resize(minimumSize());
 }
 
 void MediaPlayer::updateTime()
@@ -882,7 +879,12 @@ void MediaPlayer::forward()
 
 void MediaPlayer::hasVideoChanged(bool bHasVideo)
 {
+    /*QPoint posNew;
+    QPoint posCOld = frameGeometry().center();
     m_videoWindow.setVisible(bHasVideo);
+    posNew.setX(posCOld.x() - frameSize().width()/2);
+    posNew.setY(posCOld.y() - frameSize().height()/2);
+    move(posNew);*/
 }
 
 void MediaPlayer::showContextMenu(const QPoint &p)
