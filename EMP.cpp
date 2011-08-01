@@ -178,10 +178,10 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     volume = new Phonon::VolumeSlider(wgt);
 
     playListDoc = new QDockWidget("PLAYLIST", this);
+    playListDoc->setObjectName("playListDoc");
+    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     model = new QStandardItemModel(0, 4);
     playListView = new QTableView;
-
-    readSettings();
 
     slider->setMediaObject(&m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
@@ -247,15 +247,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    playListView->setMinimumWidth(160);
-//    playListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
 
-//    playListDoc->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     playListDoc->setWidget(playListView);
-//    playListDoc->setMinimumWidth(150);
-//    playListDoc->setContentsMargins(0,0,0,0);
-//    playListDoc->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    playListDoc->setMinimumWidth(160);
+    addDockWidget(Qt::RightDockWidgetArea, playListDoc);
 
     //Layout setup
     QHBoxLayout* phbxLayout = new QHBoxLayout;
@@ -336,7 +332,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     setCentralWidget(wgt);
     setStatusBar(controlPanel);
-//    addDockWidget(Qt::RightDockWidgetArea, playListDoc);
+
+    readSettings();
 
     if (!filePath.isEmpty()){
         setFile(filePath);
@@ -383,6 +380,9 @@ void MediaPlayer::readSettings()
         filePos[i] = m_settings->value(key_value, 0).toInt();
     }
     m_settings->endGroup();
+
+    restoreGeometry(m_settings->value("GeometryState").toByteArray());
+    restoreState(m_settings->value("ToolBarsState").toByteArray());
 }
 
 // ----------------------------------------------------------------------
@@ -406,15 +406,8 @@ void MediaPlayer::writeSettings()
     }
     m_settings->endGroup();
 
-    m_settings->beginGroup("/Playlist");
-    m_settings->setValue("/Visible", playListDoc->isVisible() ? 1 : 0);
-    m_settings->setValue("/Posx", playListDoc->pos().x());
-    m_settings->setValue("/Posy", playListDoc->pos().y());
-    m_settings->setValue("/Width", playListDoc->width());
-    m_settings->setValue("/Height", playListDoc->height());
-    m_settings->setValue("/DockWidgetArea", (int)dockWidgetArea(playListDoc));
-    int t = (int)dockWidgetArea(playListDoc);
-    m_settings->endGroup();
+    m_settings->setValue("GeometryState", saveGeometry());
+    m_settings->setValue("ToolBarsState", saveState());
 }
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
@@ -453,20 +446,6 @@ void MediaPlayer::writeSettings()
 
 /*virtual*/ void MediaPlayer::showEvent(QShowEvent*)
 {
-    QString AppFileName = qApp->applicationDirPath()+"/EMP.ini";
-    QSettings *m_settings = new QSettings(AppFileName, QSettings::IniFormat);
-    m_settings->beginGroup("/Playlist");
-    int visible = m_settings->value("/Visible", 0).toInt();
-    int posX = m_settings->value("/Posx", playListDoc->pos().x()).toInt();
-    int posY = m_settings->value("/Posy", playListDoc->pos().y()).toInt();
-    int newWidth = m_settings->value("/Width", playListDoc->width()).toInt();
-    int newHeight = m_settings->value("/Height", playListDoc->height()).toInt();
-    int dwArea = m_settings->value("/DockWidgetArea", Qt::RightDockWidgetArea).toInt();
-    m_settings->endGroup();
-    addDockWidget((Qt::DockWidgetArea)dwArea, playListDoc);
-    playListDoc->setGeometry(QRect(QPoint(posX, posY), QSize(80, newHeight)));
-    if (visible) playListDoc->show();
-    else playListDoc->hide();
 
 }
 
@@ -583,7 +562,7 @@ void MediaPlayer::initVideoWindow()
     videoLayout->addWidget(m_videoWidget);
     videoLayout->setContentsMargins(0, 0, 0, 0);
     m_videoWindow.setLayout(videoLayout);
-    m_videoWindow.setMinimumSize(200, 100);
+    m_videoWindow.setMinimumSize(100, 100);
 }
 
 // ----------------------------------------------------------------------
@@ -751,19 +730,40 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             // Flush event que so that sizeHint takes the
             // recently shown/hidden m_videoWindow into account:
             qApp->processEvents();
-            int frameWidth = this->frameSize().width() - this->size().width();
-            int frameHeight = this->frameSize().height() - this->size().height();
-            int newWidth = m_videoWindow.sizeHint().width() + frameWidth;
-            int newHeight = m_videoWindow.sizeHint().height() + buttonPanelWidget->height() +
-                    buttonPanelWidget->pos().y() + 2 + frameHeight;
-            if (playListDoc->isVisible()) newWidth += playListDoc->width();
+            QPoint posCOld = geometry().center();
+            QSize frame;
+            QSize newSize;
+            frame.setWidth(frameSize().width() - size().width());
+            frame.setHeight(frameSize().height() - size().height());
+            newSize.setWidth(m_videoWindow.sizeHint().width() + frame.width());
+            newSize.setHeight(m_videoWindow.sizeHint().height() + buttonPanelWidget->height() +
+                    buttonPanelWidget->pos().y() + 0 + frame.height());
+            if (playListDoc->isVisible()) newSize.setWidth(newSize.width() + playListDoc->width());
 
-            QRect videoHintRect = QRect(QPoint(0, 0), QSize(newWidth, newHeight));
+            QRect videoHintRect = QRect(QPoint(0, 0), newSize);
             QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
 
-            resize(newVideoRect.width()- frameWidth, newVideoRect.height() - frameHeight);
+            QPoint posNew;
+            posNew.setX(posCOld.x() - newVideoRect.width()/2);
+            posNew.setY(posCOld.y() - newVideoRect.height()/2);
+            if (posNew.x() < 0) posNew.setX(0);
+            else if ((posNew.x() + newVideoRect.width()) >
+                     QApplication::desktop()->availableGeometry(0).width()) {
+                posNew.setX(QApplication::desktop()->availableGeometry(0).width() -
+                            newVideoRect.width());
+            }
+            if (posNew.y() < 0) posNew.setY(0);
+            else if ((posNew.y() + newVideoRect.height()) >
+                     QApplication::desktop()->availableGeometry(0).height()) {
+                posNew.setY(QApplication::desktop()->availableGeometry(0).height() -
+                            newVideoRect.height());
+            }
 
-//            m_videoWindow.setGeometry(newVideoRect);
+            setGeometry(posNew.x(), posNew.y(),
+                        newVideoRect.width()- frame.width(),
+                        newVideoRect.height() - frame.height());
+            move(posNew);
+
         } else
             resize(minimumSize());
         //
@@ -774,14 +774,14 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 break;
             }
         }
-        moveWindowToCenter();
+//        moveWindowToCenter();
         m_pmedia.play();
         //
     }
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_pmedia.errorString(), QMessageBox::Close);
+            QMessageBox::warning(this, "EMP", m_pmedia.errorString(), QMessageBox::Close);
             if (m_pmedia.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
