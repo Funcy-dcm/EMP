@@ -252,6 +252,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListDoc->setWidget(playListView);
     playListDoc->setMinimumWidth(160);
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
+    playListDoc->hide();
 
     //Layout setup
     QHBoxLayout* phbxLayout = new QHBoxLayout;
@@ -603,8 +604,8 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                     addFile(fileName + QDir::separator() +  entries[0]);
                     for (int i=1; i<entries.size(); i++)
                       addFile(fileName + QDir::separator() + entries[i]);
-/*                    for (int i=1; i< entries.size(); ++i)
-                        m_pmedia.enqueue(fileName + QDir::separator() + entries[i])*/;
+                    for (int i=1; i< entries.size(); ++i)
+                        m_pmedia.enqueue(fileName + QDir::separator() + entries[i]);
                 }
             } else {
                 setFile(fileName);
