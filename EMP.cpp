@@ -110,7 +110,7 @@ bool MediaVideoWidget::event(QEvent *e)
             m_action.setChecked(windowState() & Qt::WindowFullScreen);
 //            const Qt::WindowFlags flags = m_player->windowFlags();
             if (windowState() & Qt::WindowFullScreen) {
-                m_timer.start(1000, this);
+                m_timer.start(3000, this);
             } else {
                 m_timer.stop();
                 setCursor(Qt::PointingHandCursor);
@@ -128,6 +128,7 @@ void MediaVideoWidget::timerEvent(QTimerEvent *e)
     if (e->timerId() == m_timer.timerId()) {
         //let's store the cursor shape
         setCursor(Qt::BlankCursor);
+        setFocus();
     }
     Phonon::VideoWidget::timerEvent(e);
 }
