@@ -62,7 +62,6 @@ signals:
 protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
     bool event(QEvent *e);
     void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
@@ -91,6 +90,8 @@ public:
     void handleDrop(QDropEvent *e);
 
     QWidget *buttonPanelWidget;
+    QToolBar *controlPanel;
+    QDockWidget *playListDoc;
 
 public slots:
     void moveWindowToCenter();
@@ -123,7 +124,6 @@ private:
 
     QStandardItemModel *model;
     QTableView *playListView;
-    QDockWidget *playListDoc;
 
     QIcon playIcon;
     QIcon pauseIcon;

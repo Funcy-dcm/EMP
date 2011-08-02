@@ -152,6 +152,10 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 	background: none;
 }
 
+QToolBar {
+	border: 0px;	
+}
+
 /*
 #pcmdPlay {
 		image: url(:/Project1.png);

@@ -29,6 +29,7 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     m_action.setChecked(false);
     m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
     m_action.setShortcutContext(Qt::WindowShortcut);
+    m_action.setPriority(QAction::LowPriority);
     connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
     addAction(&m_action);
     setAcceptDrops(true);
@@ -68,6 +69,13 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
 
 void MediaVideoWidget::setFullScreen(bool enabled)
 {
+    setFocus();
+    if (!enabled) {
+        m_player->activateWindow();
+        setCursor(Qt::PointingHandCursor);
+    } else {
+        setCursor(Qt::BlankCursor);
+    }
     Phonon::VideoWidget::setFullScreen(enabled);
     emit fullScreenChanged(enabled);
 }
@@ -82,23 +90,6 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mousePressEvent(e);
     m_player->playPause();
-}
-
-void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
-{
-    if (!e->modifiers()) {
-        if (e->key() == Qt::Key_Escape) {
-            setFullScreen(false);
-            m_player->playPause();
-            e->accept();
-            return;
-        } else if (e->key() == Qt::Key_F11) {
-            setFullScreen(!isFullScreen());
-            e->accept();
-            return;
-        }
-    }
-    Phonon::VideoWidget::keyPressEvent(e);
 }
 
 bool MediaVideoWidget::event(QEvent *e)
@@ -298,11 +289,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     wgt->setLayout(pvbxLayout);
 
-    QStatusBar *controlPanel = new QStatusBar;
-    controlPanel->addPermanentWidget(buttonPanelWidget, 1);
-    controlPanel->setContentsMargins(0, 0, 0, 0);
-    controlPanel->setWindowFlags(Qt::FramelessWindowHint);
-    controlPanel->setSizeGripEnabled(false);
+    controlPanel = new QToolBar;
+    controlPanel->setObjectName("controlPanel");
+    controlPanel->setFloatable(false);
+    controlPanel->setMovable(false);
+    controlPanel->addWidget(buttonPanelWidget);
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(slotOpen()));
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
@@ -332,7 +323,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
     setCentralWidget(wgt);
-    setStatusBar(controlPanel);
+    addToolBar(Qt::BottomToolBarArea, controlPanel);
 
     readSettings();
 
@@ -500,11 +491,18 @@ void MediaPlayer::writeSettings()
 
     if (pe->type() == QEvent::KeyPress) {
         if (!((QKeyEvent*)pe)->modifiers()) {
-            if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
+            if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
+                if (m_videoWidget->isFullScreen()) {
+                    m_videoWidget->setFullScreen(false);
+                    playPause();
+                    return true;
+                }
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
                 playPause();
                 return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
-                m_videoWidget->setFullScreen(!isFullScreen());
+                m_videoWidget->setFullScreen(!m_videoWidget->isFullScreen());
+                return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
                 if (m_pmedia.isSeekable()) {
                     long pos = m_pmedia.currentTime() - 15000;
