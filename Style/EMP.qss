@@ -1,6 +1,6 @@
 /* Simple Style */
 QWidget {
-	color: #B1B1B1;
+	color: #BBBBBB;
     background-color: #202020;
 }
 
@@ -154,6 +154,30 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 
 QToolBar {
 	border: 0px;	
+}
+
+QMenu {
+	border: 1px solid #999999;
+	background-color: #404040;
+	margin: 1px;
+}
+
+QMenu::item {
+	padding: 2px 25px 2px 20px;
+	border: 1px solid transparent; /* резерв пространства для границы выделения */
+	margin: 2px;
+}
+
+QMenu::item:selected {
+	border-color: #111111;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #808080, stop:1 #202020);
+}
+
+QMenu::separator {
+	height: 1px;
+	border: 1px solid #606060;
+	background: #202020;
+	margin: 1px 10px 1px 5px;
 }
 
 /*

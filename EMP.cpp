@@ -67,39 +67,37 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
 
 }
 
-void MediaVideoWidget::setFullScreen(bool enabled)
-{
-    setFocus();
-    if (!enabled) {
-        m_player->activateWindow();
-        setCursor(Qt::PointingHandCursor);
-    } else {
-        setCursor(Qt::BlankCursor);
-    }
-    Phonon::VideoWidget::setFullScreen(enabled);
-    emit fullScreenChanged(enabled);
-}
+//void MediaVideoWidget::setFullScreen(bool enabled)
+//{
+//    setFocus();
+//    if (!enabled) {
+//        m_player->activateWindow();
+//        setCursor(Qt::PointingHandCursor);
+//    } else {
+//        setCursor(Qt::BlankCursor);
+//    }
+//    Phonon::VideoWidget::setFullScreen(enabled);
+//    emit fullScreenChanged(enabled);
+//}
 
 void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
-    Phonon::VideoWidget::mouseDoubleClickEvent(e);
     setFullScreen(!isFullScreen());
+    if (isFullScreen()) setCursor(Qt::BlankCursor);
+    else setCursor(Qt::PointingHandCursor);
+    Phonon::VideoWidget::mouseDoubleClickEvent(e);
 }
 
 void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mousePressEvent(e);
-    m_player->playPause();
+    if (e->button() == Qt::LeftButton) m_player->playPause();
+    setCursor(Qt::PointingHandCursor);
 }
 
 bool MediaVideoWidget::event(QEvent *e)
 {
     switch(e->type()) {
-    /*case QEvent::Close:
-        //we just ignore the cose events on the video widget
-        //this prevents ALT+F4 from having an effect in fullscreen mode
-        e->ignore();
-        return true;*/
     case QEvent::MouseMove:
         setCursor(Qt::PointingHandCursor);
 //        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
@@ -110,7 +108,10 @@ bool MediaVideoWidget::event(QEvent *e)
             m_action.setChecked(windowState() & Qt::WindowFullScreen);
 //            const Qt::WindowFlags flags = m_player->windowFlags();
             if (windowState() & Qt::WindowFullScreen) {
-                m_timer.start(3000, this);
+                if (!m_player->fileMenu->isVisible()) {
+                    m_timer.start(3000, this);
+                    setCursor(Qt::PointingHandCursor);
+                }
             } else {
                 m_timer.stop();
                 setCursor(Qt::PointingHandCursor);
@@ -127,7 +128,7 @@ void MediaVideoWidget::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_timer.timerId()) {
         //let's store the cursor shape
-        setCursor(Qt::BlankCursor);
+        if (!m_player->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
         setFocus();
     }
     Phonon::VideoWidget::timerEvent(e);
@@ -296,7 +297,52 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     controlPanel->setMovable(false);
     controlPanel->addWidget(buttonPanelWidget);
 
-    connect(openButton, SIGNAL(clicked()), this, SLOT(slotOpen()));
+    // Create menu bar:
+    fileMenu = new QMenu(this);
+    QAction *openFileAction = fileMenu->addAction(tr("Open &File..."));
+//    QAction *openUrlAction = fileMenu->addAction(tr("Open &Location..."));
+
+    fileMenu->addSeparator();
+    QMenu *aspectMenu = fileMenu->addMenu(tr("&Aspect ratio"));
+    QActionGroup *aspectGroup = new QActionGroup(aspectMenu);
+    connect(aspectGroup, SIGNAL(triggered(QAction *)), this, SLOT(aspectChanged(QAction *)));
+    aspectGroup->setExclusive(true);
+    QAction *aspectActionAuto = aspectMenu->addAction("Auto");
+    aspectActionAuto->setCheckable(true);
+    aspectActionAuto->setChecked(true);
+    aspectGroup->addAction(aspectActionAuto);
+    QAction *aspectActionScale = aspectMenu->addAction("Scale");
+    aspectActionScale->setCheckable(true);
+    aspectGroup->addAction(aspectActionScale);
+    QAction *aspectAction16_9 = aspectMenu->addAction("16/9");
+    aspectAction16_9->setCheckable(true);
+    aspectGroup->addAction(aspectAction16_9);
+    QAction *aspectAction4_3 = aspectMenu->addAction("4/3");
+    aspectAction4_3->setCheckable(true);
+    aspectGroup->addAction(aspectAction4_3);
+
+
+    QMenu *scaleMenu = fileMenu->addMenu(tr("&Scale mode"));
+    QActionGroup *scaleGroup = new QActionGroup(scaleMenu);
+    connect(scaleGroup, SIGNAL(triggered(QAction *)), this, SLOT(scaleChanged(QAction *)));
+    scaleGroup->setExclusive(true);
+    QAction *scaleActionFit = scaleMenu->addAction("Fit in view");
+    scaleActionFit->setCheckable(true);
+    scaleActionFit->setChecked(true);
+    scaleGroup->addAction(scaleActionFit);
+    QAction *scaleActionCrop = scaleMenu->addAction("Scale and crop");
+    scaleActionCrop->setCheckable(true);
+    scaleGroup->addAction(scaleActionCrop);
+
+//    fileMenu->addSeparator();
+//    QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
+
+//    openButton->setMenu(fileMenu);
+
+    connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
+    connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
+//    connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
+
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
     connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
@@ -304,7 +350,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
 
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(&m_pmedia, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
     connect(&m_pmedia, SIGNAL(totalTimeChanged(qint64)), this, SLOT(updateTime()));
     connect(&m_pmedia, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
@@ -337,6 +382,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     moveWindowToCenter();
 
     qApp->installEventFilter( this );
+    activateWindow();
 
 //    m_videoWindow.setWindowOpacity(0.5);
 //    m_videoWindow.setAttribute(Qt::WA_TranslucentBackground);
@@ -566,7 +612,7 @@ void MediaPlayer::initVideoWindow()
 }
 
 // ----------------------------------------------------------------------
-void MediaPlayer::slotOpen()
+void MediaPlayer::openFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this);
     if (fileNames.size() > 0) {
@@ -582,8 +628,21 @@ void MediaPlayer::slotOpen()
     }
 }
 
+void MediaPlayer::openUrl()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("BrowserMainWindow"));
+    QString sourceURL = settings.value("location").toString();
+    sourceURL = QInputDialog::getText(this, tr("Open Location"), tr("Please enter a valid address here:"), QLineEdit::Normal, sourceURL);
+    if (!sourceURL.isEmpty()) {
+        setFile(sourceURL);
+        settings.setValue("location", sourceURL);
+    }
+}
+
 void MediaPlayer::handleDrop(QDropEvent *e)
 {
+    activateWindow();
     QList<QUrl> urls = e->mimeData()->urls();
     if (e->proposedAction() == Qt::MoveAction){
         // Добавляем в очередь
@@ -821,8 +880,13 @@ void MediaPlayer::updateInfo()
     fileName = fileName.left(fileName.lastIndexOf('.'));
     nameLabel->setText(fileName);
 
+//    QPoint posNew;
+//    QPoint posCOld = frameGeometry().center();
     m_videoWindow.setVisible(m_pmedia.hasVideo());
     if (!m_pmedia.hasVideo()) resize(minimumSize());
+//    posNew.setX(posCOld.x() - frameSize().width()/2);
+//    posNew.setY(posCOld.y() - frameSize().height()/2);
+//    move(posNew);
 }
 
 void MediaPlayer::updateTime()
@@ -879,15 +943,37 @@ void MediaPlayer::forward()
 
 void MediaPlayer::hasVideoChanged(bool bHasVideo)
 {
-    /*QPoint posNew;
+    QPoint posNew;
     QPoint posCOld = frameGeometry().center();
     m_videoWindow.setVisible(bHasVideo);
     posNew.setX(posCOld.x() - frameSize().width()/2);
     posNew.setY(posCOld.y() - frameSize().height()/2);
-    move(posNew);*/
+    move(posNew);
 }
 
 void MediaPlayer::showContextMenu(const QPoint &p)
 {
-//    fileMenu->popup(m_videoWidget->isFullScreen() ? p : mapToGlobal(p));
+    m_videoWidget->setCursor(Qt::ArrowCursor);
+    fileMenu->popup(m_videoWidget->isFullScreen() ? p : mapToGlobal(p));
+}
+
+void MediaPlayer::scaleChanged(QAction *act)
+{
+    if (act->text() == "Scale and crop")
+        m_videoWidget->setScaleMode(Phonon::VideoWidget::ScaleAndCrop);
+    else
+        m_videoWidget->setScaleMode(Phonon::VideoWidget::FitInView);
+}
+
+
+void MediaPlayer::aspectChanged(QAction *act)
+{
+    if (act->text() == "16/9")
+        m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatio16_9);
+    else if (act->text() == "Scale")
+        m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
+    else if (act->text() == "4/3")
+        m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatio4_3);
+    else
+        m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioAuto);
 }

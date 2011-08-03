@@ -54,7 +54,7 @@ public:
 
 public slots:
     // Over-riding non-virtual Phonon::VideoWidget slot
-    void setFullScreen(bool);
+//    void setFullScreen(bool);
 
 signals:
     void fullScreenChanged(bool);
@@ -92,10 +92,12 @@ public:
     QWidget *buttonPanelWidget;
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
+    QMenu *fileMenu;
 
 public slots:
     void moveWindowToCenter();
-    void slotOpen();
+    void openFile();
+    void openUrl();
     void playPause();
     void stop();
     void rewind();
@@ -103,6 +105,8 @@ public slots:
     void playlistShow();
     void updateInfo();
     void updateTime();
+    void scaleChanged(QAction *);
+    void aspectChanged(QAction *);
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
@@ -127,7 +131,6 @@ private:
 
     QIcon playIcon;
     QIcon pauseIcon;
-    QMenu *fileMenu;
     QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
