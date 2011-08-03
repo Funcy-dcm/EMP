@@ -82,10 +82,10 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
 
 void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
+    Phonon::VideoWidget::mouseDoubleClickEvent(e);
     setFullScreen(!isFullScreen());
     if (isFullScreen()) setCursor(Qt::BlankCursor);
     else setCursor(Qt::PointingHandCursor);
-    Phonon::VideoWidget::mouseDoubleClickEvent(e);
 }
 
 void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
