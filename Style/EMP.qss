@@ -163,7 +163,7 @@ QMenu {
 }
 
 QMenu::item {
-	padding: 2px 25px 2px 20px;
+	padding: 2px 15px 2px 20px;
 	border: 1px solid transparent; /* резерв пространства для границы выделения */
 	margin: 2px;
 }

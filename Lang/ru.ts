@@ -5,44 +5,78 @@
 <context>
     <name>MediaPlayer</name>
     <message>
-        <location filename="../EMP.cpp" line="199"/>
+        <location filename="../EMP.cpp" line="196"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="200"/>
-        <location filename="../EMP.cpp" line="712"/>
+        <location filename="../EMP.cpp" line="197"/>
+        <location filename="../EMP.cpp" line="836"/>
         <source>Play</source>
         <translation>Воспроизвести</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="471"/>
-        <location filename="../EMP.cpp" line="523"/>
+        <location filename="../EMP.cpp" line="302"/>
+        <source>Open File...</source>
+        <translation>Открыть файл...</translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="306"/>
+        <source>Aspect ratio</source>
+        <translation>Пропорции</translation>
+    </message>
+    <message>
+        <source>Scale mode</source>
+        <translation type="obsolete">Режим масштабирования</translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="521"/>
+        <location filename="../EMP.cpp" line="580"/>
         <source>Volume</source>
         <translation>Громкость</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="201"/>
+        <location filename="../EMP.cpp" line="198"/>
         <source>Stop</source>
         <translation>Остановить</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="202"/>
+        <location filename="../EMP.cpp" line="199"/>
         <source>Previous</source>
         <translation>Предыдущий файл</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="203"/>
+        <location filename="../EMP.cpp" line="200"/>
         <source>Next</source>
         <translation>Следущий файл</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="204"/>
+        <location filename="../EMP.cpp" line="201"/>
         <source>Playlist (show/hide)</source>
         <translation>Показать/спрятать плейлист</translation>
     </message>
     <message>
-        <location filename="../EMP.cpp" line="727"/>
+        <location filename="../EMP.cpp" line="310"/>
+        <source>Default</source>
+        <translation>По умолчанию</translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="320"/>
+        <source>Stretch to window</source>
+        <translation>Растянуть до размера окна</translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="623"/>
+        <source>Open Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="623"/>
+        <source>Please enter a valid address here:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EMP.cpp" line="851"/>
         <source>Pause</source>
         <translation>Пауза</translation>
     </message>

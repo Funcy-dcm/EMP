@@ -32,4 +32,24 @@
     <source>Playlist (show/hide)</source>
     <target>Показать/спрятать плейлист</target>
 </phrase>
+<phrase>
+    <source>Open File...</source>
+    <target>Открыть файл...</target>
+</phrase>
+<phrase>
+    <source>Aspect ratio</source>
+    <target>Пропорции</target>
+</phrase>
+<phrase>
+    <source>Scale mode</source>
+    <target>Режим масштабирования</target>
+</phrase>
+<phrase>
+    <source>Default</source>
+    <target>По умолчанию</target>
+</phrase>
+<phrase>
+    <source>Stretch to window</source>
+    <target>Растянуть до размера окна</target>
+</phrase>
 </QPH>

@@ -32,4 +32,24 @@
     <source>Playlist (show/hide)</source>
     <target>Wiedergabeliste (anzeigen/verstecken)</target>
 </phrase>
+<phrase>
+    <source>Open File...</source>
+    <target>Datei öffnen...</target>
+</phrase>
+<phrase>
+    <source>Aspect ratio</source>
+    <target>Seitenverhältnis</target>
+</phrase>
+<phrase>
+    <source>Scale mode</source>
+    <target>Modus Skalieren</target>
+</phrase>
+<phrase>
+    <source>Default</source>
+    <target>Standart</target>
+</phrase>
+<phrase>
+    <source>Stretch to window</source>
+    <target>Auf Fenstergröße strecken</target>
+</phrase>
 </QPH>

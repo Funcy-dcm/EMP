@@ -93,6 +93,8 @@ public:
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
     QMenu *fileMenu;
+    QAction *fullScreenAction;
+    QAction *playPauseAction;
 
 public slots:
     void moveWindowToCenter();
@@ -105,7 +107,6 @@ public slots:
     void playlistShow();
     void updateInfo();
     void updateTime();
-    void scaleChanged(QAction *);
     void aspectChanged(QAction *);
 
 private slots:

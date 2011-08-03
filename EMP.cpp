@@ -106,6 +106,7 @@ bool MediaVideoWidget::event(QEvent *e)
         {
             //we just update the state of the checkbox, in case it wasn't already
             m_action.setChecked(windowState() & Qt::WindowFullScreen);
+            m_player->fullScreenAction->setChecked(windowState() & Qt::WindowFullScreen);
 //            const Qt::WindowFlags flags = m_player->windowFlags();
             if (windowState() & Qt::WindowFullScreen) {
                 if (!m_player->fileMenu->isVisible()) {
@@ -299,40 +300,41 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     // Create menu bar:
     fileMenu = new QMenu(this);
-    QAction *openFileAction = fileMenu->addAction(tr("Open &File..."));
-//    QAction *openUrlAction = fileMenu->addAction(tr("Open &Location..."));
+    QAction *openFileAction = fileMenu->addAction(tr("Open File..."));
+//    QAction *openUrlAction = fileMenu->addAction(tr("Open Location..."));
 
     fileMenu->addSeparator();
-    QMenu *aspectMenu = fileMenu->addMenu(tr("&Aspect ratio"));
+    playPauseAction = fileMenu->addAction(tr("Play/Pause"),
+                                                   this, SLOT(playPause()), Qt::Key_Space);
+    playPauseAction->setCheckable(true);
+    playPauseAction->setChecked(true);
+
+    fileMenu->addSeparator();
+    fullScreenAction = fileMenu->addAction(tr("Full screen"),
+                                                    m_videoWidget, SLOT(setFullScreen(bool)), Qt::Key_F11);
+    fullScreenAction->setCheckable(true);
+
+    QMenu *aspectMenu = fileMenu->addMenu(tr("Aspect ratio"));
     QActionGroup *aspectGroup = new QActionGroup(aspectMenu);
     connect(aspectGroup, SIGNAL(triggered(QAction *)), this, SLOT(aspectChanged(QAction *)));
     aspectGroup->setExclusive(true);
-    QAction *aspectActionAuto = aspectMenu->addAction("Auto");
+    QAction *aspectActionAuto = aspectMenu->addAction(tr("Default"));
     aspectActionAuto->setCheckable(true);
     aspectActionAuto->setChecked(true);
+    aspectActionAuto->setObjectName("aspectAuto");
     aspectGroup->addAction(aspectActionAuto);
-    QAction *aspectActionScale = aspectMenu->addAction("Scale");
-    aspectActionScale->setCheckable(true);
-    aspectGroup->addAction(aspectActionScale);
-    QAction *aspectAction16_9 = aspectMenu->addAction("16/9");
-    aspectAction16_9->setCheckable(true);
-    aspectGroup->addAction(aspectAction16_9);
     QAction *aspectAction4_3 = aspectMenu->addAction("4/3");
     aspectAction4_3->setCheckable(true);
+    aspectAction4_3->setObjectName("aspect4/3");
     aspectGroup->addAction(aspectAction4_3);
-
-
-    QMenu *scaleMenu = fileMenu->addMenu(tr("&Scale mode"));
-    QActionGroup *scaleGroup = new QActionGroup(scaleMenu);
-    connect(scaleGroup, SIGNAL(triggered(QAction *)), this, SLOT(scaleChanged(QAction *)));
-    scaleGroup->setExclusive(true);
-    QAction *scaleActionFit = scaleMenu->addAction("Fit in view");
-    scaleActionFit->setCheckable(true);
-    scaleActionFit->setChecked(true);
-    scaleGroup->addAction(scaleActionFit);
-    QAction *scaleActionCrop = scaleMenu->addAction("Scale and crop");
-    scaleActionCrop->setCheckable(true);
-    scaleGroup->addAction(scaleActionCrop);
+    QAction *aspectAction16_9 = aspectMenu->addAction("16/9");
+    aspectAction16_9->setCheckable(true);
+    aspectAction16_9->setObjectName("aspect16/9");
+    aspectGroup->addAction(aspectAction16_9);
+    QAction *aspectActionScale = aspectMenu->addAction(tr("Stretch to window"));
+    aspectActionScale->setCheckable(true);
+    aspectActionScale->setObjectName("aspectScale");
+    aspectGroup->addAction(aspectActionScale);
 
 //    fileMenu->addSeparator();
 //    QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
@@ -704,12 +706,14 @@ void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
 
 void MediaPlayer::playPause()
 {
-    if (m_pmedia.state() == Phonon::PlayingState)
+    if (m_pmedia.state() == Phonon::PlayingState) {
         m_pmedia.pause();
-    else {
+        playPauseAction->setChecked(true);
+    } else if (m_pmedia.state() == Phonon::PausedState) {
         if (m_pmedia.currentTime() == m_pmedia.totalTime())
             m_pmedia.seek(0);
         m_pmedia.play();
+        playPauseAction->setChecked(true);
     }
 }
 
@@ -723,6 +727,7 @@ void MediaPlayer::stop()
         }
     }
     m_pmedia.stop();
+    playPauseAction->setChecked(false);
 }
 
 void MediaPlayer::playlistShow()
@@ -957,22 +962,13 @@ void MediaPlayer::showContextMenu(const QPoint &p)
     fileMenu->popup(m_videoWidget->isFullScreen() ? p : mapToGlobal(p));
 }
 
-void MediaPlayer::scaleChanged(QAction *act)
-{
-    if (act->text() == "Scale and crop")
-        m_videoWidget->setScaleMode(Phonon::VideoWidget::ScaleAndCrop);
-    else
-        m_videoWidget->setScaleMode(Phonon::VideoWidget::FitInView);
-}
-
-
 void MediaPlayer::aspectChanged(QAction *act)
 {
-    if (act->text() == "16/9")
+    if (act->objectName() == "aspect16/9")
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatio16_9);
-    else if (act->text() == "Scale")
+    else if (act->objectName() == "aspectScale")
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
-    else if (act->text() == "4/3")
+    else if (act->objectName() == "aspect4/3")
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatio4_3);
     else
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioAuto);
