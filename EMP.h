@@ -114,6 +114,7 @@ private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
     void volumeChanged(qreal);
     void hasVideoChanged(bool);
+    void bufferStatus(int percent);
     void showContextMenu(const QPoint &);
 
 protected:

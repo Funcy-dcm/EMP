@@ -76,7 +76,7 @@ void MediaVideoWidget::setFullScreen(bool enabled)
     } else {
         setCursor(Qt::BlankCursor);
     }
-//    activateWindow();
+    setFocus();
     Phonon::VideoWidget::setFullScreen(enabled);
     emit fullScreenChanged(enabled);
 }
@@ -312,7 +312,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     // Create menu bar:
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open File..."));
-//    QAction *openUrlAction = fileMenu->addAction(tr("Open Location..."));
+    QAction *openUrlAction = fileMenu->addAction(tr("Open Location..."));
 
     fileMenu->addSeparator();
     playPauseAction = fileMenu->addAction(tr("Play/Pause"),
@@ -350,11 +350,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 //    fileMenu->addSeparator();
 //    QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
 
-//    openButton->setMenu(fileMenu);
+    openButton->setMenu(fileMenu);
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
-//    connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
+    connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
 
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
     connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
@@ -367,7 +367,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(&m_pmedia, SIGNAL(totalTimeChanged(qint64)), this, SLOT(updateTime()));
     connect(&m_pmedia, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
     connect(&m_pmedia, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
-//    connect(&m_pmedia, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
+    connect(&m_pmedia, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
     connect(&m_AudioOutput, SIGNAL(volumeChanged(qreal)), this, SLOT(volumeChanged(qreal)));
     connect(&m_pmedia, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
@@ -886,6 +886,18 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::LoadingState:
             rewindButton->setEnabled(false);
             break;
+    }
+}
+
+void MediaPlayer::bufferStatus(int percent)
+{
+    if (percent == 0 || percent == 100)
+        nameLabel->setText("");
+    else {
+        QString str("(");
+        str += QString::number(percent);
+        str += "%)";
+        nameLabel->setText(str);
     }
 }
 
