@@ -371,7 +371,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(&m_AudioOutput, SIGNAL(volumeChanged(qreal)), this, SLOT(volumeChanged(qreal)));
     connect(&m_pmedia, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
-    m_pmedia.setTickInterval(250);
+    m_pmedia.setTickInterval(100);
 
     playButton->setEnabled(false);
     rewindButton->setEnabled(false);
