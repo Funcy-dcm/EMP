@@ -67,18 +67,19 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
 
 }
 
-//void MediaVideoWidget::setFullScreen(bool enabled)
-//{
-//    setFocus();
-//    if (!enabled) {
-//        m_player->activateWindow();
-//        setCursor(Qt::PointingHandCursor);
-//    } else {
-//        setCursor(Qt::BlankCursor);
-//    }
-//    Phonon::VideoWidget::setFullScreen(enabled);
-//    emit fullScreenChanged(enabled);
-//}
+void MediaVideoWidget::setFullScreen(bool enabled)
+{
+    m_timer.stop();
+    if (!enabled) {
+        m_player->activateWindow();
+        setCursor(Qt::PointingHandCursor);
+    } else {
+        setCursor(Qt::BlankCursor);
+    }
+//    activateWindow();
+    Phonon::VideoWidget::setFullScreen(enabled);
+    emit fullScreenChanged(enabled);
+}
 
 void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
@@ -95,35 +96,45 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
     setCursor(Qt::PointingHandCursor);
 }
 
-bool MediaVideoWidget::event(QEvent *e)
+void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 {
-    switch(e->type()) {
-    case QEvent::MouseMove:
-        setCursor(Qt::PointingHandCursor);
-//        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
-        //fall through
-    case QEvent::WindowStateChange:
-        {
-            //we just update the state of the checkbox, in case it wasn't already
-            m_action.setChecked(windowState() & Qt::WindowFullScreen);
-            m_player->fullScreenAction->setChecked(windowState() & Qt::WindowFullScreen);
-//            const Qt::WindowFlags flags = m_player->windowFlags();
-            if (windowState() & Qt::WindowFullScreen) {
-                if (!m_player->fileMenu->isVisible()) {
-                    m_timer.start(3000, this);
-                    setCursor(Qt::PointingHandCursor);
-                }
-            } else {
-                m_timer.stop();
-                setCursor(Qt::PointingHandCursor);
-            }
+    setCursor(Qt::PointingHandCursor);
+    if (isFullScreen()) {
+        if (!m_player->fileMenu->isVisible()) {
+            m_timer.start(3000, this);
         }
-        break;
-    default:
-        break;
     }
-    return Phonon::VideoWidget::event(e);
 }
+
+//bool MediaVideoWidget::event(QEvent *e)
+//{
+//    switch(e->type()) {
+//    case QEvent::MouseMove:
+//        setCursor(Qt::PointingHandCursor);
+////        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
+//        //fall through
+//    case QEvent::WindowStateChange:
+//        {
+//            //we just update the state of the checkbox, in case it wasn't already
+//            m_action.setChecked(windowState() & Qt::WindowFullScreen);
+//            m_player->fullScreenAction->setChecked(windowState() & Qt::WindowFullScreen);
+////            const Qt::WindowFlags flags = m_player->windowFlags();
+//            if (windowState() & Qt::WindowFullScreen) {
+//                if (!m_player->fileMenu->isVisible()) {
+//                    m_timer.start(3000, this);
+//                    setCursor(Qt::PointingHandCursor);
+//                }
+//            } else {
+//                m_timer.stop();
+//                setCursor(Qt::PointingHandCursor);
+//            }
+//        }
+//        break;
+//    default:
+//        break;
+//    }
+//    return Phonon::VideoWidget::event(e);
+//}
 
 void MediaVideoWidget::timerEvent(QTimerEvent *e)
 {

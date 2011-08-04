@@ -54,7 +54,7 @@ public:
 
 public slots:
     // Over-riding non-virtual Phonon::VideoWidget slot
-//    void setFullScreen(bool);
+    void setFullScreen(bool);
 
 signals:
     void fullScreenChanged(bool);
@@ -62,7 +62,8 @@ signals:
 protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
-    bool event(QEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
+//    bool event(QEvent *e);
     void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
