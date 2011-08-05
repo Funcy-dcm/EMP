@@ -181,6 +181,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     timeLabel  = new QLabel(wgt);
     slider = new Phonon::SeekSlider(wgt);
     volume = new Phonon::VolumeSlider(wgt);
+    volume->setObjectName("volumeSlider");
 
     playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setObjectName("playListDoc");
@@ -408,7 +409,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 // ----------------------------------------------------------------------
 /*virtual*/ MediaPlayer::~MediaPlayer()
 {
-
+    qDebug() << "~MediaPlayer";
 }
 
 // ----------------------------------------------------------------------
@@ -464,7 +465,9 @@ void MediaPlayer::writeSettings()
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
 {
+    qDebug() << "closeEventStart";
     if (m_pmedia.hasVideo()) {
+        qDebug() << "closeEvent(1)";
         bool findOk = 0;
         for (int i = 0; i < MAX_FILE_POS; ++i) {
             if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
@@ -492,8 +495,14 @@ void MediaPlayer::writeSettings()
             }
         }
     }
-    if (m_pmedia.state() != Phonon::StoppedState) m_pmedia.stop();
+    qDebug() << (int)m_pmedia.state();
+//    delete m_pmedia;
+    delete m_videoWidget;
+//    qDebug() << (int)m_pmedia.state();
+//    if (m_pmedia.state() != Phonon::StoppedState) m_pmedia.stop();
+    qDebug() << "closeEvent(3)";
     writeSettings();
+    qDebug() << "closeEventStop";
 }
 
 /*virtual*/ void MediaPlayer::showEvent(QShowEvent*)
@@ -537,6 +546,11 @@ void MediaPlayer::writeSettings()
 {
     if (pe->type() == QEvent::Close) {
         if (pobj == m_videoWidget) {
+            qDebug() << "QEvent::Close (m_videoWidget)";
+            close();
+            return true;
+        } else {
+            qDebug() << "QEvent::Close (1)";
             close();
             return false;
         }
@@ -546,6 +560,17 @@ void MediaPlayer::writeSettings()
         if (pobj == volume) {
             QString vol = tr("Volume") + " [" + QString::number(qreal(m_AudioOutput.volume()*100.0f)) + "%]";
             volume->setToolTip(vol);
+        }
+    }
+
+    if (pe->type() == QEvent::MouseButtonPress) {
+        qDebug() << "QEvent::MouseButtonPress";
+        if (pobj->parent() == volume) {
+            if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
+                QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
+                                              Qt::MidButton, Qt::MidButton, Qt::NoModifier);
+                QApplication::sendEvent(pobj, pe1);
+            }
         }
     }
 
@@ -655,12 +680,13 @@ void MediaPlayer::openUrl()
 
 void MediaPlayer::handleDrop(QDropEvent *e)
 {
+    qDebug() << "handleDropStart";
     activateWindow();
     QList<QUrl> urls = e->mimeData()->urls();
     if (e->proposedAction() == Qt::MoveAction){
         // Добавляем в очередь
-        for (int i=0; i<urls.size(); i++)
-            m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
+//        for (int i=0; i<urls.size(); i++)
+//            m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
     } else {
         // Создаём новую очередь
         m_pmedia.clearQueue();
@@ -678,6 +704,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                     for (int i=1; i< entries.size(); ++i)
                         m_pmedia.enqueue(fileName + QDir::separator() + entries[i]);
                 }
+                qDebug() << "handleDrop1";
             } else {
                 setFile(fileName);
                 addFile(fileName);
@@ -685,14 +712,17 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                   addFile(urls[i].toLocalFile());
                 for (int i=1; i<urls.size(); i++)
                     m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
+                qDebug() << "handleDrop2";
             }
         }
     }
     forwardButton->setEnabled(m_pmedia.queue().size() > 0);
+    qDebug() << "handleDropStop";
 }
 
 void MediaPlayer::dropEvent(QDropEvent *e)
 {
+    qDebug() << "dropEvent";
     if (e->mimeData()->hasUrls() && e->proposedAction() != Qt::LinkAction) {
         e->acceptProposedAction();
         handleDrop(e);
@@ -718,14 +748,16 @@ void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
 void MediaPlayer::playPause()
 {
     if (m_pmedia.state() == Phonon::PlayingState) {
+        qDebug() << "playPause(1)";
         m_pmedia.pause();
         playPauseAction->setChecked(true);
     } else if (m_pmedia.state() == Phonon::PausedState) {
+        qDebug() << "playPause(2)";
         if (m_pmedia.currentTime() == m_pmedia.totalTime())
             m_pmedia.seek(0);
         m_pmedia.play();
         playPauseAction->setChecked(true);
-    }
+    } else qDebug() << "playPause(3)";
 }
 
 void MediaPlayer::stop()
@@ -797,6 +829,7 @@ void MediaPlayer::addFile(QString fileName)
 
 void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 {
+    qDebug() << "stateChanged";
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
@@ -804,6 +837,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         if (m_pmedia.hasVideo()){
             // Flush event que so that sizeHint takes the
             // recently shown/hidden m_videoWindow into account:
+            qDebug() << "processEvents";
             qApp->processEvents();
             QPoint posCOld = frameGeometry().center();
             QSize frame;
@@ -847,6 +881,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
         }
         m_pmedia.play();
+        qDebug() << "Play";
     }
 
     switch (newstate) {
@@ -875,6 +910,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
             break;
         case Phonon::PlayingState:
+        qDebug() << "PlayingState";
             playButton->setEnabled(true);
             playButton->setIcon(pauseIcon);
             playButton->setToolTip(tr("Pause"));
@@ -899,6 +935,7 @@ void MediaPlayer::bufferStatus(int percent)
         str += "%)";
         nameLabel->setText(str);
     }
+    qDebug() << "bufferStatus";
 }
 
 void MediaPlayer::updateInfo()
@@ -915,6 +952,10 @@ void MediaPlayer::updateInfo()
 //    posNew.setX(posCOld.x() - frameSize().width()/2);
 //    posNew.setY(posCOld.y() - frameSize().height()/2);
 //    move(posNew);
+    QString t;
+    long pos = m_pmedia.currentTime();
+    t.sprintf("updateInfo %d", (int)pos);
+    qDebug() << t;
 }
 
 void MediaPlayer::updateTime()
