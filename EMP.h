@@ -19,6 +19,7 @@
 #include <QtGui/QAction>
 #include <QStandardItemModel>
 #include <QtGui/QTableView>
+#include <QtGui/QLabel>
 #include <QSettings>
 
 #include <phonon/mediaobject.h>
@@ -43,6 +44,15 @@ QT_END_NAMESPACE
 #define MAX_FILE_POS    20
 
 class MediaPlayer;
+class MLabel;
+
+class MLabel : public QLabel
+{
+    Q_OBJECT
+public:
+    MLabel(QWidget * parent = 0);
+
+};
 
 class MediaVideoWidget : public Phonon::VideoWidget
 {
@@ -69,6 +79,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e);
 
 private:
+    MLabel l;
     MediaPlayer *m_player;
     QBasicTimer m_timer;
     QAction m_action;
@@ -152,6 +163,8 @@ private:
     Phonon::Path m_audioOutputPath;
 
     QBasicTimer m_timer;
+
+    MLabel l;
 
 };
 #endif  //_MediaPlayer_h_

@@ -45,7 +45,8 @@ int main(int argc, char** argv)
     fileString = app.arguments().value(1);
     MediaPlayer  mediaPlayer(fileString);
 
-    mediaPlayer.show(); 
+    mediaPlayer.show();
+
     return app.exec();
 }
 

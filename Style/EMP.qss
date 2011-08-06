@@ -180,6 +180,11 @@ QMenu::separator {
 	margin: 1px 10px 1px 5px;
 }
 
+#MLabel {
+	color: #00FF00;
+	font: normal 18px "Arial";
+}
+
 /*
 #pcmdPlay {
 		image: url(:/Project1.png);

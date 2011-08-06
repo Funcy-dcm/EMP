@@ -9,19 +9,21 @@
 
 #include <QtGui>
 #include "EMP.h"
-/*
-class MLabel : public QLabel
+
+MLabel::MLabel(QWidget *p) : QLabel(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
-public:
-    MLabel(QWidget *p = 0) : QLabel(p)
-    {
+    setObjectName("MLabel");
+    setText("Test");
+    setGeometry(0 , 0, QApplication::desktop()->availableGeometry(0).width(), 20);
+    setWindowOpacity(0.8);
+    setWindowModality(Qt::WindowModal);
 
-        //Transparency
-        setWindowOpacity(0.8);
-
-    }
+    setAlignment(Qt::AlignHCenter);
+//    setAttribute(Qt::WA_NoSystemBackground);
+//    setAttribute(Qt::WA_TranslucentBackground);
 }
-*/
+
+
 MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     Phonon::VideoWidget(parent), m_player(player), m_action(this)
 {
@@ -33,38 +35,6 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
     addAction(&m_action);
     setAcceptDrops(true);
-
-/*
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_TranslucentBackground);
-    tLabel = new QLabel(this);
-    tLabel->setAttribute(Qt::WA_NoSystemBackground);
-    tLabel->setAttribute(Qt::WA_TranslucentBackground);
-//    tLabel->setBackgroundRole(QPalette::NoRole);
-//    tLabel->setAlignment(Qt::AlignHCenter);
-    tLabel->setText("Text111111111111111111111111111111111111111111");
-    tLabel->setObjectName("tLabel");
-
-//    tLabel->setFixedHeight(20);
-
-    tLabel->setMinimumWidth(100);
-
-    tLabel->setWindowOpacity(0.5);
-//    setWindowOpacity(0.5);
-
-
-//    tLabel->setGeometry(0,0,width(), height());
-    tLabel->setSizePolicy( QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-    tLabel->resize(width(), 20);
-//    tLabel->move(50, 50);
-
-//    QLabel *nLabel = new QLabel(this);
-//    QPixmap pixmap(nLabel->size());
-//    pixmap.fill(Qt::transparent);
-//    nLabel->render(&pixmap,QPoint(),QRegion(), DrawChildren);
-//    tLabel->setMask(pixmap.mask());
-*/
-
 }
 
 void MediaVideoWidget::setFullScreen(bool enabled)
@@ -76,7 +46,6 @@ void MediaVideoWidget::setFullScreen(bool enabled)
     } else {
         setCursor(Qt::BlankCursor);
     }
-    setFocus();
     Phonon::VideoWidget::setFullScreen(enabled);
     emit fullScreenChanged(enabled);
 }
@@ -85,8 +54,6 @@ void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mouseDoubleClickEvent(e);
     setFullScreen(!isFullScreen());
-    if (isFullScreen()) setCursor(Qt::BlankCursor);
-    else setCursor(Qt::PointingHandCursor);
 }
 
 void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
@@ -94,6 +61,7 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
     Phonon::VideoWidget::mousePressEvent(e);
     if (e->button() == Qt::LeftButton) m_player->playPause();
     setCursor(Qt::PointingHandCursor);
+    setFocus();
 }
 
 void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
@@ -102,6 +70,7 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
     if (isFullScreen()) {
         if (!m_player->fileMenu->isVisible()) {
             m_timer.start(3000, this);
+            setFocus();
         }
     }
 }
@@ -139,9 +108,7 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 void MediaVideoWidget::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_timer.timerId()) {
-        //let's store the cursor shape
         if (!m_player->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
-        setFocus();
     }
     Phonon::VideoWidget::timerEvent(e);
 }
@@ -398,12 +365,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     qApp->installEventFilter( this );
     activateWindow();
 
-//    m_videoWindow.setWindowOpacity(0.5);
-//    m_videoWindow.setAttribute(Qt::WA_TranslucentBackground);
-//    setAttribute(Qt::WA_NoSystemBackground);
-//    setAttribute(Qt::WA_TranslucentBackground);
-//    buttonPanelWidget->setAttribute(Qt::WA_TranslucentBackground);
-//    buttonPanelWidget->setWindowFlags(Qt::FramelessWindowHint);
+//    l.setParent(this);
+//    l.show();
 }
 
 // ----------------------------------------------------------------------
@@ -495,12 +458,7 @@ void MediaPlayer::writeSettings()
             }
         }
     }
-    qDebug() << (int)m_pmedia.state();
-//    delete m_pmedia;
     delete m_videoWidget;
-//    qDebug() << (int)m_pmedia.state();
-//    if (m_pmedia.state() != Phonon::StoppedState) m_pmedia.stop();
-    qDebug() << "closeEvent(3)";
     writeSettings();
     qDebug() << "closeEventStop";
 }
@@ -551,8 +509,6 @@ void MediaPlayer::writeSettings()
             return true;
         } else {
             qDebug() << "QEvent::Close (1)";
-            close();
-            return false;
         }
     }
 
@@ -564,8 +520,7 @@ void MediaPlayer::writeSettings()
     }
 
     if (pe->type() == QEvent::MouseButtonPress) {
-        qDebug() << "QEvent::MouseButtonPress";
-        if (pobj->parent() == volume) {
+        if ((pobj->parent() == volume) || (pobj->parent() == slider)) {
             if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
                 QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
                                               Qt::MidButton, Qt::MidButton, Qt::NoModifier);
@@ -758,6 +713,7 @@ void MediaPlayer::playPause()
         m_pmedia.play();
         playPauseAction->setChecked(true);
     } else qDebug() << "playPause(3)";
+    l.setFocus();
 }
 
 void MediaPlayer::stop()
@@ -944,6 +900,7 @@ void MediaPlayer::updateInfo()
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
     fileName = fileName.left(fileName.lastIndexOf('.'));
     nameLabel->setText(fileName);
+    l.setText(fileName);
 
 //    QPoint posNew;
 //    QPoint posCOld = frameGeometry().center();
