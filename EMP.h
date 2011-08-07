@@ -44,13 +44,38 @@ QT_END_NAMESPACE
 #define MAX_FILE_POS    20
 
 class MediaPlayer;
-class MLabel;
+class ControlWidget;
 
-class MLabel : public QLabel
+class MWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MLabel(QWidget * parent = 0);
+    MWidget(QWidget * parent = 0);
+    QLabel *mLabel;
+
+};
+
+class ControlWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    ControlWidget(MediaPlayer *player, QWidget * parent = 0);
+    QLabel *statusLabel;
+    QIcon playIcon;
+    QIcon pauseIcon;
+    QPushButton *openButton;
+    QPushButton *playButton;
+    QPushButton *stopButton;
+    QPushButton *rewindButton;
+    QPushButton *forwardButton;
+    QPushButton *playlistButton;
+    Phonon::SeekSlider *slider;
+    QLabel *nameLabel;
+    QLabel *timeLabel;
+    Phonon::VolumeSlider *volume;
+    QWidget *buttonPanelWidget;
+private:
+    MediaPlayer *m_player;
 
 };
 
@@ -60,7 +85,6 @@ class MediaVideoWidget : public Phonon::VideoWidget
 
 public:
     MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
-    QLabel *tLabel;
 
 public slots:
     // Over-riding non-virtual Phonon::VideoWidget slot
@@ -79,7 +103,6 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e);
 
 private:
-    MLabel l;
     MediaPlayer *m_player;
     QBasicTimer m_timer;
     QAction m_action;
@@ -101,7 +124,9 @@ public:
     void dropEvent(QDropEvent *e);
     void handleDrop(QDropEvent *e);
 
-    QWidget *buttonPanelWidget;
+    Phonon::MediaObject m_pmedia;
+    Phonon::AudioOutput m_AudioOutput;
+
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
     QMenu *fileMenu;
@@ -131,7 +156,6 @@ private slots:
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void showEvent(QShowEvent*);
-    virtual void keyPressEvent(QKeyEvent *pe);
     bool eventFilter(QObject*, QEvent*);
     void timerEvent(QTimerEvent *pe);
 
@@ -143,28 +167,15 @@ private:
     QStandardItemModel *model;
     QTableView *playListView;
 
-    QIcon playIcon;
-    QIcon pauseIcon;
-    QPushButton *openButton;
-    QPushButton *playButton;
-    QPushButton *stopButton;
-    QPushButton *rewindButton;
-    QPushButton *forwardButton;
-    QPushButton *playlistButton;
-    Phonon::SeekSlider *slider;
-    QLabel *nameLabel;
-    QLabel *timeLabel;
-    Phonon::VolumeSlider *volume;
-
     QWidget m_videoWindow;
-    Phonon::MediaObject m_pmedia;
-    Phonon::AudioOutput m_AudioOutput;
     Phonon::VideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
 
     QBasicTimer m_timer;
 
-    MLabel l;
+    MWidget mWidget;
+    ControlWidget *cWidget;
+    ControlWidget *cWidget1;
 
 };
 #endif  //_MediaPlayer_h_

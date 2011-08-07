@@ -10,19 +10,144 @@
 #include <QtGui>
 #include "EMP.h"
 
-MLabel::MLabel(QWidget *p) : QLabel(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+MWidget::MWidget(QWidget *p) : QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
-    setObjectName("MLabel");
-    setText("Test");
-    setGeometry(0 , 0, QApplication::desktop()->availableGeometry(0).width(), 20);
-    setWindowOpacity(0.8);
     setWindowModality(Qt::WindowModal);
 
-    setAlignment(Qt::AlignHCenter);
+//    setWindowOpacity(0.3);
+
+    mLabel = new QLabel(this);
+    mLabel->setObjectName("mLabel");
+    mLabel->setMinimumHeight(40);
+    mLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+//    mLabel->setAttribute(Qt::WA_TranslucentBackground);
+//    mLabel->setAutoFillBackground(true);
+    mLabel->setText("Test");
+    QVBoxLayout* pvbxLayout = new QVBoxLayout(this);
+    pvbxLayout->setContentsMargins(0, 0, 0, 0);
+    pvbxLayout->addSpacing(15);
+    pvbxLayout->addWidget(mLabel);
+    pvbxLayout->addStretch(1);
+
 //    setAttribute(Qt::WA_NoSystemBackground);
-//    setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+
+    setGeometry(0 , 0, QApplication::desktop()->geometry().width(), QApplication::desktop()->geometry().height());
 }
 
+ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
+    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint),
+    m_player(player)
+{
+    setWindowModality(Qt::WindowModal);
+//    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+
+//    setWindowOpacity(0.8);
+
+    buttonPanelWidget = new QWidget(this);
+    buttonPanelWidget->setObjectName("cWidget");
+    openButton    = new QPushButton(this);
+    playButton    = new QPushButton(this);
+    stopButton    = new QPushButton(this);
+    rewindButton  = new QPushButton(this);
+    forwardButton = new QPushButton(this);
+    playlistButton = new QPushButton(this);
+    nameLabel  = new QLabel(this);
+    timeLabel  = new QLabel(this);
+    slider = new Phonon::SeekSlider(this);
+    volume = new Phonon::VolumeSlider(this);
+    volume->setObjectName("volumeSlider");
+
+    slider->setMediaObject(&player->m_pmedia);
+    slider->setCursor(Qt::PointingHandCursor);
+
+    volume->setAudioOutput(&player->m_AudioOutput);
+    volume->setFixedWidth(100);
+    volume->setCursor(Qt::PointingHandCursor);
+
+    openButton->setIcon(QIcon(":/Res/Open.png"));
+    playIcon = QIcon(":/Res/Play1.png");
+    pauseIcon = QIcon(":/Res/Pause1.png");
+    playButton->setIcon(playIcon);
+    playButton->setObjectName("playButton");
+    stopButton->setIcon(QIcon(":/Res/Stop1.png"));
+    rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
+    forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
+    playlistButton->setIcon(QIcon(":/res/Playlist1.png"));
+
+    openButton->setToolTip(tr("Open"));
+    playButton->setToolTip(tr("Play"));
+    stopButton->setToolTip(tr("Stop"));
+    rewindButton->setToolTip(tr("Previous"));
+    forwardButton->setToolTip(tr("Next"));
+    playlistButton->setToolTip(tr("Playlist (show/hide)"));
+
+    openButton->setFocusPolicy(Qt::NoFocus);
+    playButton->setFocusPolicy(Qt::NoFocus);
+    stopButton->setFocusPolicy(Qt::NoFocus);
+    rewindButton->setFocusPolicy(Qt::NoFocus);
+    forwardButton->setFocusPolicy(Qt::NoFocus);
+    playlistButton->setFocusPolicy(Qt::NoFocus);
+    volume->setFocusPolicy(Qt::NoFocus);
+    slider->setFocusPolicy(Qt::NoFocus);
+
+    openButton->setCursor(Qt::PointingHandCursor);
+    playButton->setCursor(Qt::PointingHandCursor);
+    stopButton->setCursor(Qt::PointingHandCursor);
+    rewindButton->setCursor(Qt::PointingHandCursor);
+    forwardButton->setCursor(Qt::PointingHandCursor);
+    playlistButton->setCursor(Qt::PointingHandCursor);
+
+    timeLabel->setAlignment(Qt::AlignRight);
+    nameLabel->setAlignment(Qt::AlignLeft);
+
+    //Layout setup
+    QHBoxLayout* phbxLayout = new QHBoxLayout;
+    phbxLayout->addWidget(openButton);
+    phbxLayout->addSpacing(10);
+    phbxLayout->addWidget(playButton);
+    phbxLayout->addWidget(stopButton);
+    phbxLayout->addWidget(rewindButton);
+    phbxLayout->addWidget(forwardButton);
+//    phbxLayout->addSpacing(10);
+    phbxLayout->addStretch();
+    phbxLayout->addWidget(volume);
+    phbxLayout->addSpacing(10);
+    phbxLayout->addWidget(playlistButton);
+
+    QHBoxLayout* phbxLayout2 = new QHBoxLayout;
+    phbxLayout2->addWidget(slider);
+
+    QHBoxLayout* phbxLayout3 = new QHBoxLayout;
+    phbxLayout3->addWidget(nameLabel);
+    phbxLayout3->addSpacing(20);
+    phbxLayout3->addWidget(timeLabel);
+
+    QVBoxLayout *buttonPanelLayout = new QVBoxLayout();
+    buttonPanelLayout->setMargin(5);
+    buttonPanelLayout->setSpacing(5);
+    buttonPanelLayout->addLayout(phbxLayout2);
+    buttonPanelLayout->addLayout(phbxLayout3);
+    buttonPanelLayout->addLayout(phbxLayout);
+
+    buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    buttonPanelWidget->setLayout(buttonPanelLayout);
+//    buttonPanelWidget->setWindowOpacity(0.3);
+
+    QVBoxLayout* pvbxLayout = new QVBoxLayout(this);
+    pvbxLayout->setContentsMargins(0, 0, 0, 0);
+    pvbxLayout->addWidget(buttonPanelWidget);
+    setLayout(pvbxLayout);
+
+    connect(openButton, SIGNAL(clicked()), m_player, SLOT(openFile()));
+    connect(playButton, SIGNAL(clicked()), m_player, SLOT(playPause()));
+    connect(stopButton, SIGNAL(clicked()), m_player, SLOT(stop()));
+    connect(rewindButton, SIGNAL(clicked()), m_player, SLOT(rewind()));
+    connect(forwardButton, SIGNAL(clicked()), m_player, SLOT(forward()));
+    connect(playlistButton, SIGNAL(clicked()), m_player, SLOT(playlistShow()));
+
+}
 
 MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     Phonon::VideoWidget(parent), m_player(player), m_action(this)
@@ -75,36 +200,6 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
-//bool MediaVideoWidget::event(QEvent *e)
-//{
-//    switch(e->type()) {
-//    case QEvent::MouseMove:
-//        setCursor(Qt::PointingHandCursor);
-////        m_player->buttonPanelWidget->setWindowModality(Qt::ApplicationModal);
-//        //fall through
-//    case QEvent::WindowStateChange:
-//        {
-//            //we just update the state of the checkbox, in case it wasn't already
-//            m_action.setChecked(windowState() & Qt::WindowFullScreen);
-//            m_player->fullScreenAction->setChecked(windowState() & Qt::WindowFullScreen);
-////            const Qt::WindowFlags flags = m_player->windowFlags();
-//            if (windowState() & Qt::WindowFullScreen) {
-//                if (!m_player->fileMenu->isVisible()) {
-//                    m_timer.start(3000, this);
-//                    setCursor(Qt::PointingHandCursor);
-//                }
-//            } else {
-//                m_timer.stop();
-//                setCursor(Qt::PointingHandCursor);
-//            }
-//        }
-//        break;
-//    default:
-//        break;
-//    }
-//    return Phonon::VideoWidget::event(e);
-//}
-
 void MediaVideoWidget::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_timer.timerId()) {
@@ -126,9 +221,11 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
-    playButton(0),
+//    playButton(0),
     m_AudioOutput(Phonon::VideoCategory),
-    m_videoWidget(new MediaVideoWidget(this))
+    m_videoWidget(new MediaVideoWidget(this)),
+    cWidget(new ControlWidget(this)),
+    cWidget1(new ControlWidget(this))
 {
     setWindowTitle("EMP");
 
@@ -137,18 +234,18 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     QWidget *wgt = new QWidget;
 
-    buttonPanelWidget = new QWidget(this);
-    openButton    = new QPushButton(wgt);
-    playButton    = new QPushButton(wgt);
-    stopButton    = new QPushButton(wgt);
-    rewindButton  = new QPushButton(wgt);
-    forwardButton = new QPushButton(wgt);
-    playlistButton = new QPushButton(wgt);
-    nameLabel  = new QLabel(wgt);
-    timeLabel  = new QLabel(wgt);
-    slider = new Phonon::SeekSlider(wgt);
-    volume = new Phonon::VolumeSlider(wgt);
-    volume->setObjectName("volumeSlider");
+//    buttonPanelWidget = new QWidget(this);
+//    openButton    = new QPushButton(wgt);
+//    playButton    = new QPushButton(wgt);
+//    stopButton    = new QPushButton(wgt);
+//    rewindButton  = new QPushButton(wgt);
+//    forwardButton = new QPushButton(wgt);
+//    playlistButton = new QPushButton(wgt);
+//    nameLabel  = new QLabel(wgt);
+//    timeLabel  = new QLabel(wgt);
+//    slider = new Phonon::SeekSlider(wgt);
+//    volume = new Phonon::VolumeSlider(wgt);
+//    volume->setObjectName("volumeSlider");
 
     playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setObjectName("playListDoc");
@@ -156,48 +253,48 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     model = new QStandardItemModel(0, 4);
     playListView = new QTableView;
 
-    slider->setMediaObject(&m_pmedia);
-    slider->setCursor(Qt::PointingHandCursor);
+//    slider->setMediaObject(&m_pmedia);
+//    slider->setCursor(Qt::PointingHandCursor);
 
-    volume->setAudioOutput(&m_AudioOutput);
-    volume->setFixedWidth(100);
-    volume->setCursor(Qt::PointingHandCursor);
+//    volume->setAudioOutput(&m_AudioOutput);
+//    volume->setFixedWidth(100);
+//    volume->setCursor(Qt::PointingHandCursor);
 
-    openButton->setIcon(QIcon(":/Res/Open.png"));
-    playIcon = QIcon(":/Res/Play1.png");
-    pauseIcon = QIcon(":/Res/Pause1.png");
-    playButton->setIcon(playIcon);
-    playButton->setObjectName("playButton");
-    stopButton->setIcon(QIcon(":/Res/Stop1.png"));
-    rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
-    forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
-    playlistButton->setIcon(QIcon(":/res/Playlist1.png"));
+//    openButton->setIcon(QIcon(":/Res/Open.png"));
+//    playIcon = QIcon(":/Res/Play1.png");
+//    pauseIcon = QIcon(":/Res/Pause1.png");
+//    playButton->setIcon(playIcon);
+//    playButton->setObjectName("playButton");
+//    stopButton->setIcon(QIcon(":/Res/Stop1.png"));
+//    rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
+//    forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
+//    playlistButton->setIcon(QIcon(":/res/Playlist1.png"));
 
-    openButton->setToolTip(tr("Open"));
-    playButton->setToolTip(tr("Play"));
-    stopButton->setToolTip(tr("Stop"));
-    rewindButton->setToolTip(tr("Previous"));
-    forwardButton->setToolTip(tr("Next"));
-    playlistButton->setToolTip(tr("Playlist (show/hide)"));
+//    openButton->setToolTip(tr("Open"));
+//    playButton->setToolTip(tr("Play"));
+//    stopButton->setToolTip(tr("Stop"));
+//    rewindButton->setToolTip(tr("Previous"));
+//    forwardButton->setToolTip(tr("Next"));
+//    playlistButton->setToolTip(tr("Playlist (show/hide)"));
 
-    openButton->setFocusPolicy(Qt::NoFocus);
-    playButton->setFocusPolicy(Qt::NoFocus);
-    stopButton->setFocusPolicy(Qt::NoFocus);
-    rewindButton->setFocusPolicy(Qt::NoFocus);
-    forwardButton->setFocusPolicy(Qt::NoFocus);
-    playlistButton->setFocusPolicy(Qt::NoFocus);
-    volume->setFocusPolicy(Qt::NoFocus);
-    slider->setFocusPolicy(Qt::NoFocus);
+//    openButton->setFocusPolicy(Qt::NoFocus);
+//    playButton->setFocusPolicy(Qt::NoFocus);
+//    stopButton->setFocusPolicy(Qt::NoFocus);
+//    rewindButton->setFocusPolicy(Qt::NoFocus);
+//    forwardButton->setFocusPolicy(Qt::NoFocus);
+//    playlistButton->setFocusPolicy(Qt::NoFocus);
+//    volume->setFocusPolicy(Qt::NoFocus);
+//    slider->setFocusPolicy(Qt::NoFocus);
 
-    openButton->setCursor(Qt::PointingHandCursor);
-    playButton->setCursor(Qt::PointingHandCursor);
-    stopButton->setCursor(Qt::PointingHandCursor);
-    rewindButton->setCursor(Qt::PointingHandCursor);
-    forwardButton->setCursor(Qt::PointingHandCursor);
-    playlistButton->setCursor(Qt::PointingHandCursor);
+//    openButton->setCursor(Qt::PointingHandCursor);
+//    playButton->setCursor(Qt::PointingHandCursor);
+//    stopButton->setCursor(Qt::PointingHandCursor);
+//    rewindButton->setCursor(Qt::PointingHandCursor);
+//    forwardButton->setCursor(Qt::PointingHandCursor);
+//    playlistButton->setCursor(Qt::PointingHandCursor);
 
-    timeLabel->setAlignment(Qt::AlignRight);
-    nameLabel->setAlignment(Qt::AlignLeft);
+//    timeLabel->setAlignment(Qt::AlignRight);
+//    nameLabel->setAlignment(Qt::AlignLeft);
 
 
     playListView->setModel(model);
@@ -227,27 +324,27 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
     playListDoc->hide();
 
-    //Layout setup
-    QHBoxLayout* phbxLayout = new QHBoxLayout;
-    phbxLayout->addWidget(openButton);
-    phbxLayout->addSpacing(10);
-    phbxLayout->addWidget(playButton);
-    phbxLayout->addWidget(stopButton);
-    phbxLayout->addWidget(rewindButton);
-    phbxLayout->addWidget(forwardButton);
+//    //Layout setup
+//    QHBoxLayout* phbxLayout = new QHBoxLayout;
+//    phbxLayout->addWidget(openButton);
 //    phbxLayout->addSpacing(10);
-    phbxLayout->addStretch();
-    phbxLayout->addWidget(volume);
-    phbxLayout->addSpacing(10);
-    phbxLayout->addWidget(playlistButton);
+//    phbxLayout->addWidget(playButton);
+//    phbxLayout->addWidget(stopButton);
+//    phbxLayout->addWidget(rewindButton);
+//    phbxLayout->addWidget(forwardButton);
+////    phbxLayout->addSpacing(10);
+//    phbxLayout->addStretch();
+//    phbxLayout->addWidget(volume);
+//    phbxLayout->addSpacing(10);
+//    phbxLayout->addWidget(playlistButton);
 
-    QHBoxLayout* phbxLayout2 = new QHBoxLayout;
-    phbxLayout2->addWidget(slider);
+//    QHBoxLayout* phbxLayout2 = new QHBoxLayout;
+//    phbxLayout2->addWidget(slider);
 
-    QHBoxLayout* phbxLayout3 = new QHBoxLayout;
-    phbxLayout3->addWidget(nameLabel);
-    phbxLayout3->addSpacing(20);
-    phbxLayout3->addWidget(timeLabel);
+//    QHBoxLayout* phbxLayout3 = new QHBoxLayout;
+//    phbxLayout3->addWidget(nameLabel);
+//    phbxLayout3->addSpacing(20);
+//    phbxLayout3->addWidget(timeLabel);
 
     QVBoxLayout* pvbxLayout = new QVBoxLayout(wgt);
     pvbxLayout->setMargin(0); pvbxLayout->setSpacing(0);
@@ -256,26 +353,21 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     pvbxLayout->addWidget(&m_videoWindow);
     m_videoWindow.hide();
 
-    QVBoxLayout *buttonPanelLayout = new QVBoxLayout();
-    buttonPanelLayout->setMargin(5);
-    buttonPanelLayout->setSpacing(5);
-    buttonPanelLayout->addLayout(phbxLayout2);
-    buttonPanelLayout->addLayout(phbxLayout3);
-    buttonPanelLayout->addLayout(phbxLayout);
+//    QVBoxLayout *buttonPanelLayout = new QVBoxLayout();
+//    buttonPanelLayout->setMargin(5);
+//    buttonPanelLayout->setSpacing(5);
+//    buttonPanelLayout->addLayout(phbxLayout2);
+//    buttonPanelLayout->addLayout(phbxLayout3);
+//    buttonPanelLayout->addLayout(phbxLayout);
 
-    buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    buttonPanelWidget->setLayout(buttonPanelLayout);
+//    buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+//    buttonPanelWidget->setLayout(buttonPanelLayout);
 //    pvbxLayout->addWidget(buttonPanelWidget);
+
     QHBoxLayout *labelLayout = new QHBoxLayout();
     pvbxLayout->addLayout(labelLayout);
 
     wgt->setLayout(pvbxLayout);
-
-    controlPanel = new QToolBar;
-    controlPanel->setObjectName("controlPanel");
-    controlPanel->setFloatable(false);
-    controlPanel->setMovable(false);
-    controlPanel->addWidget(buttonPanelWidget);
 
     // Create menu bar:
     fileMenu = new QMenu(this);
@@ -318,17 +410,10 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 //    fileMenu->addSeparator();
 //    QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
 
-    openButton->setMenu(fileMenu);
+//    openButton->setMenu(fileMenu);
 
-    connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
     connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
-
-    connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
-    connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-    connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
-    connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
-    connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
 
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(&m_pmedia, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
@@ -341,15 +426,22 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     m_pmedia.setTickInterval(100);
 
-    playButton->setEnabled(false);
-    rewindButton->setEnabled(false);
-    forwardButton->setEnabled(false);
+//    playButton->setEnabled(false);
+//    rewindButton->setEnabled(false);
+//    forwardButton->setEnabled(false);
     setAcceptDrops(true);
 
     m_audioOutputPath = Phonon::createPath(&m_pmedia, &m_AudioOutput);
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
     setCentralWidget(wgt);
+
+    controlPanel = new QToolBar;
+    controlPanel->setObjectName("controlPanel");
+    controlPanel->setFloatable(false);
+    controlPanel->setMovable(false);
+//    controlPanel->addWidget(buttonPanelWidget);
+    controlPanel->addWidget(cWidget);
     addToolBar(Qt::BottomToolBarArea, controlPanel);
 
     readSettings();
@@ -366,7 +458,12 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     activateWindow();
 
 //    l.setParent(this);
-//    l.show();
+//    mWidget.show();
+
+//    cWidget1->setGeometry(0 , 0, QApplication::desktop()->geometry().width(), QApplication::desktop()->geometry().height());
+    cWidget1->show();
+    cWidget1->move(500, 900);
+    cWidget1->setObjectName("cWidget1");
 }
 
 // ----------------------------------------------------------------------
@@ -468,38 +565,6 @@ void MediaPlayer::writeSettings()
 
 }
 
-/*virtual*/ void MediaPlayer::keyPressEvent(QKeyEvent *pe)
-{
-    /*if (!pe->modifiers()) {
-        if (pe->key() == Qt::Key_Space) {
-            playPause();
-            pe->accept();
-            return;
-        } else if (pe->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
-            m_videoWidget->setFullScreen(!isFullScreen());
-//            buttonPanelWidget->setVisible(true);
-            pe->accept();
-            return;
-        } else if (pe->key() == Qt::Key_Left) {
-            if (m_pmedia.isSeekable()) {
-                long pos = m_pmedia.currentTime() - 15000;
-                if (pos) m_pmedia.seek(pos);
-                else m_pmedia.seek(0);
-            }
-            pe->accept();
-            return;
-        } else if (pe->key() == Qt::Key_Right) {
-            if (m_pmedia.isSeekable()) {
-                long pos = m_pmedia.currentTime() + 15000;
-                m_pmedia.seek(pos);
-            }
-            pe->accept();
-            return;
-        }
-    }
-    QWidget::keyPressEvent(pe);*/
-}
-
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
 {
     if (pe->type() == QEvent::Close) {
@@ -513,14 +578,14 @@ void MediaPlayer::writeSettings()
     }
 
     if (pe->type() == QEvent::ToolTip) {
-        if (pobj == volume) {
+        if (pobj == cWidget->volume) {
             QString vol = tr("Volume") + " [" + QString::number(qreal(m_AudioOutput.volume()*100.0f)) + "%]";
-            volume->setToolTip(vol);
+            cWidget->volume->setToolTip(vol);
         }
     }
 
     if (pe->type() == QEvent::MouseButtonPress) {
-        if ((pobj->parent() == volume) || (pobj->parent() == slider)) {
+        if ((pobj->parent() == cWidget->volume) || (pobj->parent() == cWidget->slider)) {
             if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
                 QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
                                               Qt::MidButton, Qt::MidButton, Qt::NoModifier);
@@ -584,7 +649,7 @@ void MediaPlayer::timerEvent(QTimerEvent *pe)
 void MediaPlayer::volumeChanged(qreal v)
 {
     QString vol = tr("Volume") + " [" + QString::number(qreal(v*100.0f)) + "%]";
-    nameLabel->setText(vol);
+    cWidget->nameLabel->setText(vol);
     m_timer.start(5000, this);
 }
 
@@ -610,7 +675,7 @@ void MediaPlayer::openFile()
     QStringList fileNames = QFileDialog::getOpenFileNames(this);
     if (fileNames.size() > 0) {
         m_pmedia.clearQueue();
-        model->clear();
+//        model->clear();
         QString fileName = fileNames[0];
         setFile(fileName);
         addFile(fileName);
@@ -671,7 +736,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
             }
         }
     }
-    forwardButton->setEnabled(m_pmedia.queue().size() > 0);
+    cWidget->forwardButton->setEnabled(m_pmedia.queue().size() > 0);
     qDebug() << "handleDropStop";
 }
 
@@ -713,7 +778,8 @@ void MediaPlayer::playPause()
         m_pmedia.play();
         playPauseAction->setChecked(true);
     } else qDebug() << "playPause(3)";
-    l.setFocus();
+//    mWidget.activateWindow();
+    cWidget1->activateWindow();
 }
 
 void MediaPlayer::stop()
@@ -801,8 +867,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             frame.setWidth(frameSize().width() - size().width());
             frame.setHeight(frameSize().height() - size().height());
             newSize.setWidth(m_videoWindow.sizeHint().width() + frame.width());
-            newSize.setHeight(m_videoWindow.sizeHint().height() + buttonPanelWidget->height() +
-                    buttonPanelWidget->pos().y() + 0 + frame.height());
+            newSize.setHeight(m_videoWindow.sizeHint().height() + cWidget->height() +
+                    cWidget->pos().y() + 0 + frame.height());
             if (playListDoc->isVisible()) newSize.setWidth(newSize.width() + playListDoc->width());
 
             QRect videoHintRect = QRect(QPoint(0, 0), newSize);
@@ -844,22 +910,22 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::ErrorState:
             QMessageBox::warning(this, "EMP", m_pmedia.errorString(), QMessageBox::Close);
             if (m_pmedia.errorType() == Phonon::FatalError) {
-                playButton->setEnabled(false);
-                rewindButton->setEnabled(false);
+                cWidget->playButton->setEnabled(false);
+                cWidget->rewindButton->setEnabled(false);
             } else {
                 m_pmedia.pause();
             }
             break;
         case Phonon::StoppedState:
         case Phonon::PausedState: 
-            playButton->setIcon(playIcon);
-            playButton->setToolTip(tr("Play"));
+            cWidget->playButton->setIcon(cWidget->playIcon);
+            cWidget->playButton->setToolTip(tr("Play"));
             if (m_pmedia.currentSource().type() != Phonon::MediaSource::Invalid){
-                playButton->setEnabled(true);
-                rewindButton->setEnabled(true);
+                cWidget->playButton->setEnabled(true);
+                cWidget->rewindButton->setEnabled(true);
             } else {
-                playButton->setEnabled(false);
-                rewindButton->setEnabled(false);
+                cWidget->playButton->setEnabled(false);
+                cWidget->rewindButton->setEnabled(false);
             }
             if (m_pmedia.currentTime() == m_pmedia.totalTime()) {
                 m_videoWidget->setFullScreen(false);
@@ -867,16 +933,16 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             break;
         case Phonon::PlayingState:
         qDebug() << "PlayingState";
-            playButton->setEnabled(true);
-            playButton->setIcon(pauseIcon);
-            playButton->setToolTip(tr("Pause"));
+            cWidget->playButton->setEnabled(true);
+            cWidget->playButton->setIcon(cWidget->pauseIcon);
+            cWidget->playButton->setToolTip(tr("Pause"));
 //            if (m_pmedia.hasVideo())
 //                m_videoWindow.show();
         case Phonon::BufferingState:
-            rewindButton->setEnabled(true);
+            cWidget->rewindButton->setEnabled(true);
             break;
         case Phonon::LoadingState:
-            rewindButton->setEnabled(false);
+            cWidget->rewindButton->setEnabled(false);
             break;
     }
 }
@@ -884,12 +950,12 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 void MediaPlayer::bufferStatus(int percent)
 {
     if (percent == 0 || percent == 100)
-        nameLabel->setText("");
+        cWidget->nameLabel->setText("");
     else {
         QString str("(");
         str += QString::number(percent);
         str += "%)";
-        nameLabel->setText(str);
+        cWidget->nameLabel->setText(str);
     }
     qDebug() << "bufferStatus";
 }
@@ -899,8 +965,9 @@ void MediaPlayer::updateInfo()
     QString fileName = m_pmedia.currentSource().fileName();
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
     fileName = fileName.left(fileName.lastIndexOf('.'));
-    nameLabel->setText(fileName);
-    l.setText(fileName);
+    cWidget->nameLabel->setText(fileName);
+    cWidget1->nameLabel->setText(fileName);
+//    mWidget.mLabel->setText(fileName);
 
 //    QPoint posNew;
 //    QPoint posCOld = frameGeometry().center();
@@ -949,7 +1016,8 @@ void MediaPlayer::updateTime()
             timeString += " (-" + nPlayTime.toString(timeFormat) + ")";
             timeString += " / " + stopTime.toString(timeFormat);
     }
-    timeLabel->setText(timeString);
+    cWidget->timeLabel->setText(timeString);
+    cWidget1->timeLabel->setText(timeString);
 }
 
 void MediaPlayer::rewind()
@@ -963,7 +1031,7 @@ void MediaPlayer::forward()
     QList<Phonon::MediaSource> queue = m_pmedia.queue();
     if (queue.size() > 0) {
         setFile(queue[0].fileName());
-        forwardButton->setEnabled(queue.size() > 1);
+        cWidget->forwardButton->setEnabled(queue.size() > 1);
     }
 }
 

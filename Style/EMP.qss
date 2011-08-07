@@ -1,7 +1,7 @@
 /* Simple Style */
 QWidget {
 	color: #BBBBBB;
-    background-color: #202020;
+    background-color: /*rgba(32, 32, 32, 125);*/#202020;
 }
 
 QPushButton {
@@ -55,7 +55,12 @@ QPushButton:checked:hover {
 				stop:0.1 #3E3EFF);
 }
 
+QSlider {
+	background-color: none;
+}
+
 QSlider::groove:horizontal {
+	
 	border: 1px solid #999999;
 	height: 12px;
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #606060, stop:1 #202020);
@@ -78,6 +83,7 @@ QSlider::sub-page:horizontal {
 }
 
 QLabel {
+	background-color: none;
 	font: normal 14px "Arial";
 }
 
@@ -110,10 +116,10 @@ QDockWidget::title {
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b0b0b0, stop:1 #626262);
 }
 
- QMainWindow::separator {
-     /*background: yellow;*/
-     /*width: 1px;*/ /* когда вертикальный */
- }
+QMainWindow::separator {
+	background-color: #202020;
+	/*width: 1px;*/ /* когда вертикальный */
+}
 
 QScrollBar:vertical {
 	border: 1px solid #999999;
@@ -180,9 +186,21 @@ QMenu::separator {
 	margin: 1px 10px 1px 5px;
 }
 
-#MLabel {
-	color: #00FF00;
-	font: normal 18px "Arial";
+#mLabel {
+	color: #FFFFFF;
+	font: bold 18px "Arial";
+	background-color: rgba(0, 0, 0, 125);
+}
+
+#cWidget {
+	/*border-radius: 10px;*/
+	background: rgba(0, 0, 0, 125);
+}
+
+#cWidget1 {
+	color: #000000;
+	/*border-radius: 10px;*/
+	background: rgba(0, 0, 0, 125);
 }
 
 /*
