@@ -65,7 +65,6 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     mutedIcon = style()->standardPixmap(QStyle::SP_MediaVolumeMuted);
     volumeLabel->setPixmap(volumeIcon);
     volumeLabel->setCursor(Qt::PointingHandCursor);
-    m_player->volumeOnOff = true;
 
     slider->setMediaObject(&player->m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
@@ -174,12 +173,16 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
 
 void MediaVideoWidget::setFullScreen(bool enabled)
 {
-    m_timer.stop();
+
     if (!enabled) {
+        m_timer.stop();
         m_player->activateWindow();
         setCursor(Qt::PointingHandCursor);
+        m_player->cWidget1->hide();
     } else {
         setCursor(Qt::BlankCursor);
+        m_player->cWidget1->show();
+        m_timer.start(3000, this);
     }
     Phonon::VideoWidget::setFullScreen(enabled);
     emit fullScreenChanged(enabled);
@@ -205,7 +208,8 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
     if (isFullScreen()) {
         if (!m_player->fileMenu->isVisible()) {
             m_timer.start(3000, this);
-            setFocus();
+            m_player->cWidget1->show();
+//            setFocus();
         }
     }
 }
@@ -214,6 +218,7 @@ void MediaVideoWidget::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_timer.timerId()) {
         if (!m_player->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
+        if (!m_player->cWidget1->underMouse()) m_player->cWidget1->hide();
     }
     Phonon::VideoWidget::timerEvent(e);
 }
@@ -234,13 +239,15 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 //    playButton(0),
     m_AudioOutput(Phonon::VideoCategory),
     m_videoWidget(new MediaVideoWidget(this)),
-    cWidget(new ControlWidget(this)),
-    cWidget1(new ControlWidget(this))
+    cWidget(new ControlWidget(this))
+
 {
     setWindowTitle("EMP");
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    cWidget1 = new ControlWidget(this);
 
     QWidget *wgt = new QWidget;
 
@@ -467,13 +474,12 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     qApp->installEventFilter( this );
     activateWindow();
 
-//    l.setParent(this);
 //    mWidget.show();
 
-//    cWidget1->setGeometry(0 , 0, QApplication::desktop()->geometry().width(), QApplication::desktop()->geometry().height());
-    cWidget1->show();
-    cWidget1->move(500, 900);
     cWidget1->setObjectName("cWidget1");
+    cWidget1->setMinimumWidth(QApplication::desktop()->availableGeometry().width());
+    cWidget1->move(0, QApplication::desktop()->availableGeometry().height() - cWidget1->sizeHint().height());
+
 }
 
 // ----------------------------------------------------------------------
@@ -672,8 +678,6 @@ void MediaPlayer::setVolumeOnOff () {
         m_AudioOutput.setMuted(true);
         cWidget->volumeLabel->setPixmap(cWidget->mutedIcon);
     }
-
-    volumeOnOff = !volumeOnOff;
 }
 
 void MediaPlayer::moveWindowToCenter()

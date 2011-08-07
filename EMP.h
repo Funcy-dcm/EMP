@@ -135,7 +135,7 @@ public:
     QMenu *fileMenu;
     QAction *fullScreenAction;
     QAction *playPauseAction;
-    bool volumeOnOff;
+    ControlWidget *cWidget1;
 
 public slots:
     void moveWindowToCenter();
@@ -180,7 +180,6 @@ private:
 
     MWidget mWidget;
     ControlWidget *cWidget;
-    ControlWidget *cWidget1;
 
 };
 #endif  //_MediaPlayer_h_
