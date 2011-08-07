@@ -58,6 +58,14 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     slider = new Phonon::SeekSlider(this);
     volume = new Phonon::VolumeSlider(this);
     volume->setObjectName("volumeSlider");
+    volume->setMuteVisible(false);
+
+    volumeLabel = new QLabel(this);
+    volumeIcon = style()->standardPixmap(QStyle::SP_MediaVolume);
+    mutedIcon = style()->standardPixmap(QStyle::SP_MediaVolumeMuted);
+    volumeLabel->setPixmap(volumeIcon);
+    volumeLabel->setCursor(Qt::PointingHandCursor);
+    m_player->volumeOnOff = true;
 
     slider->setMediaObject(&player->m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
@@ -112,6 +120,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     phbxLayout->addWidget(forwardButton);
 //    phbxLayout->addSpacing(10);
     phbxLayout->addStretch();
+    phbxLayout->addWidget(volumeLabel);
     phbxLayout->addWidget(volume);
     phbxLayout->addSpacing(10);
     phbxLayout->addWidget(playlistButton);
@@ -146,6 +155,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     connect(rewindButton, SIGNAL(clicked()), m_player, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), m_player, SLOT(forward()));
     connect(playlistButton, SIGNAL(clicked()), m_player, SLOT(playlistShow()));
+
 
 }
 
@@ -592,6 +602,7 @@ void MediaPlayer::writeSettings()
                 QApplication::sendEvent(pobj, pe1);
             }
         }
+        if (pobj == cWidget->volumeLabel) setVolumeOnOff();
     }
 
     if (pe->type() == QEvent::KeyPress) {
@@ -651,6 +662,18 @@ void MediaPlayer::volumeChanged(qreal v)
     QString vol = tr("Volume") + " [" + QString::number(qreal(v*100.0f)) + "%]";
     cWidget->nameLabel->setText(vol);
     m_timer.start(5000, this);
+}
+
+void MediaPlayer::setVolumeOnOff () {
+    if (m_AudioOutput.isMuted()) {
+        m_AudioOutput.setMuted(false);
+        cWidget->volumeLabel->setPixmap(cWidget->volumeIcon);
+    } else {
+        m_AudioOutput.setMuted(true);
+        cWidget->volumeLabel->setPixmap(cWidget->mutedIcon);
+    }
+
+    volumeOnOff = !volumeOnOff;
 }
 
 void MediaPlayer::moveWindowToCenter()

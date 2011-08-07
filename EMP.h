@@ -63,6 +63,8 @@ public:
     QLabel *statusLabel;
     QIcon playIcon;
     QIcon pauseIcon;
+    QPixmap volumeIcon;
+    QPixmap mutedIcon;
     QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
@@ -72,6 +74,7 @@ public:
     Phonon::SeekSlider *slider;
     QLabel *nameLabel;
     QLabel *timeLabel;
+    QLabel *volumeLabel;
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
 private:
@@ -132,6 +135,7 @@ public:
     QMenu *fileMenu;
     QAction *fullScreenAction;
     QAction *playPauseAction;
+    bool volumeOnOff;
 
 public slots:
     void moveWindowToCenter();
@@ -145,6 +149,7 @@ public slots:
     void updateInfo();
     void updateTime();
     void aspectChanged(QAction *);
+    void setVolumeOnOff();
 
 private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
