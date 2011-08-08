@@ -133,7 +133,7 @@ public:
     QMenu *fileMenu;
     QAction *fullScreenAction;
     QAction *playPauseAction;
-    ControlWidget *cWidget1;
+    ControlWidget *cWidget;
 
 public slots:
     void moveWindowToCenter();
@@ -176,8 +176,24 @@ private:
 
     QBasicTimer m_timer;
 
-    MWidget mWidget;
-    ControlWidget *cWidget;
+//    MWidget mWidget;
+
+    QIcon playIcon;
+    QIcon pauseIcon;
+    QPixmap volumeIcon;
+    QPixmap mutedIcon;
+    QPushButton *openButton;
+    QPushButton *playButton;
+    QPushButton *stopButton;
+    QPushButton *rewindButton;
+    QPushButton *forwardButton;
+    QPushButton *playlistButton;
+    Phonon::SeekSlider *slider;
+    QLabel *statusLabel;
+    QLabel *timeLabel;
+    QLabel *volumeLabel;
+    Phonon::VolumeSlider *volume;
+    QWidget *buttonPanelWidget;
 
 };
 #endif  //_MediaPlayer_h_

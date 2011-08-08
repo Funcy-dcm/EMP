@@ -55,11 +55,11 @@ QPushButton:checked:hover {
 				stop:0.1 #3E3EFF);
 }
 
-QSlider {
+/*#volumeSlider QSlider, #seekSlider*/ QSlider {
 	background-color: none;
 }
 
-QSlider::groove:horizontal {
+#volumeSlider QSlider::groove:horizontal, #seekSlider QSlider::groove:horizontal {
 	
 	border: 1px solid #999999;
 	height: 12px;
@@ -68,7 +68,16 @@ QSlider::groove:horizontal {
 	border-radius: 4px;
 }
 
-QSlider::handle:horizontal {
+#volumeSliderOver QSlider::groove:horizontal, #seekSliderOver QSlider::groove:horizontal {
+	
+	border: 1px solid #999999;
+	height: 12px;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #606060, stop:1 #202020);
+	margin: 2px 0px;
+	border-radius: 4px;
+}
+
+/*#volumeSlider QSlider::handle:horizontal, #seekSlider*/ QSlider::handle:horizontal {
 	/*border: 1px solid #999999;*/
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b0FFb0, stop:1 #00FF00);
 	width: 12px;
@@ -76,7 +85,7 @@ QSlider::handle:horizontal {
 	border-radius: 3px;
 }
 
-QSlider::sub-page:horizontal {
+/*#volumeSlider QSlider::sub-page:horizontal, #seekSlider*/ QSlider::sub-page:horizontal {
 	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d0d0d0, stop:1 #505050);
 	margin: 4px 2px;
 	border-radius: 2px;
@@ -107,7 +116,6 @@ QLabel {
   
 QDockWidget {
 	color: #000000;
-	/*color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #616161, stop:1 #B1B1B1);*/
 	font: bold 12px "Tahoma";
 }	
   
@@ -189,18 +197,16 @@ QMenu::separator {
 #mLabel {
 	color: #FFFFFF;
 	font: bold 18px "Arial";
-	background-color: rgba(0, 0, 0, 125);
+	background-color: rgba(0, 0, 0, 100);
 }
 
-#cWidget {
-	/*border-radius: 10px;*/
-	background: rgba(0, 0, 0, 125);
+#buttonPanelWidget {
+	background-color: rgba(32, 32, 32, 100);
 }
 
-#cWidget1 {
-	color: #000000;
-	/*border-radius: 10px;*/
-	background: rgba(0, 0, 0, 125);
+#statusLabel, #timeLabel {
+	color: #FFFFFF;
+	font: normal 18px "Arial";
 }
 
 /*
