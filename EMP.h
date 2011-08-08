@@ -60,7 +60,6 @@ class ControlWidget : public QWidget
     Q_OBJECT
 public:
     ControlWidget(MediaPlayer *player, QWidget * parent = 0);
-    QLabel *statusLabel;
     QIcon playIcon;
     QIcon pauseIcon;
     QPixmap volumeIcon;
@@ -72,7 +71,7 @@ public:
     QPushButton *forwardButton;
     QPushButton *playlistButton;
     Phonon::SeekSlider *slider;
-    QLabel *nameLabel;
+    QLabel *statusLabel;
     QLabel *timeLabel;
     QLabel *volumeLabel;
     Phonon::VolumeSlider *volume;
@@ -100,7 +99,6 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
-//    bool event(QEvent *e);
     void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
@@ -173,7 +171,7 @@ private:
     QTableView *playListView;
 
     QWidget m_videoWindow;
-    Phonon::VideoWidget *m_videoWidget;
+    MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
 
     QBasicTimer m_timer;
