@@ -87,6 +87,7 @@ class MediaVideoWidget : public Phonon::VideoWidget
 
 public:
     MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
+    void fullScreen(bool);
 
 public slots:
     // Over-riding non-virtual Phonon::VideoWidget slot
@@ -102,6 +103,7 @@ protected:
     void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
+    void resizeEvent(QResizeEvent * event);
 
 private:
     MediaPlayer *m_player;
