@@ -70,20 +70,11 @@ class MediaVideoWidget : public Phonon::VideoWidget
 
 public:
     MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
-    void fullScreen(bool);
-
-public slots:
-    // Over-riding non-virtual Phonon::VideoWidget slot
-    void setFullScreen(bool);
-
-signals:
-    void fullScreenChanged(bool);
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
-    void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
 
@@ -119,6 +110,7 @@ public:
     QAction *playPauseAction;
     ControlWidget *cWidget;
     QRect nGeometryWindows;
+    QBasicTimer timerFullScreen;
 
 public slots:
     void moveWindowToCenter();
@@ -133,8 +125,10 @@ public slots:
     void updateTime();
     void aspectChanged(QAction *);
     void setVolumeOnOff();
+    void setFullScreen(bool);
 
 private slots:
+    void currentSourceChanged ( const Phonon::MediaSource & newSource );
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
     void volumeChanged(qreal);
     void hasVideoChanged(bool);
@@ -163,7 +157,6 @@ private:
     Phonon::Path m_audioOutputPath;
 
     QBasicTimer timerUpdateInfo;
-    QBasicTimer timerFullScreen;
 
 //    MWidget mWidget;
 

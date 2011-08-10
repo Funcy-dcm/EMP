@@ -209,6 +209,10 @@ QMenu::separator {
 	font: normal 18px "Arial";
 }
 
+#logoLabel, #blackWidget {
+	background-color: rgb(0, 0, 0);
+}
+
 /*
 #pcmdPlay {
 		image: url(:/Project1.png);
