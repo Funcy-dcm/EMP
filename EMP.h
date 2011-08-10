@@ -10,28 +10,11 @@
 #ifndef _MediaPlayer_h_
 #define _MediaPlayer_h_
 
-#include <QtGui/QMainWindow>
-#include <QtGui/QApplication>
-#include <QtCore/QTimerEvent>
-#include <QtGui/QShowEvent>
-#include <QtGui/QIcon>
-#include <QtCore/QBasicTimer>
-#include <QtGui/QAction>
-#include <QStandardItemModel>
-#include <QtGui/QTableView>
-#include <QtGui/QLabel>
-#include <QSettings>
+#include <QtGui>
+//#include <QStandardItemModel>
+//#include <QSettings>
 
-#include <phonon/mediaobject.h>
-#include <phonon/audiooutput.h>
-#include <phonon/mediasource.h>
-#include <phonon/videowidget.h>
-#include <phonon/seekslider.h>
-#include <phonon/volumeslider.h>
-#include <phonon/effect.h>
-#include <phonon/backendcapabilities.h>
-#include <phonon/effect.h>
-#include <phonon/effectparameter.h>
+#include <phonon>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -136,6 +119,7 @@ public:
     QAction *fullScreenAction;
     QAction *playPauseAction;
     ControlWidget *cWidget;
+    QRect nGeometryWindows;
 
 public slots:
     void moveWindowToCenter();
@@ -157,6 +141,8 @@ private slots:
     void hasVideoChanged(bool);
     void bufferStatus(int percent);
     void showContextMenu(const QPoint &);
+    void changeEvent(QEvent*);
+    void slotWindowNormal();
 
 protected:
     virtual void closeEvent(QCloseEvent*);
@@ -172,6 +158,8 @@ private:
     QStandardItemModel *model;
     QTableView *playListView;
 
+    QStackedWidget sWidget;
+    QLabel *logoLabel;
     QWidget m_videoWindow;
     MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
@@ -197,5 +185,7 @@ private:
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
 
+signals:
+    void signalWindowNormal();
 };
 #endif  //_MediaPlayer_h_
