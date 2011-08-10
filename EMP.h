@@ -86,7 +86,6 @@ protected:
     void timerEvent(QTimerEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
-    void resizeEvent(QResizeEvent * event);
 
 private:
     MediaPlayer *m_player;
@@ -141,7 +140,6 @@ private slots:
     void hasVideoChanged(bool);
     void bufferStatus(int percent);
     void showContextMenu(const QPoint &);
-    void changeEvent(QEvent*);
     void slotWindowNormal();
 
 protected:
@@ -164,7 +162,8 @@ private:
     MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
 
-    QBasicTimer m_timer;
+    QBasicTimer timerUpdateInfo;
+    QBasicTimer timerFullScreen;
 
 //    MWidget mWidget;
 

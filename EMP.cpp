@@ -35,7 +35,7 @@ MWidget::MWidget(QWidget *p) : QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | 
 }
 
 ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
-    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint),
+    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint /*| Qt::WindowStaysOnTopHint*/),
     m_player(player)
 {
     setWindowModality(Qt::WindowModal);
@@ -169,12 +169,6 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
     addAction(&m_action);
     setAcceptDrops(true);
-}
-
-void MediaVideoWidget::resizeEvent(QResizeEvent * event)
-{
-    event->ignore();
-//    return;
 }
 
 void MediaVideoWidget::setFullScreen(bool enabled)
@@ -541,22 +535,6 @@ void MediaPlayer::writeSettings()
     m_settings->setValue("ToolBarsState", saveState());
 }
 
-void MediaPlayer::changeEvent(QEvent* pe)
-{
-
-    if(pe->type() == QEvent::WindowStateChange) {
-        int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
-        int newState = windowState();
-        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState)){
-            pe->ignore();
-            emit signalWindowNormal();
-            return;
-        }
-
-    }
-    QMainWindow::changeEvent( pe );
-}
-
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
 {
     qDebug() << "closeEventStart";
@@ -645,14 +623,14 @@ void MediaPlayer::changeEvent(QEvent* pe)
                 playPause();
                 return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11 && m_pmedia.hasVideo()) {
+                  sWidget.setCurrentIndex(2);
                   if (isFullScreen()){
                       cWidget->hide();
                       controlPanel->show();
                       playListDoc->show();
                       qApp->processEvents();
                       setWindowState(windowState() & ~Qt::WindowFullScreen);
-//                      setGeometry(nGeometryWindows);
-
+                      m_videoWidget->setCursor(Qt::PointingHandCursor);
                   } else {
                       nGeometryWindows = normalGeometry();
                       controlPanel->hide();
@@ -660,7 +638,10 @@ void MediaPlayer::changeEvent(QEvent* pe)
                       qApp->processEvents();
                       setWindowState(windowState() ^ Qt::WindowFullScreen);
                       cWidget->show();
+                      timerFullScreen.start(3000, this);
+                      m_videoWidget->setCursor(Qt::BlankCursor);
                   }
+                  sWidget.setCurrentIndex(0);
                   activateWindow();
 
 //                m_videoWidget->setFullScreen(!m_videoWidget->isFullScreen());
@@ -692,13 +673,14 @@ void MediaPlayer::changeEvent(QEvent* pe)
         }
     }
 
-    if (pe->type() == QEvent::WindowStateChange) {
-//        int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
-//        int newState = windowState();
-//        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState))
-//            setGeometry(nGeometryWindows);
-//        pe->accept();
-//        return true;
+    if(pe->type() == QEvent::WindowStateChange) {
+        int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
+        int newState = windowState();
+        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState)){
+            pe->ignore();
+            emit signalWindowNormal();
+            return true;
+        }
     }
 
     return false;
@@ -706,8 +688,12 @@ void MediaPlayer::changeEvent(QEvent* pe)
 
 void MediaPlayer::timerEvent(QTimerEvent *pe)
 {
-    if (pe->timerId() == m_timer.timerId()) {
+    if (pe->timerId() == timerUpdateInfo.timerId()) {
         updateInfo();
+    }
+    if (pe->timerId() == timerFullScreen.timerId()) {
+        if (!fileMenu->isVisible()) setCursor(Qt::BlankCursor);
+        if (!cWidget->underMouse()) cWidget->hide();
     }
     QWidget::timerEvent(pe);
 }
@@ -721,7 +707,7 @@ void MediaPlayer::volumeChanged(qreal v)
     QString vol = tr("Volume") + " [" + QString::number(qreal(v*100.0f)) + "%]";
     statusLabel->setText(vol);
     cWidget->statusLabel->setText(vol);
-    m_timer.start(5000, this);
+    timerUpdateInfo.start(5000, this);
 }
 
 void MediaPlayer::setVolumeOnOff () {
@@ -745,23 +731,26 @@ void MediaPlayer::moveWindowToCenter()
 
 void MediaPlayer::initVideoWindow()
 {
+    QLabel *blackWidget = new QLabel;
+
     logoLabel = new QLabel(this);
     logoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     QPixmap pix;
     pix.load(":/res/Logo.png");
     logoLabel->setPixmap(pix);
 
-    QVBoxLayout *videoLayout = new QVBoxLayout;
-    videoLayout->setContentsMargins(0, 0, 0, 0);
-    videoLayout->addWidget(m_videoWidget);
-    m_videoWindow.setLayout(videoLayout);
-    m_videoWindow.setContentsMargins(0, 0, 0, 0);
+//    QVBoxLayout *videoLayout = new QVBoxLayout;
+//    videoLayout->setContentsMargins(0, 0, 0, 0);
+//    videoLayout->addWidget(m_videoWidget);
+//    m_videoWindow.setLayout(videoLayout);
+//    m_videoWindow.setContentsMargins(0, 0, 0, 0);
 
 //    sWidget = new QStackedWidget(this);
     sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
-    sWidget.addWidget(&m_videoWindow);
+    sWidget.addWidget(m_videoWidget/*&m_videoWindow*/);
     sWidget.addWidget(logoLabel);
+    sWidget.addWidget(blackWidget);
     sWidget.setCurrentIndex(1);
 }
 
