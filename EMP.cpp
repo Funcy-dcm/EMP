@@ -372,6 +372,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     fullScreenAction->setPriority(QAction::QAction::HighPriority);
     connect(fullScreenAction, SIGNAL(toggled(bool)), this, SLOT(setFullScreen(bool)));
     addAction(fullScreenAction);
+    cWidget->addAction(fullScreenAction);
     fileMenu->addAction(fullScreenAction);
 
     QMenu *aspectMenu = fileMenu->addMenu(tr("Aspect ratio"));
@@ -746,6 +747,7 @@ void MediaPlayer::openUrl()
 void MediaPlayer::handleDrop(QDropEvent *e)
 {
     qDebug() << "handleDropStart";
+    fullScreenAction->setChecked(false);
     activateWindow();
     QList<QUrl> urls = e->mimeData()->urls();
     if (e->proposedAction() == Qt::MoveAction){
@@ -909,42 +911,54 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
+        QPoint posCOld = frameGeometry().center();
         if (m_pmedia.hasVideo()){
             qDebug() << "processEvents";
             qApp->processEvents();
-            QPoint posCOld = frameGeometry().center();
-            QSize frame;
-            QSize newSize;
-            frame.setWidth(frameSize().width() - size().width());
-            frame.setHeight(frameSize().height() - size().height());
-            newSize.setWidth(m_videoWidget->sizeHint().width() + frame.width());
-            newSize.setHeight(m_videoWidget->sizeHint().height() + buttonPanelWidget->height() +
-                    buttonPanelWidget->pos().y() + 0 + frame.height());
-            if (playListDoc->isVisible()) newSize.setWidth(newSize.width() + playListDoc->width());
+            if (!isFullScreen()) {
+                qDebug() << "processEvents (resize)";
 
-            QRect videoHintRect = QRect(QPoint(0, 0), newSize);
-            QRect newVideoRect = QApplication::desktop()->availableGeometry(0).intersected(videoHintRect);
+                QSize frame;
+                QSize newSize;
+                frame.setWidth(frameSize().width() - size().width());
+                frame.setHeight(frameSize().height() - size().height());
+                newSize.setWidth(m_videoWidget->sizeHint().width() + frame.width());
+                newSize.setHeight(m_videoWidget->sizeHint().height() + buttonPanelWidget->height() +
+                        buttonPanelWidget->pos().y() + 0 + frame.height());
+                if (playListDoc->isVisible()) newSize.setWidth(newSize.width() + playListDoc->width());
 
-            QPoint posNew;
-            posNew.setX(posCOld.x() - (newVideoRect.width()- frame.width())/2);
-            posNew.setY(posCOld.y() - (newVideoRect.height() - frame.height())/2);
-            if (posNew.x() < 0) posNew.setX(0);
-            else if ((posNew.x() + newVideoRect.width()) >
-                     QApplication::desktop()->availableGeometry(0).width()) {
-                posNew.setX(QApplication::desktop()->availableGeometry(0).width() -
-                            newVideoRect.width());
+                QRect videoHintRect = QRect(QPoint(0, 0), newSize);
+                QRect newVideoRect = QApplication::desktop()->availableGeometry(0).intersected(videoHintRect);
+
+                resize(newVideoRect.width()- frame.width(), newVideoRect.height() - frame.height());
+
+                QPoint posNew = newVideoRect.center();
+                posNew = posCOld - posNew;
+
+                if (posNew.x() < 0) posNew.setX(0);
+                else if ((posNew.x() + newVideoRect.width()) >
+                         QApplication::desktop()->availableGeometry(0).width()) {
+                    posNew.setX(QApplication::desktop()->availableGeometry(0).width() -
+                                newVideoRect.width());
+                }
+                if (posNew.y() < 0) posNew.setY(0);
+                else if ((posNew.y() + newVideoRect.height()) >
+                         QApplication::desktop()->availableGeometry(0).height()) {
+                    posNew.setY(QApplication::desktop()->availableGeometry(0).height() -
+                                newVideoRect.height());
+                }
+                move(posNew);
+
+                qDebug() << posCOld.x();
+                qDebug() << posCOld.y();
+                posCOld = frameGeometry().center();
+                qDebug() << posCOld.x();
+                qDebug() << posCOld.y();
             }
-            if (posNew.y() < 0) posNew.setY(0);
-            else if ((posNew.y() + newVideoRect.height()) >
-                     QApplication::desktop()->availableGeometry(0).height()) {
-                posNew.setY(QApplication::desktop()->availableGeometry(0).height() -
-                            newVideoRect.height());
-            }
 
-            resize(newVideoRect.width()- frame.width(), newVideoRect.height() - frame.height());
-            move(posNew);
-
-        } else resize(minimumSize());
+        } else if (!isFullScreen()) {
+            resize(minimumSize());
+        }
 
         for (int i = 0; i < MAX_FILE_POS; ++i) {
             if (fileNameP[i] == m_pmedia.currentSource().fileName()) {
@@ -1015,8 +1029,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 void MediaPlayer::currentSourceChanged ( const Phonon::MediaSource & newSource )
 {
 //    sWidget.setCurrentIndex(0);
-
-    int t = 0;
 }
 
 void MediaPlayer::bufferStatus(int percent)
@@ -1048,7 +1060,7 @@ void MediaPlayer::updateInfo()
 //    QPoint posNew;
 //    QPoint posCOld = frameGeometry().center();
 //    m_videoWindow.setVisible(m_pmedia.hasVideo());
-    if (!m_pmedia.hasVideo()) resize(minimumSize());
+//    if (!m_pmedia.hasVideo()) resize(minimumSize());
 //    posNew.setX(posCOld.x() - frameSize().width()/2);
 //    posNew.setY(posCOld.y() - frameSize().height()/2);
 //    move(posNew);
@@ -1141,17 +1153,17 @@ void MediaPlayer::setFullScreen(bool enabled)
         timerFullScreen.start(3000, this);
     }
     sWidget.setCurrentIndex(0);
-    setFocus();
+//    setFocus();
 }
 
 void MediaPlayer::hasVideoChanged(bool bHasVideo)
 {
-    QPoint posNew;
-    QPoint posCOld = frameGeometry().center();
+//    QPoint posNew;
+//    QPoint posCOld = frameGeometry().center();
 //    m_videoWindow.setVisible(bHasVideo);
-    posNew.setX(posCOld.x() - frameSize().width()/2);
-    posNew.setY(posCOld.y() - frameSize().height()/2);
-    move(posNew);
+//    posNew.setX(posCOld.x() - frameSize().width()/2);
+//    posNew.setY(posCOld.y() - frameSize().height()/2);
+//    move(posNew);
 }
 
 void MediaPlayer::showContextMenu(const QPoint &p)
