@@ -911,6 +911,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
+        sWidget.setCurrentIndex(2);
         QPoint posCOld = frameGeometry().center();
         if (m_pmedia.hasVideo()){
             qDebug() << "processEvents";
@@ -957,7 +958,13 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
 
         } else if (!isFullScreen()) {
+
             resize(minimumSize());
+            QSize frame = frameSize();
+            QRect hintRect = QRect(QPoint(0, 0), frame);
+            QPoint posNew = hintRect.center();
+            posNew = posCOld - posNew;
+            move(posNew);
         }
 
         for (int i = 0; i < MAX_FILE_POS; ++i) {
@@ -968,8 +975,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
         }
         m_pmedia.play();
-        sWidget.setCurrentIndex(0);
-        qDebug() << "Play";
     }
 
     switch (newstate) {
@@ -1008,7 +1013,11 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             break;
         case Phonon::PlayingState:  
             qDebug() << "PlayingState";
-//            sWidget.setCurrentIndex(0);
+            qDebug() << oldstate;
+            if (oldstate == Phonon::StoppedState) {
+                if (m_pmedia.hasVideo()) sWidget.setCurrentIndex(0);
+                else sWidget.setCurrentIndex(1);
+            }
             playButton->setEnabled(true);
             playButton->setIcon(cWidget->pauseIcon);
             playButton->setToolTip(tr("Pause"));
