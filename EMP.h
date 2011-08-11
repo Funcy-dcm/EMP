@@ -80,8 +80,7 @@ protected:
 
 private:
     MediaPlayer *m_player;
-    QBasicTimer m_timer;
-    QAction m_action;
+
 };
 
 // ======================================================================
@@ -152,11 +151,12 @@ private:
 
     QStackedWidget sWidget;
     QLabel *logoLabel;
-    QWidget m_videoWindow;
+//    QWidget m_videoWindow;
     MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
 
     QBasicTimer timerUpdateInfo;
+    QBasicTimer timerSetCursor;
 
 //    MWidget mWidget;
 
