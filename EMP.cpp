@@ -548,6 +548,7 @@ void MediaPlayer::writeSettings()
 
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
 {
+    bool keyOk;
     if (pe->type() == QEvent::Close) {
         if (pobj == m_videoWidget) {
             qDebug() << "QEvent::Close (m_videoWidget)";
@@ -588,35 +589,45 @@ void MediaPlayer::writeSettings()
                     playPause();
                     return true;
                 }
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
-                playPause();
-                return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11) {
                 fullScreenAction->setChecked(!isFullScreen());
                 return true;
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
-                if (m_pmedia.isSeekable()) {
-                    long pos = m_pmedia.currentTime() - 15000;
-                    if (pos > 0) m_pmedia.seek(pos);
-                    else m_pmedia.seek(0);
+            } else {
+                keyOk = false;
+                if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
+                    playPause();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+                    if (m_pmedia.isSeekable()) {
+                        long pos = m_pmedia.currentTime() - 15000;
+                        if (pos > 0) m_pmedia.seek(pos);
+                        else m_pmedia.seek(0);
+                    }
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+                    if (m_pmedia.isSeekable()) {
+                        long pos = m_pmedia.currentTime() + 15000;
+                        if (pos < m_pmedia.totalTime()) m_pmedia.seek(pos);
+                    }
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Up) {
+                    qreal vol = m_AudioOutput.volume() + 0.05;
+                    if (vol <= 1) m_AudioOutput.setVolume(vol);
+                    else m_AudioOutput.setVolume(1);
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
+                    qreal vol = m_AudioOutput.volume() - 0.05;
+                    if (vol >= 0.01) m_AudioOutput.setVolume(vol);
+                    else m_AudioOutput.setVolume(0);
+                    keyOk = true;
                 }
-                return true;
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
-                if (m_pmedia.isSeekable()) {
-                    long pos = m_pmedia.currentTime() + 15000;
-                    if (pos < m_pmedia.totalTime()) m_pmedia.seek(pos);
+                if (keyOk) {
+                    if (isFullScreen()) {
+                        cWidget->show();
+                        timerFullScreen.start(5000, this);
+                    }
+                    return true;
                 }
-                return true;
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Up) {
-                qreal vol = m_AudioOutput.volume() + 0.05;
-                if (vol <= 1) m_AudioOutput.setVolume(vol);
-                else m_AudioOutput.setVolume(1);
-                return true;
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
-                qreal vol = m_AudioOutput.volume() - 0.05;
-                if (vol >= 0.01) m_AudioOutput.setVolume(vol);
-                else m_AudioOutput.setVolume(0);
-                return true;
             }
         }
     }
@@ -812,7 +823,15 @@ void MediaPlayer::playPause()
             m_pmedia.seek(0);
         m_pmedia.play();
         playPauseAction->setChecked(true);
-    } else qDebug() << "playPause(3)";
+    } else {
+        qDebug() << "playPause(3)";
+        if (m_pmedia.state() == Phonon::StoppedState) {
+            QString fileName = m_pmedia.currentSource().fileName();
+            m_pmedia.clearQueue();
+            setFile(fileName);
+        }
+        qDebug() << m_pmedia.state();
+    }
 //    cWidget->activateWindow();
 }
 
@@ -840,9 +859,9 @@ void MediaPlayer::playlistShow()
 
 void MediaPlayer::setFile(const QString &fileName)
 {
-    if (model->rowCount() == 0) {
+//    if (model->rowCount() == 0) {
         m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
-    }
+//    }
 }
 
 void MediaPlayer::addFile(QString fileName)
@@ -996,6 +1015,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 void MediaPlayer::currentSourceChanged ( const Phonon::MediaSource & newSource )
 {
 //    sWidget.setCurrentIndex(0);
+
+    int t = 0;
 }
 
 void MediaPlayer::bufferStatus(int percent)
@@ -1015,6 +1036,7 @@ void MediaPlayer::bufferStatus(int percent)
 
 void MediaPlayer::updateInfo()
 {
+//    m_pmedia.stop();
     sWidget.setCurrentIndex(0);
     QString fileName = m_pmedia.currentSource().fileName();
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
