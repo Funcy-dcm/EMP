@@ -41,6 +41,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     setWindowModality(Qt::WindowModal);
     setAttribute(Qt::WA_TranslucentBackground);
     setObjectName("controlWidget");
+//    setFocusPolicy(Qt::StrongFocus);
 
     buttonPanelWidget = new QWidget(this);
     buttonPanelWidget->setObjectName("buttonPanelWidget");
@@ -182,10 +183,12 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 {
     setCursor(Qt::PointingHandCursor);
     if (m_player->isFullScreen()) {
-        if (!m_player->fileMenu->isVisible()) {
+//        if (!m_player->fileMenu->isVisible()) {
+            if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
+            else m_player->cWidget->activateWindow();
             m_player->timerFullScreen.start(5000, m_player);
-            m_player->cWidget->show();
-        }
+
+//        }
     }
 }
 
@@ -316,7 +319,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelWidget->setLayout(buttonPanelLayout);
 
     controlPanel = new QToolBar;
-    controlPanel->setObjectName("controlPanel");
+//    controlPanel->setObjectName("controlPanel");
     controlPanel->setFloatable(false);
     controlPanel->setMovable(false);
     controlPanel->addWidget(buttonPanelWidget);
@@ -343,7 +346,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     playListDoc->setWidget(playListView);
     playListDoc->setMinimumWidth(160);
-    playListDoc->setParent(m_videoWidget);
+//    playListDoc->setParent(m_videoWidget);
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
     playListDoc->hide();
 
@@ -501,8 +504,10 @@ void MediaPlayer::writeSettings()
     }
     m_settings->endGroup();
 
-    m_settings->setValue("GeometryState", saveGeometry());
-    m_settings->setValue("ToolBarsState", saveState());
+    if (!isFullScreen()) {
+        m_settings->setValue("GeometryState", saveGeometry());
+        m_settings->setValue("ToolBarsState", saveState());
+    }
 }
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
@@ -537,7 +542,16 @@ void MediaPlayer::writeSettings()
             }
         }
     }
-    delete m_videoWidget;
+
+    delete controlPanel;
+    qDebug() << "closeEvent(2)";
+    delete playListDoc;
+    qDebug() << "closeEvent(3)";
+//    m_videoWidget->deleteLater();
+//    qDebug() << "closeEvent(4)";
+    delete cWidget;
+    qDebug() << "closeEvent(4)";
+
     writeSettings();
     qDebug() << "closeEventStop";
 }
@@ -556,7 +570,13 @@ void MediaPlayer::writeSettings()
             close();
             return true;
         } else {
-            qDebug() << "QEvent::Close (1)";
+            if (pobj == cWidget) {
+                qDebug() << "QEvent::Close (cWidget)";
+                close();
+                return true;
+            } else {
+                qDebug() << "QEvent::Close (1)";
+            }
         }
     }
 
