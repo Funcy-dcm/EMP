@@ -61,11 +61,12 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     volume->setObjectName("volumeSliderOver");
     volume->setMuteVisible(false);
 
-    volumeLabel = new QLabel(this);
-    volumeIcon = style()->standardPixmap(QStyle::SP_MediaVolume);
-    mutedIcon = style()->standardPixmap(QStyle::SP_MediaVolumeMuted);
-    volumeLabel->setPixmap(volumeIcon);
-    volumeLabel->setCursor(Qt::PointingHandCursor);
+    volumeButton = new QPushButton(this);
+    volumeButton->setObjectName("volumeButton");
+    volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
+    mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
+    volumeButton->setIcon(volumeIcon);
+    volumeButton->setCursor(Qt::PointingHandCursor);
 
     slider->setMediaObject(&player->m_pmedia);
     slider->setCursor(Qt::PointingHandCursor);
@@ -119,7 +120,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     phbxLayout->addWidget(rewindButton);
     phbxLayout->addWidget(forwardButton);
     phbxLayout->addStretch();
-    phbxLayout->addWidget(volumeLabel);
+    phbxLayout->addWidget(volumeButton);
     phbxLayout->addWidget(volume);
 //    phbxLayout->addSpacing(10);
 //    phbxLayout->addWidget(playlistButton);
@@ -153,6 +154,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     connect(rewindButton, SIGNAL(clicked()), m_player, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), m_player, SLOT(forward()));
 //    connect(playlistButton, SIGNAL(clicked()), m_player, SLOT(playlistShow()));
+    connect(volumeButton, SIGNAL(clicked()), m_player, SLOT(setVolumeOnOff()));
 
 
     setMinimumWidth(QApplication::desktop()->availableGeometry().width());
@@ -177,18 +179,21 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
     Phonon::VideoWidget::mousePressEvent(e);
     if (e->button() == Qt::LeftButton) m_player->playPause();
     setCursor(Qt::PointingHandCursor);
+    if (m_player->isFullScreen()) {
+        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
+        else m_player->cWidget->activateWindow();
+        m_player->timerFullScreen.start(5000, m_player);
+    }
 }
 
 void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 {
+    Phonon::VideoWidget::mouseMoveEvent(e);
     setCursor(Qt::PointingHandCursor);
     if (m_player->isFullScreen()) {
-//        if (!m_player->fileMenu->isVisible()) {
-            if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
-            else m_player->cWidget->activateWindow();
-            m_player->timerFullScreen.start(5000, m_player);
-
-//        }
+        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
+        else m_player->cWidget->activateWindow();
+        m_player->timerFullScreen.start(5000, m_player);
     }
 }
 
@@ -235,11 +240,12 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     volume->setCursor(Qt::PointingHandCursor);
     volume->setMuteVisible(false);
 
-    volumeLabel = new QLabel(this);
-    volumeIcon = style()->standardPixmap(QStyle::SP_MediaVolume);
-    mutedIcon = style()->standardPixmap(QStyle::SP_MediaVolumeMuted);
-    volumeLabel->setPixmap(volumeIcon);
-    volumeLabel->setCursor(Qt::PointingHandCursor);
+    volumeButton = new QPushButton(this);
+    volumeButton->setObjectName("volumeButton");
+    volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
+    mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
+    volumeButton->setIcon(volumeIcon);
+    volumeButton->setCursor(Qt::PointingHandCursor);
 
     playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setObjectName("playListDoc");
@@ -295,7 +301,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     phbxLayout->addWidget(forwardButton);
 //    phbxLayout->addSpacing(10);
     phbxLayout->addStretch();
-    phbxLayout->addWidget(volumeLabel);
+    phbxLayout->addWidget(volumeButton);
     phbxLayout->addWidget(volume);
     phbxLayout->addSpacing(10);
     phbxLayout->addWidget(playlistButton);
@@ -319,7 +325,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelWidget->setLayout(buttonPanelLayout);
 
     controlPanel = new QToolBar;
-//    controlPanel->setObjectName("controlPanel");
+    controlPanel->setObjectName("controlPanel");
     controlPanel->setFloatable(false);
     controlPanel->setMovable(false);
     controlPanel->addWidget(buttonPanelWidget);
@@ -414,6 +420,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
+    connect(volumeButton, SIGNAL(clicked()), this, SLOT(setVolumeOnOff()));
 
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(&m_pmedia, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
@@ -438,6 +445,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     Phonon::createPath(&m_pmedia, m_videoWidget);
 
     readSettings();
+    controlPanel->show();
 
     if (!filePath.isEmpty()){
         setFile(filePath);
@@ -454,6 +462,13 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 // ----------------------------------------------------------------------
 /*virtual*/ MediaPlayer::~MediaPlayer()
 {
+    qDebug() << "~controlPanel";
+    delete controlPanel;
+    qDebug() << "~playListDoc";
+    delete playListDoc;
+    qDebug() << "~cWidget";
+    delete cWidget;
+
     qDebug() << "~MediaPlayer";
 }
 
@@ -504,10 +519,10 @@ void MediaPlayer::writeSettings()
     }
     m_settings->endGroup();
 
-    if (!isFullScreen()) {
+//    if (!isFullScreen()) {
         m_settings->setValue("GeometryState", saveGeometry());
         m_settings->setValue("ToolBarsState", saveState());
-    }
+//    }
 }
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
@@ -542,16 +557,7 @@ void MediaPlayer::writeSettings()
             }
         }
     }
-
-    delete controlPanel;
-    qDebug() << "closeEvent(2)";
-    delete playListDoc;
-    qDebug() << "closeEvent(3)";
-//    m_videoWidget->deleteLater();
-//    qDebug() << "closeEvent(4)";
-    delete cWidget;
-    qDebug() << "closeEvent(4)";
-
+    fullScreenAction->setChecked(false);
     writeSettings();
     qDebug() << "closeEventStop";
 }
@@ -596,9 +602,6 @@ void MediaPlayer::writeSettings()
                                               Qt::MidButton, Qt::MidButton, Qt::NoModifier);
                 QApplication::sendEvent(pobj, pe1);
             }
-        }
-        if ((pobj == cWidget->volumeLabel) || (pobj == volumeLabel)) {
-            setVolumeOnOff();
         }
     }
 
@@ -701,12 +704,12 @@ void MediaPlayer::volumeChanged(qreal v)
 void MediaPlayer::setVolumeOnOff () {
     if (m_AudioOutput.isMuted()) {
         m_AudioOutput.setMuted(false);
-        volumeLabel->setPixmap(volumeIcon);
-        cWidget->volumeLabel->setPixmap(cWidget->volumeIcon);
+        volumeButton->setIcon(volumeIcon);
+        cWidget->volumeButton->setIcon(cWidget->volumeIcon);
     } else {
         m_AudioOutput.setMuted(true);
-        volumeLabel->setPixmap(mutedIcon);
-        cWidget->volumeLabel->setPixmap(cWidget->mutedIcon);
+        volumeButton->setIcon(mutedIcon);
+        cWidget->volumeButton->setIcon(cWidget->mutedIcon);
     }
 }
 
@@ -1173,7 +1176,6 @@ void MediaPlayer::setFullScreen(bool enabled)
         if (viewPlaylist) playListDoc->show();
         qApp->processEvents();
         setWindowState(windowState() & ~Qt::WindowFullScreen);
-
     } else {
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();

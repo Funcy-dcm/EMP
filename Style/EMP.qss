@@ -213,6 +213,12 @@ QMenu::separator {
 	background-color: #000000;
 }
 
+#volumeButton {
+	min-width: 24px;
+	background: none;
+	border: none;
+}
+
 /*
 #pcmdPlay {
 		image: url(:/Project1.png);

@@ -45,8 +45,8 @@ public:
     ControlWidget(MediaPlayer *player, QWidget * parent = 0);
     QIcon playIcon;
     QIcon pauseIcon;
-    QPixmap volumeIcon;
-    QPixmap mutedIcon;
+    QIcon volumeIcon;
+    QIcon mutedIcon;
     QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
@@ -56,7 +56,7 @@ public:
     Phonon::SeekSlider *slider;
     QLabel *statusLabel;
     QLabel *timeLabel;
-    QLabel *volumeLabel;
+    QPushButton *volumeButton;
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
 private:
@@ -162,8 +162,8 @@ private:
 
     QIcon playIcon;
     QIcon pauseIcon;
-    QPixmap volumeIcon;
-    QPixmap mutedIcon;
+    QIcon volumeIcon;
+    QIcon mutedIcon;
     QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
@@ -173,7 +173,7 @@ private:
     Phonon::SeekSlider *slider;
     QLabel *statusLabel;
     QLabel *timeLabel;
-    QLabel *volumeLabel;
+    QPushButton *volumeButton;
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
 
