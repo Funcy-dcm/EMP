@@ -13,6 +13,7 @@
         <file>Res/Open.png</file>
         <file>res/Playlist.png</file>
         <file>res/Playlist1.png</file>
-        <file>res/Logo.png</file>
+        <file>res/Logo2.png</file>
+        <file>res/Logo3.png</file>
     </qresource>
 </RCC>

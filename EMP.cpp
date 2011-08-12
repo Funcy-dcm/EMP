@@ -440,8 +440,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
         setFile(filePath);
         addFile(filePath);
     }
+    setWindowState(Qt::WindowNoState);
     resize(minimumSizeHint());
-
     moveWindowToCenter();
 
     qApp->installEventFilter( this );
@@ -641,6 +641,9 @@ void MediaPlayer::writeSettings()
             emit signalWindowNormal();
             return true;
         }
+        if ((newState == Qt::WindowMaximized) && (oldState == Qt::WindowNoState)){
+            nGeometryWindows = normalGeometry();
+        }
     }
 
     return false;
@@ -704,7 +707,7 @@ void MediaPlayer::initVideoWindow()
     logoLabel->setObjectName("logoLabel");
     logoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     QPixmap pix;
-    pix.load(":/res/Logo.png");
+    pix.load(":/res/Logo3.png");
     logoLabel->setPixmap(pix);
 
     sWidget.setMinimumSize(250, 200);
@@ -1152,7 +1155,6 @@ void MediaPlayer::setFullScreen(bool enabled)
         setWindowState(windowState() & ~Qt::WindowFullScreen);
 
     } else {
-        nGeometryWindows = normalGeometry();
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();
         playListDoc->hide();
