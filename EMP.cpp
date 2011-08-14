@@ -730,10 +730,10 @@ void MediaPlayer::initVideoWindow()
     logoLabel->setObjectName("logoLabel");
     logoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     QPixmap pix;
-    pix.load(":/res/Logo3.png");
+    pix.load(":/res/Logo7.png");
     logoLabel->setPixmap(pix);
 
-    sWidget.setMinimumSize(250, 200);
+    sWidget.setMinimumSize(250, 250);
     sWidget.setContentsMargins(0, 0, 0, 0);
     sWidget.addWidget(m_videoWidget);
     sWidget.addWidget(logoLabel);
@@ -937,7 +937,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
-        sWidget.setCurrentIndex(2);
+        sWidget.setCurrentIndex(1);
         QPoint posCOld = frameGeometry().center();
         if (m_pmedia.hasVideo()){
             qDebug() << "processEvents";
@@ -1001,8 +1001,12 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
         }
         m_pmedia.play();
+        if (m_pmedia.hasVideo()) {
+            sWidget.setCurrentIndex(0);
+            sWidget.setCurrentIndex(1);
+        }
     }
-
+    int t1 = 0;
     switch (newstate) {
         case Phonon::ErrorState:
             QMessageBox::warning(this, "EMP", m_pmedia.errorString(), QMessageBox::Close);
@@ -1017,6 +1021,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             break;
         case Phonon::StoppedState:
 //            sWidget.setCurrentIndex(1);
+            t1 = 1;
         case Phonon::PausedState:
             playButton->setIcon(cWidget->playIcon);
             playButton->setToolTip(tr("Play"));
@@ -1038,8 +1043,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
             break;
         case Phonon::PlayingState:  
-            qDebug() << "PlayingState";
-            qDebug() << oldstate;
+        qDebug() << "PlayingState" << ", OldState:" << oldstate;
+//            qDebug() << ;
             if (oldstate == Phonon::StoppedState) {
                 if (m_pmedia.hasVideo()) sWidget.setCurrentIndex(0);
                 else sWidget.setCurrentIndex(1);
@@ -1064,6 +1069,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 void MediaPlayer::currentSourceChanged ( const Phonon::MediaSource & newSource )
 {
 //    sWidget.setCurrentIndex(0);
+    int t = 0;
+    t = 0;
 }
 
 void MediaPlayer::bufferStatus(int percent)
@@ -1084,7 +1091,9 @@ void MediaPlayer::bufferStatus(int percent)
 void MediaPlayer::updateInfo()
 {
 //    m_pmedia.stop();
-    sWidget.setCurrentIndex(0);
+//    sWidget.setCurrentIndex(0);
+    qDebug() << m_pmedia.state();
+
     QString fileName = m_pmedia.currentSource().fileName();
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
     fileName = fileName.left(fileName.lastIndexOf('.'));
@@ -1186,7 +1195,7 @@ void MediaPlayer::setFullScreen(bool enabled)
         timerFullScreen.start(3000, this);
     }
     sWidget.setCurrentIndex(0);
-//    setFocus();
+    setFocus();
 }
 
 void MediaPlayer::hasVideoChanged(bool bHasVideo)
