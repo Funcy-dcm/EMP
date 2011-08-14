@@ -110,6 +110,7 @@ public:
     ControlWidget *cWidget;
     QRect nGeometryWindows;
     QBasicTimer timerFullScreen;
+    int curPlayList;
 
 public slots:
     void moveWindowToCenter();
@@ -125,12 +126,14 @@ public slots:
     void aspectChanged(QAction *);
     void setVolumeOnOff();
     void setFullScreen(bool);
+    void playListDoubleClicked(QModelIndex);
 
 private slots:
     void currentSourceChanged ( const Phonon::MediaSource & newSource );
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
     void volumeChanged(qreal);
     void hasVideoChanged(bool);
+    void finished();
     void bufferStatus(int percent);
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
