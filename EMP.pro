@@ -2,7 +2,8 @@
 TEMPLATE     = app
 HEADERS	     = EMP.h
 SOURCES	     = EMP.cpp main.cpp
-QT           += phonon
+QT           += phonon\
+                network
 win32:TARGET = ../EMP
 
 RESOURCES += \

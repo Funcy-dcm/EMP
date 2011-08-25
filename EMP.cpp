@@ -8,6 +8,7 @@
 */
 
 #include <QtGui>
+#include <QtNetwork>
 #include "EMP.h"
 
 MWidget::MWidget(QWidget *p) : QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
@@ -211,7 +212,8 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
     m_AudioOutput(Phonon::VideoCategory),
-    m_videoWidget(new MediaVideoWidget(this))
+    m_videoWidget(new MediaVideoWidget(this)),
+    m_nNextBlockSize(0)
 {
     setWindowTitle("EMP");
 
@@ -459,6 +461,20 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 
     qApp->installEventFilter( this );
     activateWindow();
+
+    m_ptcpServer = new QTcpServer(this);
+    if (!m_ptcpServer->listen(QHostAddress::Any, 13551)) {
+        QMessageBox::critical(0,
+                              "Server Error",
+                              "Unable to start the server:"
+                              + m_ptcpServer->errorString()
+                             );
+        m_ptcpServer->close();
+    } else {
+        connect(m_ptcpServer, SIGNAL(newConnection()),
+                this,         SLOT(slotNewConnection())
+               );
+    }
 
     curPlayList = 0;
 }
@@ -1320,4 +1336,69 @@ void MediaPlayer::aspectChanged(QAction *act)
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatio4_3);
     else
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioAuto);
+}
+
+// ----------------------------------------------------------------------
+/*virtual*/ void MediaPlayer::slotNewConnection()
+{
+    QTcpSocket* pClientSocket = m_ptcpServer->nextPendingConnection();
+    connect(pClientSocket, SIGNAL(disconnected()),
+            pClientSocket, SLOT(deleteLater())
+           );
+    connect(pClientSocket, SIGNAL(readyRead()),
+            this,          SLOT(slotReadClient())
+           );
+
+    sendToClient(pClientSocket, "*OK", NULL);
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::slotReadClient()
+{
+    QString str;
+    QTcpSocket* pClientSocket = (QTcpSocket*)sender();
+    QDataStream in(pClientSocket);
+    for (;;) {
+        if (!m_nNextBlockSize) {
+            if (pClientSocket->bytesAvailable() < sizeof(quint16)) {
+                break;
+            }
+            in >> m_nNextBlockSize;
+        }
+
+        if (pClientSocket->bytesAvailable() < m_nNextBlockSize) {
+            break;
+        }
+
+        QString cmd;
+        char *str1;
+        in >> str1;
+        cmd.sprintf("%s", str1);
+
+        m_nNextBlockSize = 0;
+
+        if (cmd == "Name") {
+            QString fileName = m_pmedia.currentSource().fileName();
+            fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
+            fileName = fileName.left(fileName.lastIndexOf('.'));
+            str = fileName;
+        }
+
+        sendToClient(pClientSocket, cmd, str);
+    }
+}
+
+// ----------------------------------------------------------------------
+void MediaPlayer::sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str)
+{
+    QByteArray  arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+    out << quint16(0);
+    out << cmd.toAscii();
+    if (str.size() > 0) out << str.toAscii();
+
+    out.device()->seek(0);
+    out << quint16(arrBlock.size() - sizeof(quint16));
+
+    pSocket->write(arrBlock);
 }

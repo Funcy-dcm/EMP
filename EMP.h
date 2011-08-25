@@ -11,10 +11,10 @@
 #define _MediaPlayer_h_
 
 #include <QtGui>
-//#include <QStandardItemModel>
-//#include <QSettings>
-
 #include <phonon>
+
+class QTcpServer;
+class QTcpSocket;
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -128,6 +128,9 @@ public slots:
     void setFullScreen(bool);
     void playListDoubleClicked(QModelIndex);
 
+    virtual void slotNewConnection();
+            void slotReadClient   ();
+
 private slots:
     void currentSourceChanged ( const Phonon::MediaSource & newSource );
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
@@ -137,6 +140,7 @@ private slots:
     void bufferStatus(int percent);
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
+    void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
 
 protected:
     virtual void closeEvent(QCloseEvent*);
@@ -179,6 +183,9 @@ private:
     QPushButton *volumeButton;
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
+
+    QTcpServer* m_ptcpServer;
+    quint16     m_nNextBlockSize;
 
 signals:
     void signalWindowNormal();
