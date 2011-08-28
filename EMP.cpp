@@ -1378,10 +1378,7 @@ void MediaPlayer::slotReadClient()
         m_nNextBlockSize = 0;
 
         if (cmd == "Name") {
-            QString fileName = m_pmedia.currentSource().fileName();
-            fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
-            fileName = fileName.left(fileName.lastIndexOf('.'));
-            str = fileName;
+            str = m_pmedia.currentSource().fileName();
         }
 
         sendToClient(pClientSocket, cmd, str);
@@ -1395,7 +1392,14 @@ void MediaPlayer::sendToClient(QTcpSocket* pSocket, const QString& cmd, const QS
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out << quint16(0);
     out << cmd.toAscii();
-    if (str.size() > 0) out << str.toAscii();
+    if (str.size() > 0) {
+        QString fileName = str;
+        fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
+        fileName = fileName.left(fileName.lastIndexOf('.'));
+        out << fileName;
+        out << quint64(m_pmedia.currentTime());
+        out << quint64(m_pmedia.totalTime());
+    }
 
     out.device()->seek(0);
     out << quint16(arrBlock.size() - sizeof(quint16));
