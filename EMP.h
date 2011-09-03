@@ -197,6 +197,7 @@ private:
     QPushButton *volumeButton;
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
+    bool fullScreenOn;
 
     QTcpServer* m_ptcpServer;
     quint16     m_nNextBlockSize;

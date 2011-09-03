@@ -527,6 +527,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
         setFile(filePath);
         addFile(filePath);
     }
+    fullScreenOn = false;
     setWindowState(Qt::WindowNoState);
     resize(minimumSizeHint());
     moveWindowToCenter();
@@ -752,7 +753,7 @@ void MediaPlayer::writeSettings()
     if(pe->type() == QEvent::WindowStateChange) {
         int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
         int newState = windowState();
-        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState)){
+        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState) && !fullScreenOn){
             pe->ignore();
             emit signalWindowNormal();
             return true;
@@ -1361,13 +1362,17 @@ void MediaPlayer::setFullScreen(bool enabled)
         controlPanel->show();
         if (viewPlaylist) playListDoc->show();
         qApp->processEvents();
+        fullScreenOn = true;
         setWindowState(windowState() & ~Qt::WindowFullScreen);
+        fullScreenOn = false;
     } else {
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();
         playListDoc->hide();
         qApp->processEvents();
+        fullScreenOn = true;
         setWindowState(windowState() ^ Qt::WindowFullScreen);
+        fullScreenOn = false;
         cWidget->show();
         timerFullScreen.start(3000, this);
     }
