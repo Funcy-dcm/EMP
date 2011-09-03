@@ -195,9 +195,13 @@ QMenu::separator {
 }
 
 #mLabel {
+	border: 8px solid #404040;
+	border-radius: 20px;
 	color: #FFFFFF;
-	font: bold 18px "Arial";
-	background-color: rgba(0, 0, 0, 100);
+	font: bold 44px "Arial";
+	background-color: rgba(32, 32, 32, 100);
+	padding: 10px;
+
 }
 
 #buttonPanelWidget {

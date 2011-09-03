@@ -11,38 +11,98 @@
 #include <QtNetwork>
 #include "EMP.h"
 
-MWidget::MWidget(QWidget *p) : QWidget(p,  Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+MWidget::MWidget(MediaPlayer *player, QWidget *p) :
+    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint),
+    m_player(player)
 {
-    setWindowModality(Qt::WindowModal);
+//    setWindowModality(Qt::WindowModal);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setFocusPolicy(Qt::NoFocus);
 
 //    setWindowOpacity(0.3);
 
     mLabel = new QLabel(this);
     mLabel->setObjectName("mLabel");
-    mLabel->setMinimumHeight(40);
     mLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-//    mLabel->setAttribute(Qt::WA_TranslucentBackground);
-    mLabel->setText("Test");
+    mLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    mLabel->setMinimumWidth(100);
+
+    QAction *showLocalTime = new QAction(this);
+    showLocalTime->setShortcut(QKeySequence( Qt::Key_T ));
+    showLocalTime->setShortcutContext(Qt::ApplicationShortcut);
+    connect(showLocalTime, SIGNAL(triggered()), this, SLOT(slotShowLocalTime()));
+    m_player->addAction(showLocalTime);
+
+    QAction *showEndTime = new QAction(this);
+    showEndTime->setShortcut(QKeySequence( Qt::Key_E ));
+    showEndTime->setShortcutContext(Qt::ApplicationShortcut);
+    connect(showEndTime, SIGNAL(triggered()), this, SLOT(slotShowEndTime()));
+    m_player->addAction(showEndTime);
+
     QVBoxLayout* pvbxLayout = new QVBoxLayout(this);
     pvbxLayout->setContentsMargins(0, 0, 0, 0);
-    pvbxLayout->addSpacing(15);
     pvbxLayout->addWidget(mLabel);
-    pvbxLayout->addStretch(1);
+    setLayout(pvbxLayout);
 
-//    setAttribute(Qt::WA_NoSystemBackground);
-    setAttribute(Qt::WA_TranslucentBackground);
+    mLabel->setText("EMP");
+}
 
-    setGeometry(0 , 0, QApplication::desktop()->geometry().width(), QApplication::desktop()->geometry().height());
+void MWidget::showWidget(QString str)
+{
+    hide();
+    mLabel->setText(str);
+
+    QPoint pos;
+    show();
+    pos.setX(m_player->geometry().x() + m_player->width() - width() - 25);
+    pos.setY(m_player->geometry().y() + 25);
+    move(pos);
+
+    timerShowWidget.start(5000, this);
+}
+
+void MWidget::timerEvent(QTimerEvent *pe)
+{
+    if (pe->timerId() == timerShowWidget.timerId()) {
+        timerShowWidget.stop();
+        hide();
+    }
+}
+
+void MWidget::slotShowLocalTime()
+{
+    QString str = QDateTime::currentDateTime().toString("h:mm");
+    showWidget(str);
+}
+
+void MWidget::slotShowEndTime()
+{
+    long len = m_player->m_pmedia.totalTime();
+    long pos = m_player->m_pmedia.currentTime();
+    QString timeString = " ";
+    if (pos || len)
+    {
+        long nPos = len - pos;
+        int sec = nPos/1000;
+        int min = sec/60;
+        int hour = min/60;
+        int msec = nPos;
+        QTime nPlayTime(hour%60, min%60, sec%60, msec%1000);
+        QString timeFormat = "m:ss";
+        if (hour > 0)
+            timeFormat = "h:mm:ss";
+        if (len) timeString = nPlayTime.toString(timeFormat);
+    }
+    showWidget(timeString);
 }
 
 ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
-    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint /*| Qt::WindowStaysOnTopHint*/),
+    QWidget(p,  Qt::Tool | Qt::FramelessWindowHint),
     m_player(player)
 {
-    setWindowModality(Qt::WindowModal);
+//    setWindowModality(Qt::WindowModal);
     setAttribute(Qt::WA_TranslucentBackground);
     setObjectName("controlWidget");
-//    setFocusPolicy(Qt::StrongFocus);
 
     buttonPanelWidget = new QWidget(this);
     buttonPanelWidget->setObjectName("buttonPanelWidget");
@@ -169,6 +229,14 @@ MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
     setAcceptDrops(true);
 }
 
+void MediaVideoWidget::timerEvent(QTimerEvent *pe)
+{
+    if (pe->timerId() == timerMouseSClick.timerId()) {
+        timerMouseSClick.stop();
+        m_player->playPause();
+    }
+}
+
 void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mouseDoubleClickEvent(e);
@@ -178,11 +246,14 @@ void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mousePressEvent(e);
-    if (e->button() == Qt::LeftButton) m_player->playPause();
+    if (e->button() == Qt::LeftButton) {
+        if (timerMouseSClick.isActive()) timerMouseSClick.stop();
+        else timerMouseSClick.start(501, this);
+    }
     setCursor(Qt::PointingHandCursor);
     if (m_player->isFullScreen()) {
-        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
-        else m_player->cWidget->activateWindow();
+//        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
+//        else m_player->cWidget->activateWindow();
         m_player->timerFullScreen.start(5000, m_player);
     }
 }
@@ -213,6 +284,7 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
 MediaPlayer::MediaPlayer(const QString &filePath) :
     m_AudioOutput(Phonon::VideoCategory),
     m_videoWidget(new MediaVideoWidget(this)),
+    mLabel(new MWidget(this, this)),
     m_nNextBlockSize(0)
 {
     setWindowTitle("EMP");
@@ -220,7 +292,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    cWidget = new ControlWidget(this);
+    cWidget = new ControlWidget(this, this);
 
     QWidget *wgt = new QWidget;
 
@@ -477,6 +549,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     }
 
     curPlayList = 0;
+    timerOffScreenSaver.start(1000, this);
 }
 
 // ----------------------------------------------------------------------
@@ -667,8 +740,8 @@ void MediaPlayer::writeSettings()
                 }
                 if (keyOk) {
                     if (isFullScreen()) {
-                        cWidget->show();
-                        timerFullScreen.start(5000, this);
+                        //cWidget->show();
+                        //timerFullScreen.start(5000, this);
                     }
                     return true;
                 }
@@ -705,7 +778,40 @@ void MediaPlayer::timerEvent(QTimerEvent *pe)
         qDebug() << "timerFullScreen";
         timerFullScreen.stop();
     }
+    if (pe->timerId() == timerOffScreenSaver.timerId()) {
+
+//        activateWindow();
+//        QPoint pos = cursor().pos();
+//        cursor().setPos(pos.x()+10,pos.y()+10);
+//        cursor().setPos(pos);
+//        QCursor cur = cursor();
+//        setCursor(Qt::BlankCursor);
+//        setCursor(cur);
+//        update();
+
+
+    }
     QWidget::timerEvent(pe);
+}
+
+/*virtual*/ void MediaPlayer::resizeEvent(QResizeEvent* pe)
+{
+    if (mLabel->isVisible()) {
+        QPoint pos;
+        pos.setX(geometry().x() + width() - mLabel->width() - 25);
+        pos.setY(geometry().y() + 25);
+        mLabel->move(pos);
+    }
+}
+
+/*virtual*/ void MediaPlayer::moveEvent(QMoveEvent* pe)
+{
+    if (mLabel->isVisible()) {
+        QPoint pos;
+        pos.setX(geometry().x() + width() - mLabel->width() - 25);
+        pos.setY(geometry().y() + 25);
+        mLabel->move(pos);
+    }
 }
 
 void MediaPlayer::slotWindowNormal()
@@ -717,6 +823,7 @@ void MediaPlayer::volumeChanged(qreal v)
 {
     QString vol = tr("Volume") + " [" + QString::number(qreal(v*100.0f)) + "%]";
     statusLabel->setText(vol);
+    if (isFullScreen()) mLabel->showWidget(vol);
     cWidget->statusLabel->setText(vol);
     timerUpdateInfo.start(5000, this);
 }
@@ -753,12 +860,20 @@ void MediaPlayer::initVideoWindow()
     pix.load(":/res/Logo7.png");
     logoLabel->setPixmap(pix);
 
-    sWidget.setMinimumSize(250, 250);
+    sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
     sWidget.addWidget(m_videoWidget);
     sWidget.addWidget(logoLabel);
     sWidget.addWidget(blackWidget);
     sWidget.setCurrentIndex(1);
+//
+    m_videoWidget->setAttribute(Qt::WA_OpaquePaintEvent);
+    m_videoWidget->setAttribute(Qt::WA_PaintOnScreen);
+    m_videoWidget->setAttribute(Qt::WA_NoSystemBackground);
+    QPalette p = palette();
+    p.setColor(backgroundRole(), Qt::black);
+    m_videoWidget->setPalette(p);
+//
 }
 
 // ----------------------------------------------------------------------
@@ -865,12 +980,14 @@ void MediaPlayer::playPause()
         qDebug() << "playPause(1)";
         m_pmedia.pause();
         playPauseAction->setChecked(true);
+        if (isFullScreen()) mLabel->showWidget(tr("Pause"));
     } else if (m_pmedia.state() == Phonon::PausedState) {
         qDebug() << "playPause(2)";
         if (m_pmedia.currentTime() == m_pmedia.totalTime())
             m_pmedia.seek(0);
         m_pmedia.play();
         playPauseAction->setChecked(true);
+        if (isFullScreen()) mLabel->showWidget(tr("Play"));
     } else {
         qDebug() << "playPause(3)";
         if (m_pmedia.state() == Phonon::StoppedState) {
@@ -1239,6 +1356,7 @@ void MediaPlayer::setFullScreen(bool enabled)
     timerFullScreen.stop();
     sWidget.setCurrentIndex(2);
     if (!enabled){
+        mLabel->hide();
         cWidget->hide();
         controlPanel->show();
         if (viewPlaylist) playListDoc->show();

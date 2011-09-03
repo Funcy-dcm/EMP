@@ -33,8 +33,18 @@ class MWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MWidget(QWidget * parent = 0);
+    MWidget(MediaPlayer *player, QWidget * parent = 0);
     QLabel *mLabel;
+public slots:
+    void slotShowLocalTime();
+    void slotShowEndTime();
+    void showWidget(QString);
+
+protected:
+    void timerEvent(QTimerEvent *);
+private:
+    MediaPlayer *m_player;
+    QBasicTimer timerShowWidget;
 
 };
 
@@ -77,9 +87,11 @@ protected:
     void mouseMoveEvent(QMouseEvent *e);
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
+    void timerEvent(QTimerEvent *);
 
 private:
     MediaPlayer *m_player;
+    QBasicTimer timerMouseSClick;
 
 };
 
@@ -147,6 +159,8 @@ protected:
     virtual void showEvent(QShowEvent*);
     bool eventFilter(QObject*, QEvent*);
     void timerEvent(QTimerEvent *pe);
+    virtual void resizeEvent(QResizeEvent*);
+    virtual void moveEvent(QMoveEvent*);
 
 private:
     QString lang;
@@ -161,11 +175,11 @@ private:
 //    QWidget m_videoWindow;
     MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
+    MWidget *mLabel;
 
     QBasicTimer timerUpdateInfo;
     QBasicTimer timerSetCursor;
-
-//    MWidget mWidget;
+    QBasicTimer timerOffScreenSaver;
 
     QIcon playIcon;
     QIcon pauseIcon;
