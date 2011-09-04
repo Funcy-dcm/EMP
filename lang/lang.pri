@@ -9,7 +9,7 @@ isEmpty(QMAKE_LRELEASE) {
 }
 
 updateqm.input = TRANSLATIONS
-updateqm.output = lang/${QMAKE_FILE_BASE}.qm
-updateqm.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN} -qm lang/${QMAKE_FILE_BASE}.qm
+updateqm.output = build/target/lang/${QMAKE_FILE_BASE}.qm
+updateqm.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN} -qm build/target/lang/${QMAKE_FILE_BASE}.qm
 updateqm.CONFIG += no_link target_predeps
 QMAKE_EXTRA_COMPILERS += updateqm

@@ -140,8 +140,11 @@ public slots:
     void setFullScreen(bool);
     void playListDoubleClicked(QModelIndex);
 
+    void receiveMessage(const QString&);
+
     virtual void slotNewConnection();
             void slotReadClient   ();
+
 
 private slots:
     void currentSourceChanged ( const Phonon::MediaSource & newSource );

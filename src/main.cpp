@@ -8,6 +8,7 @@
 */
 
 #include <QtGui>
+#include "qtsingleapplication/qtsingleapplication.h"
 #include "EMP.h"
 
 void LoadLang (QString &lang){
@@ -25,7 +26,11 @@ int main(int argc, char** argv)
 {
     Q_INIT_RESOURCE(EMP);
 
-    QApplication app(argc, argv);
+    QtSingleApplication app(argc, argv);
+    if (app.isRunning()) {
+        app.sendMessage(app.arguments().value(1));
+        return 0;
+    }
     app.setApplicationName("EMP");
     app.setQuitOnLastWindowClosed(true);
 
@@ -34,19 +39,21 @@ int main(int argc, char** argv)
     QFile file(fileString);
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());
-    qApp->setStyleSheet(strCSS);
+    app.setStyleSheet(strCSS);
 
     QString lang;
     LoadLang(lang);
     QTranslator translator;
-    translator.load(lang, qApp->applicationDirPath() + QString("/lang"));
-    qApp->installTranslator(&translator);
+    translator.load(lang, app.applicationDirPath() + QString("/lang"));
+    app.installTranslator(&translator);
 
     fileString = app.arguments().value(1);
     MediaPlayer  mediaPlayer(fileString);
 
-    mediaPlayer.show();
+    app.setActivationWindow(&mediaPlayer, true);
+    QObject::connect(&app, SIGNAL(messageReceived(const QString&)), &mediaPlayer, SLOT(receiveMessage(const QString&)));
 
+    mediaPlayer.show();
     return app.exec();
 }
 

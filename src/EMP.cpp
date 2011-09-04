@@ -279,6 +279,26 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
         e->acceptProposedAction();
 }
 
+void MediaPlayer::receiveMessage(const QString& message)
+{
+    qDebug() << QString("Received message: %1").arg(message);
+    if (!message.isEmpty()){
+        activateWindow();
+        m_pmedia.clearQueue();
+
+        model->clear();
+        model->setColumnCount(4);
+        playListView->setColumnHidden(0, true);
+        playListView->setColumnHidden(3, true);
+        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+
+        curPlayList = 0;
+        setFile(message);
+        addFile(message);
+    }
+}
 
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath) :
@@ -882,8 +902,18 @@ void MediaPlayer::openFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this);
     if (fileNames.size() > 0) {
+
         m_pmedia.clearQueue();
-//        model->clear();
+
+        model->clear();
+        model->setColumnCount(4);
+        playListView->setColumnHidden(0, true);
+        playListView->setColumnHidden(3, true);
+        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+
+        curPlayList = 0;
         QString fileName = fileNames[0];
         setFile(fileName);
         addFile(fileName);
