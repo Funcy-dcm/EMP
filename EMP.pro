@@ -8,7 +8,8 @@ HEADERS	     = \
     src/EMP.h \
     src/qtsingleapplication/qtsingleapplication.h \
     src/qtsingleapplication/qtlockedfile.h \
-    src/qtsingleapplication/qtlocalpeer.h
+    src/qtsingleapplication/qtlocalpeer.h \
+    src/ScreenSaver.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -16,7 +17,8 @@ SOURCES	     = \
     src/qtsingleapplication/qtlockedfile_win.cpp \
     src/qtsingleapplication/qtlockedfile_unix.cpp \
     src/qtsingleapplication/qtlockedfile.cpp \
-    src/qtsingleapplication/qtlocalpeer.cpp
+    src/qtsingleapplication/qtlocalpeer.cpp \
+    src/ScreenSaver.cpp
 
 RESOURCES += \
     EMP.qrc
@@ -30,3 +32,5 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
+
+

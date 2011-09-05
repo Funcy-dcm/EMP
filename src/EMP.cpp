@@ -10,6 +10,7 @@
 #include <QtGui>
 #include <QtNetwork>
 #include "EMP.h"
+#include "ScreenSaver.h"
 
 MWidget::MWidget(MediaPlayer *player, QWidget *p) :
     QWidget(p,  Qt::Tool | Qt::FramelessWindowHint),
@@ -1078,17 +1079,17 @@ void MediaPlayer::addFile(QString fileName)
         model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
     }
 
-    long len = 0;
-    QString timeString;
-    int sec = len/1000;
-    int min = sec/60;
-    int hour = min/60;
-    int msec = len;
-    QTime mTime(hour%60, min%60, sec%60, msec%1000);
-    QString timeFormat = "h:mm:ss";
-    timeString = mTime.toString(timeFormat);
+//    long len = 0;
+//    QString timeString;
+//    int sec = len/1000;
+//    int min = sec/60;
+//    int hour = min/60;
+//    int msec = len;
+//    QTime mTime(hour%60, min%60, sec%60, msec%1000);
+//    QString timeFormat = "h:mm:ss";
+//    timeString = mTime.toString(timeFormat);
     index = model->index(row, 2);                           // 2
-    model->setData(index, timeString);
+//    model->setData(index, timeString);
     if (row == 0) {
         model->setData(index, Qt::white, Qt::TextColorRole);
         model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
@@ -1151,7 +1152,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
 
         } else if (!isFullScreen()) {
-
             resize(minimumSize());
             QSize frame = frameSize();
             QRect hintRect = QRect(QPoint(0, 0), frame);
@@ -1208,10 +1208,11 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             if (m_pmedia.currentTime() == m_pmedia.totalTime()) {
 //                fullScreenAction->setChecked(false);
             }
+            //Restore screensaver
+            ScreenSaver::restore();
             break;
         case Phonon::PlayingState:  
-        qDebug() << "PlayingState" << ", OldState:" << oldstate;
-//            qDebug() << ;
+            qDebug() << "PlayingState" << ", OldState:" << oldstate;
             if (oldstate == Phonon::StoppedState) {
                 if (m_pmedia.hasVideo()) sWidget.setCurrentIndex(0);
                 else sWidget.setCurrentIndex(1);
@@ -1222,6 +1223,13 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             cWidget->playButton->setEnabled(true);
             cWidget->playButton->setIcon(cWidget->pauseIcon);
             cWidget->playButton->setToolTip(tr("Pause"));
+            if (m_pmedia.hasVideo()) {
+                //Disable screensaver
+                ScreenSaver::disable();
+            } else {
+                //Restore screensaver
+                ScreenSaver::restore();
+            }
         case Phonon::BufferingState:
             rewindButton->setEnabled(true);
             cWidget->rewindButton->setEnabled(true);
@@ -1274,6 +1282,18 @@ void MediaPlayer::updateInfo()
     int row = model->rowCount();
     forwardButton->setEnabled(curPlayList < row-1);
     cWidget->forwardButton->setEnabled(curPlayList < row-1);
+
+    long len = m_pmedia.totalTime();
+    QString timeString;
+    int sec = len/1000;
+    int min = sec/60;
+    int hour = min/60;
+    int msec = len;
+    QTime mTime(hour%60, min%60, sec%60, msec%1000);
+    QString timeFormat = "h:mm:ss";
+    timeString = mTime.toString(timeFormat);
+    QModelIndex index = model->index(curPlayList, 2); // 2
+    model->setData(index, timeString);
 }
 
 void MediaPlayer::updateTime()
