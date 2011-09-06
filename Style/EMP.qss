@@ -195,7 +195,7 @@ QMenu::separator {
 }
 
 #mLabel {
-	border: 8px solid #404040;
+	border: 6px solid #404040;
 	border-radius: 20px;
 	color: #FFFFFF;
 	font: bold 44px "Arial";

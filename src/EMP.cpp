@@ -56,6 +56,7 @@ void MWidget::showWidget(QString str)
     QPoint pos;
     show();
     pos.setX(m_player->geometry().x() + m_player->width() - width() - 25);
+    if (m_player->playListDoc->isVisible()) pos.setX(pos.x() - m_player->playListDoc->width());
     pos.setY(m_player->geometry().y() + 25);
     move(pos);
 
@@ -153,6 +154,7 @@ ControlWidget::ControlWidget(MediaPlayer *player, QWidget *p) :
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
 //    playlistButton->setToolTip(tr("Playlist (show/hide)"));
+    volumeButton->setToolTip(tr("Mute"));
 
     openButton->setFocusPolicy(Qt::NoFocus);
     playButton->setFocusPolicy(Qt::NoFocus);
@@ -249,8 +251,8 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mousePressEvent(e);
     if (e->button() == Qt::LeftButton) {
-        if (timerMouseSClick->isActive()) timerMouseSClick->stop();
-        else timerMouseSClick->start(501, this);
+//        if (timerMouseSClick->isActive()) timerMouseSClick->stop();
+//        else timerMouseSClick->start(501, this);
     }
     setCursor(Qt::PointingHandCursor);
     if (m_player->isFullScreen()) {
@@ -371,6 +373,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
     playlistButton->setToolTip(tr("Playlist (show/hide)"));
+    volumeButton->setToolTip(tr("Mute"));
 
     openButton->setFocusPolicy(Qt::NoFocus);
     playButton->setFocusPolicy(Qt::NoFocus);
@@ -817,6 +820,7 @@ void MediaPlayer::timerEvent(QTimerEvent *pe)
     if (mLabel->isVisible()) {
         QPoint pos;
         pos.setX(geometry().x() + width() - mLabel->width() - 25);
+        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
         pos.setY(geometry().y() + 25);
         mLabel->move(pos);
     }
@@ -827,6 +831,7 @@ void MediaPlayer::timerEvent(QTimerEvent *pe)
     if (mLabel->isVisible()) {
         QPoint pos;
         pos.setX(geometry().x() + width() - mLabel->width() - 25);
+        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
         pos.setY(geometry().y() + 25);
         mLabel->move(pos);
     }
@@ -1046,6 +1051,13 @@ void MediaPlayer::playlistShow()
         playListDoc->hide();
     } else {
         playListDoc->show();
+    }
+    if (mLabel->isVisible()) {
+        QPoint pos;
+        pos.setX(geometry().x() + width() - mLabel->width() - 25);
+        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
+        pos.setY(geometry().y() + 25);
+        mLabel->move(pos);
     }
 }
 
