@@ -544,7 +544,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
     connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
 
-    m_pmedia.setTickInterval(100);
+    m_pmedia.setTickInterval(200);
 
     playButton->setEnabled(false);
     rewindButton->setEnabled(false);
