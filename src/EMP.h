@@ -91,7 +91,7 @@ protected:
 
 private:
     MediaPlayer *m_player;
-    QBasicTimer timerMouseSClick;
+    QBasicTimer *timerMouseSClick;
 
 };
 
@@ -121,7 +121,7 @@ public:
     QAction *playPauseAction;
     ControlWidget *cWidget;
     QRect nGeometryWindows;
-    QBasicTimer timerFullScreen;
+    QBasicTimer *timerFullScreen;
     int curPlayList;
 
 public slots:
@@ -180,9 +180,7 @@ private:
     Phonon::Path m_audioOutputPath;
     MWidget *mLabel;
 
-    QBasicTimer timerUpdateInfo;
-    QBasicTimer timerSetCursor;
-    QBasicTimer timerOffScreenSaver;
+    QBasicTimer *timerUpdateInfo;
 
     QIcon playIcon;
     QIcon pauseIcon;
