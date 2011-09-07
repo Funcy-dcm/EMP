@@ -277,7 +277,7 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 
 void MediaVideoWidget::dropEvent(QDropEvent *e)
 {
-//    m_player->handleDrop(e);
+    m_player->handleDrop(e);
 }
 
 void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
@@ -776,14 +776,27 @@ void MediaPlayer::writeSettings()
                 } else if (((QKeyEvent*)pe)->key() == Qt::Key_Delete) {
                     if (playListView->selectionModel()->hasSelection()) {
                         int count = playListView->selectionModel()->selectedRows().count();
+                        int row = 0;
                         for(int i = count-1; i >= 0; --i) {
-                            int row = playListView->selectionModel()->selectedRows().at( i).row();
+                            row = playListView->selectionModel()->selectedRows().at(i).row();
                             playListView->model()->removeRow(row, QModelIndex());
+                            if (curPlayList == row) {
+                                m_pmedia.clear();
+                                sWidget.setCurrentIndex(1);
+                            }
                         }
+
                         if (!model->rowCount()) {
-//                            stop();
                             m_pmedia.clear();
                             sWidget.setCurrentIndex(1);
+                            forwardButton->setEnabled(false);
+                            cWidget->forwardButton->setEnabled(false);
+                        } else {
+                            if (row == model->rowCount()){
+                                playListView->selectRow(row-1);
+                            } else {
+                                playListView->selectRow(row);
+                            }
                         }
                     }
                     return true;
@@ -1143,10 +1156,11 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     qDebug() << "stateChanged";
     Q_UNUSED(oldstate);
 
-    if ((oldstate == Phonon::LoadingState) && (newstate != Phonon::ErrorState)) {
+    QString fileName = m_pmedia.currentSource().fileName();
+    if ((oldstate == Phonon::LoadingState) && (fileName.size() > 0)) {
         sWidget.setCurrentIndex(1);
         QPoint posCOld = frameGeometry().center();
-        if (m_pmedia.hasVideo()){
+        if (m_pmedia.hasVideo()) {
             qDebug() << "processEvents";
             qApp->processEvents();
             if (!isFullScreen()) {
@@ -1215,15 +1229,15 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     int t1 = 0;
     switch (newstate) {
         case Phonon::ErrorState:
-            if (oldstate == Phonon::LoadingState) break;
+            if (fileName.size() == 0) break;
             QMessageBox::warning(this, "EMP", m_pmedia.errorString(), QMessageBox::Close);
             if (m_pmedia.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
-                rewindButton->setEnabled(false);
+//                rewindButton->setEnabled(false);
                 cWidget->playButton->setEnabled(false);
-                cWidget->rewindButton->setEnabled(false);
+//                cWidget->rewindButton->setEnabled(false);
             } else {
-                if (oldstate == Phonon::PlayingState) m_pmedia.pause();
+                m_pmedia.pause();
             }
             break;
         case Phonon::StoppedState:
@@ -1234,7 +1248,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             playButton->setToolTip(tr("Play"));
             cWidget->playButton->setIcon(cWidget->playIcon);
             cWidget->playButton->setToolTip(tr("Play"));
-            if (m_pmedia.currentSource().type() != Phonon::MediaSource::Invalid){
+            if ((m_pmedia.currentSource().type() != Phonon::MediaSource::Invalid) &&
+                (fileName.size() > 0)) {
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
                 cWidget->playButton->setEnabled(true);
