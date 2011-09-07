@@ -51,6 +51,8 @@ MWidget::MWidget(MediaPlayer *player, QWidget *p) :
 void MWidget::showWidget(QString str)
 {
     hide();
+//    mLabel->setText("<CENTER><img src=\":/Res/Pause1.png\"><CENTER>"
+//                    "<CENTER>" + str);
     mLabel->setText(str);
 
     QPoint pos;
@@ -251,13 +253,13 @@ void MediaVideoWidget::mousePressEvent(QMouseEvent *e)
 {
     Phonon::VideoWidget::mousePressEvent(e);
     if (e->button() == Qt::LeftButton) {
-//        if (timerMouseSClick->isActive()) timerMouseSClick->stop();
-//        else timerMouseSClick->start(501, this);
+        if (timerMouseSClick->isActive()) timerMouseSClick->stop();
+        else timerMouseSClick->start(501, this);
     }
     setCursor(Qt::PointingHandCursor);
     if (m_player->isFullScreen()) {
-//        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
-//        else m_player->cWidget->activateWindow();
+        if (!m_player->cWidget->isVisible()) m_player->cWidget->show();
+        else m_player->cWidget->activateWindow();
         m_player->timerFullScreen->start(5000, m_player);
     }
 }
@@ -275,7 +277,7 @@ void MediaVideoWidget::mouseMoveEvent(QMouseEvent *e)
 
 void MediaVideoWidget::dropEvent(QDropEvent *e)
 {
-    m_player->handleDrop(e);
+//    m_player->handleDrop(e);
 }
 
 void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
@@ -771,6 +773,20 @@ void MediaPlayer::writeSettings()
                     if (vol >= 0.01) m_AudioOutput.setVolume(vol);
                     else m_AudioOutput.setVolume(0);
                     keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Delete) {
+                    if (playListView->selectionModel()->hasSelection()) {
+                        int count = playListView->selectionModel()->selectedRows().count();
+                        for(int i = count-1; i >= 0; --i) {
+                            int row = playListView->selectionModel()->selectedRows().at( i).row();
+                            playListView->model()->removeRow(row, QModelIndex());
+                        }
+                        if (!model->rowCount()) {
+//                            stop();
+                            m_pmedia.clear();
+                            sWidget.setCurrentIndex(1);
+                        }
+                    }
+                    return true;
                 }
                 if (keyOk) {
                     if (isFullScreen()) {
@@ -944,37 +960,45 @@ void MediaPlayer::handleDrop(QDropEvent *e)
     fullScreenAction->setChecked(false);
     activateWindow();
     QList<QUrl> urls = e->mimeData()->urls();
-    if (e->proposedAction() == Qt::MoveAction){
+    m_pmedia.clearQueue();
+    if ((e->proposedAction() == Qt::MoveAction) || playListDoc->underMouse()){
         // Добавляем в очередь
-//        for (int i=0; i<urls.size(); i++)
-//            m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
+        qDebug() << "handleDropStart";
     } else {
         // Создаём новую очередь
-        m_pmedia.clearQueue();
-        if (urls.size() > 0) {
-            QString fileName = urls[0].toLocalFile();
-            QDir dir(fileName);
-            if (dir.exists()) {
-                dir.setFilter(QDir::Files);
-                QStringList entries = dir.entryList();
-                if (entries.size() > 0) {
-                    setFile(fileName + QDir::separator() +  entries[0]);
-                    addFile(fileName + QDir::separator() +  entries[0]);
-                    for (int i=1; i<entries.size(); i++)
-                      addFile(fileName + QDir::separator() + entries[i]);
+        model->clear();
+        model->setColumnCount(4);
+        playListView->setColumnHidden(0, true);
+        playListView->setColumnHidden(3, true);
+        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+
+        curPlayList = 0;
+    }
+    if (urls.size() > 0) {
+        QString fileName = urls[0].toLocalFile();
+        QDir dir(fileName);
+        if (dir.exists()) {
+            dir.setFilter(QDir::Files);
+            QStringList entries = dir.entryList();
+            if (entries.size() > 0) {
+                setFile(fileName + QDir::separator() +  entries[0]);
+                addFile(fileName + QDir::separator() +  entries[0]);
+                for (int i=1; i<entries.size(); i++)
+                  addFile(fileName + QDir::separator() + entries[i]);
 //                    for (int i=1; i< entries.size(); ++i)
 //                        m_pmedia.enqueue(fileName + QDir::separator() + entries[i]);
-                }
-                qDebug() << "handleDrop1";
-            } else {
-                setFile(fileName);
-                addFile(fileName);
-                for (int i=1; i<urls.size(); i++)
-                  addFile(urls[i].toLocalFile());
+            }
+            qDebug() << "handleDrop1";
+        } else {
+            setFile(fileName);
+            addFile(fileName);
+            for (int i=1; i<urls.size(); i++)
+              addFile(urls[i].toLocalFile());
 //                for (int i=1; i<urls.size(); i++)
 //                    m_pmedia.enqueue(Phonon::MediaSource(urls[i].toLocalFile()));
-                qDebug() << "handleDrop2";
-            }
+            qDebug() << "handleDrop2";
         }
     }
 //    forwardButton->setEnabled(m_pmedia.queue().size() > 0);
@@ -1119,7 +1143,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     qDebug() << "stateChanged";
     Q_UNUSED(oldstate);
 
-    if (oldstate == Phonon::LoadingState) {
+    if ((oldstate == Phonon::LoadingState) && (newstate != Phonon::ErrorState)) {
         sWidget.setCurrentIndex(1);
         QPoint posCOld = frameGeometry().center();
         if (m_pmedia.hasVideo()){
@@ -1191,6 +1215,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     int t1 = 0;
     switch (newstate) {
         case Phonon::ErrorState:
+            if (oldstate == Phonon::LoadingState) break;
             QMessageBox::warning(this, "EMP", m_pmedia.errorString(), QMessageBox::Close);
             if (m_pmedia.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
@@ -1198,7 +1223,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 cWidget->playButton->setEnabled(false);
                 cWidget->rewindButton->setEnabled(false);
             } else {
-                m_pmedia.pause();
+                if (oldstate == Phonon::PlayingState) m_pmedia.pause();
             }
             break;
         case Phonon::StoppedState:
