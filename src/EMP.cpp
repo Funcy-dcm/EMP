@@ -546,6 +546,9 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
     connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
 
+    m_controller = new Phonon::MediaController(&m_pmedia);
+    connect(m_controller, SIGNAL(availableAudioChannelsChanged()), this, SLOT(selectAudio()));
+
     m_pmedia.setTickInterval(200);
 
     playButton->setEnabled(false);
@@ -1221,6 +1224,10 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
         }
         m_pmedia.play();
+//        Phonon::AudioChannelDescription audchan = m_controller->currentAudioChannel();
+
+//        QList<Phonon::AudioChannelDescription> audchan = m_controller->availableAudioChannels();
+//        m_controller->setCurrentAudioChannel(audchan[0]);
         if (m_pmedia.hasVideo()) {
             sWidget.setCurrentIndex(0);
             sWidget.setCurrentIndex(1);
@@ -1266,7 +1273,8 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             //Restore screensaver
             ScreenSaver::restore();
             break;
-        case Phonon::PlayingState:  
+        case Phonon::PlayingState:
+        {
             qDebug() << "PlayingState" << ", OldState:" << oldstate;
             if (oldstate == Phonon::StoppedState) {
                 if (m_pmedia.hasVideo()) sWidget.setCurrentIndex(0);
@@ -1285,6 +1293,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
                 //Restore screensaver
                 ScreenSaver::restore();
             }
+        }
         case Phonon::BufferingState:
             rewindButton->setEnabled(true);
             cWidget->rewindButton->setEnabled(true);
@@ -1387,6 +1396,12 @@ void MediaPlayer::updateTime()
     }
     timeLabel->setText(timeString);
     cWidget->timeLabel->setText(timeString);
+}
+
+void MediaPlayer::selectAudio()
+{
+    QList<Phonon::AudioChannelDescription> audchan = m_controller->availableAudioChannels();
+    m_controller->setCurrentAudioChannel(audchan[0]);
 }
 
 void MediaPlayer::rewind()

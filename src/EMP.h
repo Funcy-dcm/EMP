@@ -113,6 +113,7 @@ public:
 
     Phonon::MediaObject m_pmedia;
     Phonon::AudioOutput m_AudioOutput;
+    Phonon::MediaController *m_controller;
 
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
@@ -153,6 +154,7 @@ private slots:
     void hasVideoChanged(bool);
     void finished();
     void bufferStatus(int percent);
+    void selectAudio();
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
     void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
