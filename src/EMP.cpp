@@ -546,8 +546,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
     connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
 
-    m_controller = new Phonon::MediaController(&m_pmedia);
-    connect(m_controller, SIGNAL(availableAudioChannelsChanged()), this, SLOT(selectAudio()));
+//    connect(m_controller, SIGNAL(availableAudioChannelsChanged()), this, SLOT(selectAudio()));
 
     m_pmedia.setTickInterval(200);
 
@@ -565,6 +564,23 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     if (!filePath.isEmpty()){
         setFile(filePath);
         addFile(filePath);
+    } else {
+        QFile filePL(qApp->applicationDirPath()+ "/default.epl");
+        if (filePL.open(QIODevice::ReadOnly)){
+            int rowCount = 0;
+            QString fileName;
+            QDataStream stream(&filePL);
+            stream.setVersion(QDataStream::Qt_4_7);
+            stream >> rowCount;
+            for (int i = 0; i < rowCount; i++) {
+                stream >> fileName;
+                addFile(fileName);
+            }
+            if (stream.status() != QDataStream::Ok){
+                qDebug() << "Ошибка чтения файла";
+            }
+        }
+        filePL.close();
     }
     fullScreenOn = false;
     setWindowState(Qt::WindowNoState);
@@ -654,7 +670,7 @@ void MediaPlayer::writeSettings()
 //    if (!isFullScreen()) {
         m_settings->setValue("GeometryState", saveGeometry());
         m_settings->setValue("ToolBarsState", saveState());
-//    }
+//    }    
 }
 
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
@@ -691,6 +707,25 @@ void MediaPlayer::writeSettings()
     }
     fullScreenAction->setChecked(false);
     writeSettings();
+
+    QFile filePL(qApp->applicationDirPath()+ "/default.epl");
+    if (filePL.open(QIODevice::WriteOnly)){
+        QString fileName;
+        QModelIndex index;
+        QDataStream stream(&filePL);
+        stream.setVersion(QDataStream::Qt_4_7);
+        stream << model->rowCount();
+        for (int i = 0; i < model->rowCount(); i++) {
+            index = model->index(i, 3);
+            fileName = model->data(index).toString();
+            stream << fileName;
+        }
+        if (stream.status() != QDataStream::Ok){
+            qDebug() << "Ошибка записи";
+        }
+    }
+    filePL.close();
+
     qDebug() << "closeEventStop";
 }
 
@@ -1400,8 +1435,7 @@ void MediaPlayer::updateTime()
 
 void MediaPlayer::selectAudio()
 {
-    QList<Phonon::AudioChannelDescription> audchan = m_controller->availableAudioChannels();
-    m_controller->setCurrentAudioChannel(audchan[0]);
+
 }
 
 void MediaPlayer::rewind()

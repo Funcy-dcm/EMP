@@ -1,4 +1,4 @@
-#CONFIG += release
+#CONFIG += -static -release -no-exceptions -no-qt3support -nomake demos -nomake examples
 TEMPLATE     = app
 TARGET       = EMP
 QT          += phonon\

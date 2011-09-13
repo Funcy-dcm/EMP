@@ -113,7 +113,6 @@ public:
 
     Phonon::MediaObject m_pmedia;
     Phonon::AudioOutput m_AudioOutput;
-    Phonon::MediaController *m_controller;
 
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
