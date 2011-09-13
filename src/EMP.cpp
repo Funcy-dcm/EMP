@@ -469,6 +469,28 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     initVideoWindow();
     setCentralWidget(&sWidget);
 
+    // Фильтр диалога
+    filters << trUtf8("Media files(all types) (*.aac *.mp3 *.flac *.ape \
+                                             *.ogg *.ogm *.ogv *.mp4 \
+                                             *.avi *.ts *.wv *.3gp *.m2ts \
+                                             *.vob *.wmv *.wav *.mpg \
+                                             *.mov *.m4a *.m4v *.mka \
+                                             *.cue *.mkv *.flv *.pls \
+                                             *.wvx *.m3u *.mpc)")
+                    << trUtf8("Списки воспроизведения (*.cue *.pls *.wvx *.m3u)")
+                    << trUtf8("Video files (*.ogg *.ogv *.avi *.mkv *.mp4 *.ts \
+                                       *.wv *.3gp *.m2ts *.vob *.wmv *.mpg \
+                                       *.mov *.m4v *.flv)")
+                    << trUtf8("Audio files (*.mp3 *.flac *.ogg *.ogm *.aac \
+                                       *.ape *.ogm *.wav *.m4a *.mka)")
+                    << trUtf8("All Files (*.*)")
+                    << trUtf8("Каталог с файлами или DVD каталог (.)");
+
+//    filedialog = new QFileDialog(this, tr("Open File..."));
+//    filedialog->setOption(QFileDialog::DontUseNativeDialog, true);
+//    filedialog->setOption(QFileDialog::HideNameFilterDetails, true);
+//    filedialog->setNameFilters(filters);
+
     // Create menu bar:
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open File..."));
@@ -522,9 +544,13 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
 //    openButton->setMenu(fileMenu);
 
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
+//    connect(openFileAction, SIGNAL(triggered(bool)), filedialog, SLOT(exec()));
     connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
+//    connect(openButton, SIGNAL(clicked()), filedialog, SLOT(exec()));
+//    connect(filedialog, SIGNAL(filesSelected(QStringList)), this, SLOT(fileSelected(QStringList)));
+//    connect(filedialog, SIGNAL(filterSelected(QString)), this, SLOT(fileDialogFilter(QString)));
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
     connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
@@ -981,9 +1007,24 @@ void MediaPlayer::initVideoWindow()
 // ----------------------------------------------------------------------
 void MediaPlayer::openFile()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this);
+    QString filters1 = tr("Media files(all types) (*.aac *.mp3 *.flac *.ape\
+*.ogg *.ogm *.ogv *.mp4\
+*.avi *.ts *.wv *.3gp *.m2ts\
+*.vob *.wmv *.wav *.mpg\
+*.mov *.m4a *.m4v *.mka\
+*.cue *.mkv *.flv *.pls\
+*.wvx *.m3u *.mpc);;\
+Списки воспроизведения (*.cue *.pls *.wvx *.m3u);;\
+Video files (*.ogg *.ogv *.avi *.mkv *.mp4 *.ts \
+*.wv *.3gp *.m2ts *.vob *.wmv *.mpg \
+*.mov *.m4v *.flv);;\
+Audio files (*.mp3 *.flac *.ogg *.ogm *.aac \
+*.ape *.ogm *.wav *.m4a *.mka);;\
+All Files (*.*);;\
+Каталог с файлами или DVD каталог (.)");
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), "", filters1, 0,
+                                                          QFileDialog::HideNameFilterDetails);
     if (fileNames.size() > 0) {
-
         m_pmedia.clearQueue();
 
         model->clear();
@@ -1004,6 +1045,40 @@ void MediaPlayer::openFile()
 //            m_pmedia.enqueue(Phonon::MediaSource(fileNames[i]));
     }
 }
+
+//void MediaPlayer::fileSelected(QStringList fileNames)
+//{
+//    if (fileNames.size() > 0) {
+//        m_pmedia.clearQueue();
+
+//        model->clear();
+//        model->setColumnCount(4);
+//        playListView->setColumnHidden(0, true);
+//        playListView->setColumnHidden(3, true);
+//        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+//        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+//        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+
+//        curPlayList = 0;
+//        QString fileName = fileNames[0];
+//        setFile(fileName);
+//        addFile(fileName);
+//        for (int i=1; i<fileNames.size(); i++)
+//          addFile(fileNames[i]);
+//    }
+//}
+
+//void MediaPlayer::fileDialogFilter(QString filter)
+//{
+//        if (filter.compare(filters.at(5)) == -4)
+//        {
+//                filedialog->setFileMode(QFileDialog::Directory);
+//                filedialog->setNameFilters(filters);
+//                filedialog->selectFilter(filters.at(5));
+//        }
+//        else
+//                filedialog->setFileMode(QFileDialog::AnyFile);
+//}
 
 void MediaPlayer::openUrl()
 {

@@ -157,6 +157,8 @@ private slots:
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
     void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
+//    void fileSelected(QStringList);
+//    void fileDialogFilter(QString);
 
 protected:
     virtual void closeEvent(QCloseEvent*);
@@ -200,6 +202,8 @@ private:
     Phonon::VolumeSlider *volume;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
+    QStringList filters;
+//    QFileDialog *filedialog;
 
     QTcpServer* m_ptcpServer;
     quint16     m_nNextBlockSize;
