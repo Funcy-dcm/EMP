@@ -52,4 +52,32 @@
     <source>Stretch to window</source>
     <target>Auf Fenstergröße strecken</target>
 </phrase>
+<phrase>
+    <source>Mute</source>
+    <target>Stummschaltung</target>
+</phrase>
+<phrase>
+    <source>Play/Pause</source>
+    <target>Wiedergabe/Pause</target>
+</phrase>
+<phrase>
+    <source>Full screen</source>
+    <target>Vollbild</target>
+</phrase>
+<phrase>
+    <source>Media files (all types)</source>
+    <target>Medien Dateien (Alle Formate)</target>
+</phrase>
+<phrase>
+    <source>Video files</source>
+    <target>Video Dateien</target>
+</phrase>
+<phrase>
+    <source>Audio files</source>
+    <target>Audio Dateien</target>
+</phrase>
+<phrase>
+    <source>All files</source>
+    <target>Alle Dateien</target>
+</phrase>
 </QPH>

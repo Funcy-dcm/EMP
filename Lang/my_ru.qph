@@ -52,4 +52,28 @@
     <source>Stretch to window</source>
     <target>Растянуть до размера окна</target>
 </phrase>
+<phrase>
+    <source>Mute</source>
+    <target>Отключить звук</target>
+</phrase>
+<phrase>
+    <source>Full screen</source>
+    <target>Во весь экран</target>
+</phrase>
+<phrase>
+    <source>Media files (all types)</source>
+    <target>Медиа файлы (все типы)</target>
+</phrase>
+<phrase>
+    <source>Video files</source>
+    <target>Видео файлы</target>
+</phrase>
+<phrase>
+    <source>Audio files</source>
+    <target>Аудио файлы</target>
+</phrase>
+<phrase>
+    <source>All files</source>
+    <target>Все файлы</target>
+</phrase>
 </QPH>

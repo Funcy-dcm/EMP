@@ -26,7 +26,7 @@
 
 #define EXTENSIONS_PLAYLIST " *.asx *.b4s *.ifo *.m3u *.m3u8 *.pls *.ram *.rar *.sdp *.vlc *.xspf *.zip"
 
-#define EXTENSIONS_MEDIA EXTENSIONS_VIDEO EXTENSIONS_AUDIO EXTENSIONS_PLAYLIST
+#define EXTENSIONS_MEDIA EXTENSIONS_VIDEO EXTENSIONS_AUDIO /*EXTENSIONS_PLAYLIST*/
 
 class QTcpServer;
 class QTcpSocket;

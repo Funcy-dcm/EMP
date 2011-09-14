@@ -442,7 +442,7 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->horizontalHeader()->hide();
     playListView->verticalHeader()->hide();
     playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
-    playListView->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    playListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
     playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
@@ -453,8 +453,9 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 //****
-//    playListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    playListView->setSelectionMode(QAbstractItemView::SingleSelection);
 //    playListView->setDragEnabled(true);
 //    playListView->setAcceptDrops(true);
 //    playListView->setDropIndicatorShown(true);
@@ -980,11 +981,11 @@ void MediaPlayer::initVideoWindow()
 void MediaPlayer::openFile()
 {
     QString filters = "";
-    filters += tr("Media Files") + " (" + EXTENSIONS_MEDIA + ");;";
-    filters += tr("Video Files") + " (" + EXTENSIONS_VIDEO + ");;";
-    filters += tr("Audio Files") + " (" + EXTENSIONS_AUDIO + ");;";
-    filters += tr("Playlist Files") + " (" + EXTENSIONS_PLAYLIST + ");;";
-    filters += tr("All Files") + " (*)";
+    filters += tr("Media files (all types)") + " (" + EXTENSIONS_MEDIA + ");;";
+    filters += tr("Video files") + " (" + EXTENSIONS_VIDEO + ");;";
+    filters += tr("Audio files") + " (" + EXTENSIONS_AUDIO + ");;";
+//    filters += tr("Playlist files") + " (" + EXTENSIONS_PLAYLIST + ");;";
+    filters += tr("All files") + " (*)";
 
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), QDir::homePath(), filters);
 
