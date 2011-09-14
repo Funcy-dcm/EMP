@@ -18,6 +18,11 @@ QPushButton {
 	/*image: url(images/control_pause_blue.png);*/
 } 
 
+QPushButton:!enabled {
+	background: #444444;
+    border: 1px solid #555555;
+}
+
 QPushButton:hover {
     background: qlineargradient(x1:0, y1:1, x2:0, y2:0, 
 				stop:1 #FFFFFF,
