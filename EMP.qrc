@@ -18,5 +18,6 @@
         <file>res/Logo7.png</file>
         <file>res/Logo8.png</file>
         <file>res/Logo1.png</file>
+        <file>style/EMP.qss</file>
     </qresource>
 </RCC>

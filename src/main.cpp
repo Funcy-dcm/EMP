@@ -34,8 +34,9 @@ int main(int argc, char** argv)
     app.setApplicationName("EMP");
     app.setQuitOnLastWindowClosed(true);
 
-    QString dirString = app.applicationDirPath();
-    QString fileString = dirString + "/Style/EMP.qss";
+//    QString dirString = app.applicationDirPath();
+//    QString fileString = dirString + "/Style/EMP.qss";
+    QString fileString = ":/style/EMP.qss";
     QFile file(fileString);
     file.open(QFile::ReadOnly);
     QString strCSS = QLatin1String(file.readAll());

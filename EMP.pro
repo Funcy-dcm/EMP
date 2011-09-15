@@ -9,7 +9,8 @@ HEADERS	     = \
     src/qtsingleapplication/qtsingleapplication.h \
     src/qtsingleapplication/qtlockedfile.h \
     src/qtsingleapplication/qtlocalpeer.h \
-    src/ScreenSaver.h
+    src/ScreenSaver.h \
+    src/VersionNo.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -32,5 +33,10 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
+
+OTHER_FILES +=
+
+
+
 
 

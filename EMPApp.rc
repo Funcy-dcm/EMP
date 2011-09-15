@@ -7,9 +7,10 @@ IDI_ICON1               ICON    DISCARDABLE     "EMP.ico"
 #  include <winver.h>
 # endif
 #endif
+#include "src/VersionNo.h"
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,6
- PRODUCTVERSION 1,0,0,6
+ FILEVERSION FILEVER
+ PRODUCTVERSION PRODUCTVER
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -24,14 +25,15 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-	    VALUE "CompanyName", "EMP Team\0"
+            VALUE "CompanyName", "EMP Team\0"
             VALUE "Comments", "Application\0"
             VALUE "FileDescription", "EMP\0"
-            VALUE "FileVersion", "1, 0, 0, 6\0"
+            VALUE "FileVersion", STRFILEVER
             VALUE "InternalName", "EMP\0"
-	    VALUE "OriginalFilename", "EMP.exe"
+		    VALUE "OriginalFilename", "EMP.exe\0"
             VALUE "LegalCopyright", "Shilyev Egor\0"
             VALUE "ProductName", "EMP\0"
+            VALUE "ProductVersion", STRPRODUCTVER
         END
     END
     BLOCK "VarFileInfo"
