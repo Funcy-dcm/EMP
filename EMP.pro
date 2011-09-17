@@ -1,16 +1,15 @@
-#CONFIG += -static -release -no-exceptions -no-qt3support -nomake demos -nomake examples
-TEMPLATE     = app
+CONFIG += -static -release -no-exceptions -no-qt3support -nomake demos -nomake examples
 TARGET       = EMP
-QT          += phonon\
-                network
+TEMPLATE     = app
+QT          += core gui network
 
 HEADERS	     = \
     src/EMP.h \
     src/qtsingleapplication/qtsingleapplication.h \
     src/qtsingleapplication/qtlockedfile.h \
     src/qtsingleapplication/qtlocalpeer.h \
-    src/ScreenSaver.h \
-    src/VersionNo.h
+    src/VersionNo.h \
+    src/VideoWidget.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -19,7 +18,9 @@ SOURCES	     = \
     src/qtsingleapplication/qtlockedfile_unix.cpp \
     src/qtsingleapplication/qtlockedfile.cpp \
     src/qtsingleapplication/qtlocalpeer.cpp \
-    src/ScreenSaver.cpp
+    src/VideoWidget.cpp
+
+LIBS     += -L$$PWD/libvlc -lvlc
 
 RESOURCES += \
     EMP.qrc
@@ -33,9 +34,6 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
-
-OTHER_FILES +=
-
 
 
 

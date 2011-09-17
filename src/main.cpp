@@ -49,6 +49,7 @@ int main(int argc, char** argv)
     app.installTranslator(&translator);
 
     fileString = app.arguments().value(1);
+    qDebug() << "0";
     MediaPlayer  mediaPlayer(fileString);
 
     app.setActivationWindow(&mediaPlayer, true);

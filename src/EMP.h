@@ -11,7 +11,8 @@
 #define _MediaPlayer_h_
 
 #include <QtGui>
-#include <phonon>
+#include <vlc/vlc.h>
+#include "VideoWidget.h"
 
 #define EXTENSIONS_AUDIO " *.a52 *.aac *.ac3 *.adt *.adts *.aif *.aifc *.aiff *.amr *.aob"\
                          " *.ape *.cda *.dts *.flac *.it *.m4a *.m4p *.mid *.mka *.mlp *.mod *.mp1 *.mp2"\
@@ -28,155 +29,52 @@
 
 #define EXTENSIONS_MEDIA EXTENSIONS_VIDEO EXTENSIONS_AUDIO /*EXTENSIONS_PLAYLIST*/
 
-class QTcpServer;
-class QTcpSocket;
-
-QT_BEGIN_NAMESPACE
-class QPushButton;
-class QLabel;
-class QSlider;
-class QTextEdit;
-class QMenu;
-QT_END_NAMESPACE
-
 #define MAX_FILE_POS    20
 
 class MediaPlayer;
-class ControlWidget;
-
-class MWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    MWidget(MediaPlayer *player, QWidget * parent = 0);
-    QLabel *mLabel;
-public slots:
-    void slotShowLocalTime();
-    void slotShowEndTime();
-    void showWidget(QString);
-
-protected:
-    void timerEvent(QTimerEvent *);
-private:
-    MediaPlayer *m_player;
-    QBasicTimer timerShowWidget;
-
-};
-
-class ControlWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    ControlWidget(MediaPlayer *player, QWidget * parent = 0);
-    QIcon playIcon;
-    QIcon pauseIcon;
-    QIcon volumeIcon;
-    QIcon mutedIcon;
-    QPushButton *openButton;
-    QPushButton *playButton;
-    QPushButton *stopButton;
-    QPushButton *rewindButton;
-    QPushButton *forwardButton;
-    QPushButton *playlistButton;
-    Phonon::SeekSlider *slider;
-    QLabel *statusLabel;
-    QLabel *timeLabel;
-    QPushButton *volumeButton;
-    Phonon::VolumeSlider *volume;
-    QWidget *buttonPanelWidget;
-private:
-    MediaPlayer *m_player;
-
-};
-
-class MediaVideoWidget : public Phonon::VideoWidget
-{
-    Q_OBJECT
-
-public:
-    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
-
-protected:
-    void mouseDoubleClickEvent(QMouseEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);
-    void dropEvent(QDropEvent *e);
-    void dragEnterEvent(QDragEnterEvent *e);
-    void timerEvent(QTimerEvent *);
-
-private:
-    MediaPlayer *m_player;
-    QBasicTimer *timerMouseSClick;
-
-};
 
 // ======================================================================
 class MediaPlayer : public QMainWindow {
     Q_OBJECT
+    libvlc_instance_t *_vlcinstance;
+    libvlc_media_player_t *_m_player;
+    libvlc_media_t *_m;
 public:
     MediaPlayer(const QString &fileName);
     virtual ~MediaPlayer();
     void writeSettings();
     void readSettings ();
     void initVideoWindow();
-    void setFile(const QString &text);
-    void addFile(QString fileName);
-    void dragEnterEvent(QDragEnterEvent *e);
-    void dragMoveEvent(QDragMoveEvent *e);
-    void dropEvent(QDropEvent *e);
-    void handleDrop(QDropEvent *e);
-
-    Phonon::MediaObject m_pmedia;
-    Phonon::AudioOutput m_AudioOutput;
 
     QToolBar *controlPanel;
     QDockWidget *playListDoc;
     QMenu *fileMenu;
     QAction *fullScreenAction;
     QAction *playPauseAction;
-    ControlWidget *cWidget;
     QRect nGeometryWindows;
     QBasicTimer *timerFullScreen;
     int curPlayList;
 
 public slots:
+    void receiveMessage(const QString&);
+
     void moveWindowToCenter();
     void openFile();
-    void openUrl();
     void playPause();
     void stop();
     void rewind();
     void forward();
     void playlistShow();
-    void updateInfo();
-    void updateTime();
-    void aspectChanged(QAction *);
-    void setVolumeOnOff();
     void setFullScreen(bool);
-    void playListDoubleClicked(QModelIndex);
-
-    void receiveMessage(const QString&);
-
-    virtual void slotNewConnection();
-            void slotReadClient   ();
 
 private slots:
-    void currentSourceChanged ( const Phonon::MediaSource & newSource );
-    void stateChanged(Phonon::State newstate, Phonon::State oldstate);
-    void volumeChanged(qreal);
-    void hasVideoChanged(bool);
-    void finished();
-    void bufferStatus(int percent);
-    void selectAudio();
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
-    void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
+    void setFile(const QString &text);
+    void addFile(QString fileName);
+    void playing(bool,bool);
 
 protected:
-    virtual void closeEvent(QCloseEvent*);
-    virtual void showEvent(QShowEvent*);
-    bool eventFilter(QObject*, QEvent*);
-    void timerEvent(QTimerEvent *pe);
     virtual void resizeEvent(QResizeEvent*);
     virtual void moveEvent(QMoveEvent*);
 
@@ -190,12 +88,7 @@ private:
 
     QStackedWidget sWidget;
     QLabel *logoLabel;
-//    QWidget m_videoWindow;
-    MediaVideoWidget *m_videoWidget;
-    Phonon::Path m_audioOutputPath;
-    MWidget *mLabel;
-
-    QBasicTimer *timerUpdateInfo;
+    VlcVideoWidget *m_videoWidget;
 
     QIcon playIcon;
     QIcon pauseIcon;
@@ -207,15 +100,14 @@ private:
     QPushButton *rewindButton;
     QPushButton *forwardButton;
     QPushButton *playlistButton;
-    Phonon::SeekSlider *slider;
+//    VlcSeekWidget *slider;
     QLabel *statusLabel;
     QLabel *timeLabel;
     QPushButton *volumeButton;
-    Phonon::VolumeSlider *volume;
+//    VlcVolumeSlider *volume;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
 
-    QTcpServer* m_ptcpServer;
     quint16     m_nNextBlockSize;
 
 signals:
