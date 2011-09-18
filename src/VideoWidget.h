@@ -6,40 +6,40 @@
 
 class VlcVideoWidget : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-	VlcVideoWidget(QWidget *parent = 0);
-	~VlcVideoWidget();
-        WId widgetId() { return _widget->winId(); }
+    VlcVideoWidget(QWidget *parent = 0);
+    ~VlcVideoWidget();
+    WId widgetId() { return _widget->winId(); }
 
 protected:
-	void mouseMoveEvent(QMouseEvent *event);
-	void mousePressEvent(QMouseEvent *event);
-	void wheelEvent(QWheelEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 signals:
-	void rightClick(const QPoint);
-	void wheel(const bool);
-	void mouseShow(const QPoint);
-	void mouseHide();
+    void rightClick(const QPoint);
+    void wheel(const bool);
+    void mouseShow(const QPoint);
+    void mouseHide();
 
 public slots:
-	void enableMouseHide() { _hide = true; }
-	void disableMouseHide() { _hide = false; }
+    void enableMouseHide() { _hide = true; }
+    void disableMouseHide() { _hide = false; }
 
 private slots:
-	void hideMouse();
+    void hideMouse();
 
 private:
-	QWidget *_widget;
-	QTimer *_timerMouse;
-	QTimer *_timerSettings;
+    QWidget *_widget;
+    QTimer *_timerMouse;
+    QTimer *_timerSettings;
 
-	bool _hide;
+    bool _hide;
 
-	QString _currentRatio;
-	QString _currentCrop;
-	QString _currentFilter;
+    QString _currentRatio;
+    QString _currentCrop;
+    QString _currentFilter;
 };
 
 #endif // _VIDEOWIDGET_H_

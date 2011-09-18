@@ -11,6 +11,8 @@
 #include <QtNetwork>
 #include "EMP.h"
 
+libvlc_media_player_t *_curPlayer = NULL;
+
 void MediaPlayer::receiveMessage(const QString& message)
 {
     qDebug() << QString("Received message: %1").arg(message);
@@ -46,11 +48,12 @@ MediaPlayer::MediaPlayer(const QString &filePath)
         "--reset-plugins-cache",
         "--no-stats",
         "--no-osd",
-        "--verbose=2",
+//        "--verbose=2",
         "--no-video-title-show"
     };
     _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
     _m_player = libvlc_media_player_new (_vlcinstance);
+    _curPlayer = _m_player;
 
 
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -68,20 +71,10 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     playlistButton = new QPushButton(wgt);
     statusLabel  = new QLabel(wgt);
     timeLabel  = new QLabel(wgt);
-//    slider = new VlcSeekWidget(wgt);
-//    slider->setObjectName("seekSlider");
-//    slider->setContentsMargins(0,0,0,0);
-//    volume = new VlcVolumeSlider(wgt);
-//    volume->setObjectName("volumeSlider");
-//    volume->setFixedWidth(100);
-//    volume->setCursor(Qt::PointingHandCursor);
-
-    volumeButton = new QPushButton(this);
-    volumeButton->setObjectName("volumeButton");
-    volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
-    mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
-    volumeButton->setIcon(volumeIcon);
-    volumeButton->setCursor(Qt::PointingHandCursor);
+    seekSlider = new VlcSeekSlider(wgt);
+    seekSlider->setObjectName("seekSlider");
+    volumeSlider = new VlcVolumeSlider(wgt);
+    volumeSlider->setObjectName("volumeSlider");
 
     playListDoc = new QDockWidget("PLAYLIST", this);
     playListDoc->setObjectName("playListDoc");
@@ -107,7 +100,6 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     rewindButton->setToolTip(tr("Previous"));
     forwardButton->setToolTip(tr("Next"));
     playlistButton->setToolTip(tr("Playlist (show/hide)"));
-    volumeButton->setToolTip(tr("Mute"));
 
     openButton->setFocusPolicy(Qt::NoFocus);
     playButton->setFocusPolicy(Qt::NoFocus);
@@ -115,8 +107,6 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     rewindButton->setFocusPolicy(Qt::NoFocus);
     forwardButton->setFocusPolicy(Qt::NoFocus);
     playlistButton->setFocusPolicy(Qt::NoFocus);
-//    volume->setFocusPolicy(Qt::NoFocus);
-//    slider->setFocusPolicy(Qt::NoFocus);
 
     openButton->setCursor(Qt::PointingHandCursor);
     playButton->setCursor(Qt::PointingHandCursor);
@@ -136,13 +126,13 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     phbxLayout->addWidget(rewindButton);
     phbxLayout->addWidget(forwardButton);
     phbxLayout->addStretch();
-    phbxLayout->addWidget(volumeButton);
-//    phbxLayout->addWidget(volume);
+    phbxLayout->addSpacing(10);
+    phbxLayout->addWidget(volumeSlider);
     phbxLayout->addSpacing(10);
     phbxLayout->addWidget(playlistButton);
 
     QHBoxLayout* phbxLayout2 = new QHBoxLayout;
-//    phbxLayout2->addWidget(slider);
+    phbxLayout2->addWidget(seekSlider);
 
     QHBoxLayout* phbxLayout3 = new QHBoxLayout;
     phbxLayout3->addWidget(statusLabel);
@@ -569,6 +559,7 @@ void MediaPlayer::setFile(const QString &fileName)
         /* Create a new LibVLC media descriptor */
         _m = libvlc_media_new_path(_vlcinstance, fileName.toUtf8());
         libvlc_media_player_set_media (_m_player, _m);
+        _curPlayer = _m_player;
 
         #if defined(Q_WS_WIN)
             libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());

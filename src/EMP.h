@@ -13,17 +13,19 @@
 #include <QtGui>
 #include <vlc/vlc.h>
 #include "VideoWidget.h"
+#include "SeekSlider.h"
+#include "VolumeSlider.h"
 
 #define EXTENSIONS_AUDIO " *.a52 *.aac *.ac3 *.adt *.adts *.aif *.aifc *.aiff *.amr *.aob"\
-                         " *.ape *.cda *.dts *.flac *.it *.m4a *.m4p *.mid *.mka *.mlp *.mod *.mp1 *.mp2"\
-                         " *.mp3 *.mpc *.oga *.ogg *.oma *.rmi *.s3m *.spx *.tta *.voc"\
-                         " *.vqf *.w64 *.wav *.wma *.wv *.xa *.xm"
+    " *.ape *.cda *.dts *.flac *.it *.m4a *.m4p *.mid *.mka *.mlp *.mod *.mp1 *.mp2"\
+    " *.mp3 *.mpc *.oga *.ogg *.oma *.rmi *.s3m *.spx *.tta *.voc"\
+    " *.vqf *.w64 *.wav *.wma *.wv *.xa *.xm"
 
 #define EXTENSIONS_VIDEO " *.3g2 *.3gp *.3gp2 *.3gpp *.amv *.asf *.avi *.bin *.cue *.divx *.dv *.flv *.gxf *.iso *.m1v *.m2v"\
-                         " *.m2t *.m2ts *.m4v *.mkv *.mov *.mp2 *.mp2v *.mp4 *.mp4v *.mpa *.mpe *.mpeg *.mpeg1"\
-                         " *.mpeg2 *.mpeg4 *.mpg *.mpv2 *.mts *.mxf *.nsv *.nuv"\
-                         " *.ogg *.ogm *.ogv *.ogx *.ps"\
-                         " *.rec *.rm *.rmvb *.tod *.ts *.tts *.vob *.vro *.webm *.wmv"
+    " *.m2t *.m2ts *.m4v *.mkv *.mov *.mp2 *.mp2v *.mp4 *.mp4v *.mpa *.mpe *.mpeg *.mpeg1"\
+    " *.mpeg2 *.mpeg4 *.mpg *.mpv2 *.mts *.mxf *.nsv *.nuv"\
+    " *.ogg *.ogm *.ogv *.ogx *.ps"\
+    " *.rec *.rm *.rmvb *.tod *.ts *.tts *.vob *.vro *.webm *.wmv"
 
 #define EXTENSIONS_PLAYLIST " *.asx *.b4s *.ifo *.m3u *.m3u8 *.pls *.ram *.rar *.sdp *.vlc *.xspf *.zip"
 
@@ -33,15 +35,21 @@
 
 class MediaPlayer;
 
+struct libvlc_media_player_t;
+extern libvlc_media_player_t *_curPlayer;
+
 // ======================================================================
 class MediaPlayer : public QMainWindow {
     Q_OBJECT
-    libvlc_instance_t *_vlcinstance;
-    libvlc_media_player_t *_m_player;
-    libvlc_media_t *_m;
+
 public:
     MediaPlayer(const QString &fileName);
     virtual ~MediaPlayer();
+
+    libvlc_instance_t *_vlcinstance;
+    libvlc_media_player_t *_m_player;
+    libvlc_media_t *_m;
+
     void writeSettings();
     void readSettings ();
     void initVideoWindow();
@@ -92,19 +100,16 @@ private:
 
     QIcon playIcon;
     QIcon pauseIcon;
-    QIcon volumeIcon;
-    QIcon mutedIcon;
     QPushButton *openButton;
     QPushButton *playButton;
     QPushButton *stopButton;
     QPushButton *rewindButton;
     QPushButton *forwardButton;
     QPushButton *playlistButton;
-//    VlcSeekWidget *slider;
+    VlcSeekSlider *seekSlider;
     QLabel *statusLabel;
     QLabel *timeLabel;
-    QPushButton *volumeButton;
-//    VlcVolumeSlider *volume;
+    VlcVolumeSlider *volumeSlider;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
 

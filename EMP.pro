@@ -9,7 +9,9 @@ HEADERS	     = \
     src/qtsingleapplication/qtlockedfile.h \
     src/qtsingleapplication/qtlocalpeer.h \
     src/VersionNo.h \
-    src/VideoWidget.h
+    src/VideoWidget.h \
+    src/VolumeSlider.h \
+    src/SeekSlider.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -18,7 +20,9 @@ SOURCES	     = \
     src/qtsingleapplication/qtlockedfile_unix.cpp \
     src/qtsingleapplication/qtlockedfile.cpp \
     src/qtsingleapplication/qtlocalpeer.cpp \
-    src/VideoWidget.cpp
+    src/VideoWidget.cpp \
+    src/VolumeSlider.cpp \
+    src/SeekSlider.cpp
 
 LIBS     += -L$$PWD/libvlc -lvlc
 
@@ -34,6 +38,8 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
+
+
 
 
 

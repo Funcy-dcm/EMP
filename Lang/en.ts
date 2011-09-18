@@ -3,155 +3,84 @@
 <TS version="2.0">
 <defaultcodec>UTF-8</defaultcodec>
 <context>
-    <name>ControlWidget</name>
-    <message>
-        <location filename="../src/EMP.cpp" line="153"/>
-        <source>Open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="154"/>
-        <source>Play</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="155"/>
-        <source>Stop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="156"/>
-        <source>Previous</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="157"/>
-        <source>Next</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="159"/>
-        <source>Mute</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MediaPlayer</name>
     <message>
-        <location filename="../src/EMP.cpp" line="372"/>
+        <location filename="../src/EMP.cpp" line="94"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="373"/>
-        <location filename="../src/EMP.cpp" line="1113"/>
-        <location filename="../src/EMP.cpp" line="1315"/>
-        <location filename="../src/EMP.cpp" line="1317"/>
+        <location filename="../src/EMP.cpp" line="95"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="474"/>
-        <location filename="../src/EMP.cpp" line="989"/>
+        <location filename="../src/EMP.cpp" line="185"/>
+        <location filename="../src/EMP.cpp" line="373"/>
         <source>Open File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="497"/>
-        <source>Aspect ratio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="757"/>
-        <location filename="../src/EMP.cpp" line="924"/>
-        <source>Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="374"/>
+        <location filename="../src/EMP.cpp" line="96"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="375"/>
+        <location filename="../src/EMP.cpp" line="97"/>
         <source>Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="376"/>
+        <location filename="../src/EMP.cpp" line="98"/>
         <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="377"/>
+        <location filename="../src/EMP.cpp" line="99"/>
         <source>Playlist (show/hide)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="378"/>
-        <source>Mute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="475"/>
-        <source>Open Location...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="478"/>
+        <location filename="../src/EMP.cpp" line="188"/>
         <source>Play/Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="486"/>
+        <location filename="../src/EMP.cpp" line="196"/>
         <source>Full screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="501"/>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="514"/>
-        <source>Stretch to window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="983"/>
+        <location filename="../src/EMP.cpp" line="367"/>
         <source>Media files (all types)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="984"/>
+        <location filename="../src/EMP.cpp" line="368"/>
         <source>Video files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="985"/>
+        <location filename="../src/EMP.cpp" line="369"/>
         <source>Audio files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="987"/>
+        <location filename="../src/EMP.cpp" line="371"/>
         <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>VlcVolumeSlider</name>
     <message>
-        <location filename="../src/EMP.cpp" line="1016"/>
-        <source>Open Location</source>
+        <location filename="../src/VolumeSlider.cpp" line="37"/>
+        <source>Mute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/EMP.cpp" line="1016"/>
-        <source>Please enter a valid address here:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/EMP.cpp" line="1106"/>
-        <location filename="../src/EMP.cpp" line="1347"/>
-        <location filename="../src/EMP.cpp" line="1350"/>
-        <source>Pause</source>
+        <location filename="../src/VolumeSlider.cpp" line="84"/>
+        <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
