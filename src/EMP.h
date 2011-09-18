@@ -52,6 +52,9 @@ public:
 
     void writeSettings();
     void readSettings ();
+
+    static bool isActive();
+
     void initVideoWindow();
 
     QToolBar *controlPanel;
@@ -76,6 +79,7 @@ public slots:
     void setFullScreen(bool);
 
 private slots:
+    void stateChanged();
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
     void setFile(const QString &text);
@@ -83,6 +87,7 @@ private slots:
     void playing(bool,bool);
 
 protected:
+    virtual void closeEvent(QCloseEvent*);
     virtual void resizeEvent(QResizeEvent*);
     virtual void moveEvent(QMoveEvent*);
 
@@ -112,6 +117,8 @@ private:
     VlcVolumeSlider *volumeSlider;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
+
+    QTimer *_timerState;
 
     quint16     m_nNextBlockSize;
 

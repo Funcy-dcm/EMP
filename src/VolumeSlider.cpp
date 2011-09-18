@@ -45,9 +45,9 @@ VlcVolumeSlider::VlcVolumeSlider(QWidget *parent)
     _muteButton->setCursor(Qt::PointingHandCursor);
 
     QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
     layout->addWidget(_muteButton);
     layout->addWidget(_slider);
-    layout->setMargin(0);
     setLayout(layout);
 
     connect(_muteButton, SIGNAL(clicked()), this, SLOT(mute()));

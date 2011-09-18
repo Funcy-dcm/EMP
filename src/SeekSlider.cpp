@@ -22,6 +22,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <vlc/vlc.h>
+#include "EMP.h"
 #include "SeekSlider.h"
 
 VlcSeekSlider::VlcSeekSlider(QWidget *parent)
@@ -39,6 +40,8 @@ VlcSeekSlider::VlcSeekSlider(QWidget *parent)
     layout->setMargin(0);
     layout->addWidget(_seek);
     setLayout(layout);
+
+    timeString = "";
 
     _timer = new QTimer(this);
 
@@ -74,28 +77,19 @@ VlcSeekSlider::~VlcSeekSlider()
 
 void VlcSeekSlider::updateTime()
 {
-    bool active = false;
-
-    if(_curPlayer == NULL)
-        active = false;
-    else {
-        libvlc_state_t state;
-        state = libvlc_media_player_get_state(_curPlayer);
-
-        if(state == libvlc_NothingSpecial || state == libvlc_Ended || state == libvlc_Error)
-            active = false;
-        else
-            active = true;
-    }
-
-    if(active) {
+    if(MediaPlayer::isActive()) {
         int fullTime = libvlc_media_player_get_length(_curPlayer);
         int currentTime = libvlc_media_player_get_time(_curPlayer);
 
         _seek->setMaximum(fullTime);
         if (!_seek->isSliderDown())
             _seek->setValue(currentTime);
-
+        timeString = QTime(0,0,0,0).addMSecs(currentTime).toString("hh:mm:ss");
+        timeString += " (-" +
+                QTime(0,0,0,0).addMSecs(fullTime-currentTime).toString("hh:mm:ss") +
+                ")";
+        timeString += " / " + QTime(0,0,0,0).addMSecs(fullTime).toString("hh:mm:ss");
+//        MediaPlayer::timeLabel->setText(timeString);
         if(_autoHide && fullTime == 0) {
             setVisible(false);
         } else {

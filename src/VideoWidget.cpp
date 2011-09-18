@@ -8,11 +8,18 @@ VlcVideoWidget::VlcVideoWidget(QWidget *parent)
       _currentCrop(""),
       _currentFilter("")
 {
-//    setMouseTracking(true);
+    setMouseTracking(true);
     setCursor(Qt::PointingHandCursor);
     _widget = new QWidget(this);
     _widget->setCursor(Qt::PointingHandCursor);
-//    _widget->setMouseTracking(true);
+    _widget->setMouseTracking(true);
+
+    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
+    _widget->setAttribute(Qt::WA_PaintOnScreen);
+    _widget->setAttribute(Qt::WA_NoSystemBackground);
+    QPalette p = palette();
+    p.setColor(backgroundRole(), Qt::black);
+    _widget->setPalette(p);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);

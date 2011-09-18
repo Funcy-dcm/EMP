@@ -33,6 +33,7 @@ class VlcSeekSlider : public QWidget
 public:
     VlcSeekSlider(QWidget *parent = 0);
     ~VlcSeekSlider();
+    QString timeString;
 
 public:
     bool autoHide() const { return _autoHide; }
