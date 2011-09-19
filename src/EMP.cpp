@@ -9,6 +9,7 @@
 
 #include <QtGui>
 #include <QtNetwork>
+#include "VersionNo.h"
 #include "EMP.h"
 
 libvlc_media_player_t *_curPlayer = NULL;
@@ -416,8 +417,13 @@ void MediaPlayer::initVideoWindow()
     logoLabel->setObjectName("logoLabel");
     logoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     QPixmap pix;
-    pix.load(":/res/Logo7.png");
+    if (pix.load(qApp->applicationDirPath()+"/logo/logoEx.png") == 0)
+        pix.load(":/res/Logo7.png");
     logoLabel->setPixmap(pix);
+
+    QLabel *textb = new QLabel(logoLabel);
+    textb->setText(QString("v")+STRFILEVER);
+    textb->move(5, 5);
 
     sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
@@ -487,6 +493,7 @@ void MediaPlayer::stateChanged()
                         break;
                     }
                 }
+                statusLabel->setText("");
             }
             sWidget.setCurrentIndex(0);
             playButton->setEnabled(true);
@@ -527,6 +534,8 @@ void MediaPlayer::openFile()
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), QDir::homePath(), filters);
 
     if (fileNames.size() > 0) {
+        statusLabel->setText("Open...");
+
         model->clear();
         model->setColumnCount(4);
         playListView->setColumnHidden(0, true);
@@ -569,7 +578,7 @@ void MediaPlayer::playPause()
         indexNew = model->index(curPlayList, 3);
         QString fileName = model->data(indexNew).toString();
 
-        _m = libvlc_media_new_path(_vlcinstance, fileName.toUtf8());
+        _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(fileName).toEncoded());
         libvlc_media_player_set_media(_m_player, _m);
 #if defined(Q_WS_WIN)
         libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());
@@ -748,14 +757,13 @@ void MediaPlayer::setFile(const QString &fileName)
 {
     if (model->rowCount() == 0) {
         /* Create a new LibVLC media descriptor */
-        _m = libvlc_media_new_path(_vlcinstance, fileName.toUtf8());
+        _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(fileName).toEncoded());
         libvlc_media_player_set_media(_m_player, _m);
+        _curPlayer = _m_player;
 
         //        libvlc_media_track_info_t *tracks = NULL;
         //        int num = libvlc_media_get_tracks_info(_m, &tracks);
         //        num = 0;
-
-        _curPlayer = _m_player;
 
 #if defined(Q_WS_WIN)
         libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());
@@ -768,8 +776,7 @@ void MediaPlayer::setFile(const QString &fileName)
 
         /* Play */
         libvlc_media_player_play(_m_player);
-
-        //        _isPlaying=true;
+//        _isPlaying=true;
 //        sWidget.setCurrentIndex(0);
     }
 }
