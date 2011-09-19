@@ -45,11 +45,12 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     const char * const vlc_args[] = {
         "-I", "dummy",
         "--ignore-config",
+//        "--extraintf=logger",
+//        "--verbose=2",
         "--no-media-library",
         "--reset-plugins-cache",
         "--no-stats",
         "--no-osd",
-        //        "--verbose=2",
         "--no-video-title-show"
     };
     _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
@@ -495,6 +496,13 @@ void MediaPlayer::stateChanged()
                 }
                 statusLabel->setText("");
             }
+            unsigned w = 0;
+            unsigned h = 0;
+            int ok = libvlc_video_get_size(_m_player, 0, &w, &h);
+//            libvlc_video_get_height(_m_player);
+//            libvlc_video_get_width(_m_player);
+            qDebug() << ok << ":" << w << h;
+
             sWidget.setCurrentIndex(0);
             playButton->setEnabled(true);
             playButton->setIcon(pauseIcon);
