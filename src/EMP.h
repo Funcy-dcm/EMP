@@ -45,6 +45,10 @@ class MediaPlayer : public QMainWindow {
 public:
     MediaPlayer(const QString &fileName);
     virtual ~MediaPlayer();
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dragMoveEvent(QDragMoveEvent *e);
+    void dropEvent(QDropEvent *e);
+    void handleDrop(QDropEvent *e);
 
     libvlc_instance_t *_vlcinstance;
     libvlc_media_player_t *_m_player;
@@ -76,13 +80,14 @@ public slots:
     void rewind();
     void forward();
     void playlistShow();
+    void playListDoubleClicked(QModelIndex);
+    void setCurrentSource(const QString &source);
     void setFullScreen(bool);
 
 private slots:
     void stateChanged();
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
-    void setFile(const QString &text);
     void addFile(QString fileName);
     void playing(bool,bool);
 

@@ -29,8 +29,8 @@ void MediaPlayer::receiveMessage(const QString& message)
         playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
 
         curPlayList = 0;
-        setFile(message);
         addFile(message);
+        setCurrentSource(message);
     }
 }
 
@@ -43,10 +43,13 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     m_videoWidget = new VlcVideoWidget(this);
 
     const char * const vlc_args[] = {
-        "-I", "dummy",
+        "--intf=dummy",
         "--ignore-config",
-//        "--extraintf=logger",
-//        "--verbose=2",
+        //        "--extraintf=logger",
+        //        "--verbose=2",
+        //        "--no-mouse-events",
+        //        "--no-keyboard-events",
+        "--no-fullscreen",
         "--no-media-library",
         "--reset-plugins-cache",
         "--no-stats",
@@ -217,6 +220,9 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
 
+    connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
+    connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
+
     connect(_timerState, SIGNAL(timeout()), this, SLOT(stateChanged()));
 
     playButton->setEnabled(false);
@@ -229,9 +235,9 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     readSettings();
     controlPanel->show();
 
-    if (!filePath.isEmpty()){
-        setFile(filePath);
+    if (!filePath.isEmpty()) {
         addFile(filePath);
+        setCurrentSource(filePath);
     } else {
         QFile filePL(qApp->applicationDirPath()+ "/default.epl");
         if (filePL.open(QIODevice::ReadOnly)){
@@ -386,6 +392,74 @@ void MediaPlayer::writeSettings()
     qDebug() << "closeEventStop";
 }
 
+void MediaPlayer::handleDrop(QDropEvent *e)
+{
+    qDebug() << "handleDropStart";
+    QString fileName;
+    bool newPlayList = false;
+    fullScreenAction->setChecked(false);
+    activateWindow();
+    QList<QUrl> urls = e->mimeData()->urls();
+    if ((e->proposedAction() == Qt::MoveAction) || playListDoc->underMouse()){
+        // Добавляем в плейлист
+    } else {
+        // Создаём новый плейлист
+        model->clear();
+        model->setColumnCount(4);
+        playListView->setColumnHidden(0, true);
+        playListView->setColumnHidden(3, true);
+        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+        curPlayList = 0;
+        newPlayList = true;
+    }
+    if (urls.size() > 0) {
+        fileName = urls[0].toLocalFile();
+        QDir dir(fileName);
+        if (dir.exists()) {
+            dir.setFilter(QDir::Files);
+            QStringList entries = dir.entryList();
+            if (entries.size() > 0) {
+                for (int i = 0; i < entries.size(); i++)
+                    addFile(fileName + QDir::separator() + entries[i]);
+                fileName = fileName + QDir::separator() +  entries[0];
+            }
+        } else {
+            for (int i = 0; i < urls.size(); i++)
+                addFile(urls[i].toLocalFile());
+        }
+        if (newPlayList)
+            setCurrentSource(fileName);
+    }
+    qDebug() << "handleDropStop";
+}
+
+void MediaPlayer::dropEvent(QDropEvent *e)
+{
+    qDebug() << "dropEvent";
+    if (e->mimeData()->hasUrls() && e->proposedAction() != Qt::LinkAction) {
+        e->acceptProposedAction();
+        handleDrop(e);
+    } else {
+        e->ignore();
+    }
+}
+
+void MediaPlayer::dragEnterEvent(QDragEnterEvent *e)
+{
+    dragMoveEvent(e);
+}
+
+void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        if (e->proposedAction() == Qt::CopyAction || e->proposedAction() == Qt::MoveAction){
+            e->acceptProposedAction();
+        }
+    }
+}
+
 /*virtual*/ void MediaPlayer::resizeEvent(QResizeEvent* pe)
 {
 
@@ -468,7 +542,7 @@ void MediaPlayer::stateChanged()
     int state;
     state = libvlc_media_player_get_state(_m_player);
 
-//    if (state == libvlc_Playing)
+    //    if (state == libvlc_Playing)
 
     if (state != state_t) {
         switch (state) {
@@ -488,7 +562,7 @@ void MediaPlayer::stateChanged()
                 QString fileName = model->data(indexNew).toString();
                 for (int i = 0; i < MAX_FILE_POS; ++i) {
                     if (fileNameP[i] == fileName) {
-        //                if (m_pmedia.isSeekable())
+                        //                if (m_pmedia.isSeekable())
                         libvlc_media_player_set_time(_m_player, filePos[i]);
                         qDebug() << "set_time:" << filePos[i];
                         break;
@@ -496,18 +570,23 @@ void MediaPlayer::stateChanged()
                 }
                 statusLabel->setText("");
             }
-            unsigned w = 0;
-            unsigned h = 0;
-            int ok = libvlc_video_get_size(_m_player, 0, &w, &h);
-//            libvlc_video_get_height(_m_player);
-//            libvlc_video_get_width(_m_player);
-            qDebug() << ok << ":" << w << h;
+
 
             sWidget.setCurrentIndex(0);
             playButton->setEnabled(true);
             playButton->setIcon(pauseIcon);
             playButton->setToolTip(tr("Pause"));
             rewindButton->setEnabled(true);
+
+            int isp = libvlc_media_player_has_vout(_m_player);
+            qDebug() << isp;
+            unsigned w = 0;
+            unsigned h = 0;
+            int ok = libvlc_video_get_size(_m_player, 0, &w, &h);
+            //            libvlc_video_get_height(_m_player);
+            //            libvlc_video_get_width(_m_player);
+            qDebug() << ok << ":" << w << h;
+
             break;
         }
         case libvlc_Stopped:
@@ -554,10 +633,10 @@ void MediaPlayer::openFile()
 
         curPlayList = 0;
         QString fileName = fileNames[0];
-        setFile(fileName);
         addFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
             addFile(fileNames[i]);
+        setCurrentSource(fileName);
     }
 }
 
@@ -681,7 +760,7 @@ void MediaPlayer::forward()
 {
     ////    QList<Phonon::MediaSource> queue = m_player.queue();
     ////    if (queue.size() > 0) {
-    ////        setFile(queue[0].fileName());
+    ////        setCurrentSource(queue[0].fileName());
     ////        forwardButton->setEnabled(queue.size() > 1);
     ////        cWidget->forwardButton->setEnabled(queue.size() > 1);
     ////    }
@@ -717,13 +796,38 @@ void MediaPlayer::playlistShow()
     } else {
         playListDoc->show();
     }
-//    if (mLabel->isVisible()) {
-//        QPoint pos;
-//        pos.setX(geometry().x() + width() - mLabel->width() - 25);
-//        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
-//        pos.setY(geometry().y() + 25);
-//        mLabel->move(pos);
-//    }
+    //    if (mLabel->isVisible()) {
+    //        QPoint pos;
+    //        pos.setX(geometry().x() + width() - mLabel->width() - 25);
+    //        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
+    //        pos.setY(geometry().y() + 25);
+    //        mLabel->move(pos);
+    //    }
+}
+
+void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
+{
+    QString fileName;
+    if ((curPlayList < model->rowCount()-1) && (curPlayList >= 0)) {
+        QModelIndex indexOld = model->index(curPlayList, 1);
+        model->setData(indexOld, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(indexOld, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+        indexOld = model->index(curPlayList, 2);
+        model->setData(indexOld, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(indexOld, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+    }
+
+    curPlayList = indexNew.row();
+    indexNew = model->index(curPlayList, 1);
+    model->setData(indexNew, Qt::white, Qt::TextColorRole);
+    model->setData(indexNew, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+    indexNew = model->index(curPlayList, 2);
+    model->setData(indexNew, Qt::white, Qt::TextColorRole);
+    model->setData(indexNew, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+
+    indexNew = model->index(curPlayList, 3);
+    fileName = model->data(indexNew).toString();
+    //    m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
 }
 
 void MediaPlayer::setFullScreen(bool enabled)
@@ -761,32 +865,31 @@ void MediaPlayer::setFullScreen(bool enabled)
     setFocus();
 }
 
-void MediaPlayer::setFile(const QString &fileName)
+void MediaPlayer::setCurrentSource(const QString &source)
 {
-    if (model->rowCount() == 0) {
-        /* Create a new LibVLC media descriptor */
-        _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(fileName).toEncoded());
-        libvlc_media_player_set_media(_m_player, _m);
-        _curPlayer = _m_player;
+    _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
+    libvlc_media_player_set_media(_m_player, _m);
+    _curPlayer = _m_player;
+    //        libvlc_video_set_key_input(_m_player, false);
+    //        libvlc_video_set_mouse_input(_m_player, false);
 
-        //        libvlc_media_track_info_t *tracks = NULL;
-        //        int num = libvlc_media_get_tracks_info(_m, &tracks);
-        //        num = 0;
+    //        libvlc_media_track_info_t *tracks = NULL;
+    //        int num = libvlc_media_get_tracks_info(_m, &tracks);
+    //        num = 0;
 
 #if defined(Q_WS_WIN)
-        libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());
+    libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());
 #elif defined(Q_WS_MAC)
-        libvlc_media_player_set_agl(_m_player, m_videoWidget->winId());
+    libvlc_media_player_set_agl(_m_player, m_videoWidget->winId());
 #else // Q_WS_X11
-        int windid = m_videoWidget->winId();
-        libvlc_media_player_set_xwindow(_m_player, windid);
+    int windid = m_videoWidget->winId();
+    libvlc_media_player_set_xwindow(_m_player, windid);
 #endif // Q_WS_*
 
-        /* Play */
-        libvlc_media_player_play(_m_player);
-//        _isPlaying=true;
-//        sWidget.setCurrentIndex(0);
-    }
+    /* Play */
+    libvlc_media_player_play(_m_player);
+    //        _isPlaying=true;
+    //        sWidget.setCurrentIndex(0);
 }
 
 void MediaPlayer::addFile(QString fileName)

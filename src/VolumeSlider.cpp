@@ -43,6 +43,7 @@ VlcVolumeSlider::VlcVolumeSlider(QWidget *parent)
     mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
     _muteButton->setIcon(volumeIcon);
     _muteButton->setCursor(Qt::PointingHandCursor);
+    _muteButton->setFocusPolicy(Qt::NoFocus);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->setMargin(0);
