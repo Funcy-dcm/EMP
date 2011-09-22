@@ -37,7 +37,7 @@ void MediaPlayer::receiveMessage(const QString& message)
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath)
 {
-    setWindowTitle("EMP");
+    setWindowTitle(QString("EMP v") + STRFILEVER);
     qDebug() << "2";
 
     m_videoWidget = new VlcVideoWidget(this);
@@ -410,6 +410,19 @@ void MediaPlayer::writeSettings()
         }
     }
 
+    if(pe->type() == QEvent::WindowStateChange) {
+        int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
+        int newState = windowState();
+        if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState) && !fullScreenOn){
+            pe->ignore();
+            emit signalWindowNormal();
+            return true;
+        }
+        if ((newState == Qt::WindowMaximized) && (oldState == Qt::WindowNoState)){
+            nGeometryWindows = normalGeometry();
+        }
+    }
+
     return false;
 }
 
@@ -517,9 +530,9 @@ void MediaPlayer::initVideoWindow()
         pix.load(":/res/Logo7.png");
     logoLabel->setPixmap(pix);
 
-    QLabel *textb = new QLabel(logoLabel);
-    textb->setText(QString("v")+STRFILEVER);
-    textb->move(5, 5);
+//    QLabel *textb = new QLabel(logoLabel);
+//    textb->setText(QString("v")+STRFILEVER);
+//    textb->move(5, 5);
 
     sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
@@ -854,36 +867,34 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 void MediaPlayer::setFullScreen(bool enabled)
 {
     static bool viewPlaylist;
-//    if (!enabled){
-//        m_videoWidget->setCursor(Qt::PointingHandCursor);
-//    } else {
-//        m_videoWidget->setCursor(Qt::BlankCursor);
-//    }
-
+    fullScreenOn = true;
     timerFullScreen->stop();
     sWidget.setCurrentIndex(2);
-    if (!enabled){
+    if (!isFullScreen()){
+        controlPanel->hide();
+        viewPlaylist = playListDoc->isVisible();
+        playListDoc->hide();
+#ifdef Q_WS_X11
+        show();
+        raise();
+        setWindowState( windowState() | Qt::WindowFullScreen );
+#else
+        setWindowState( windowState() | Qt::WindowFullScreen );
+        show();
+        raise();
+#endif
+//        //        cWidget->show();
+//        timerFullScreen->start(3000, this);
+    } else if (isFullScreen()) {
         //        mLabel->hide();
         //        cWidget->hide();
         controlPanel->show();
         if (viewPlaylist) playListDoc->show();
-        qApp->processEvents();
-        fullScreenOn = true;
-        setWindowState(windowState() & ~Qt::WindowFullScreen);
-        fullScreenOn = false;
-    } else {
-        controlPanel->hide();
-        viewPlaylist = playListDoc->isVisible();
-        playListDoc->hide();
-        qApp->processEvents();
-        fullScreenOn = true;
-        setWindowState(windowState() ^ Qt::WindowFullScreen);
-        fullScreenOn = false;
-        //        cWidget->show();
-        timerFullScreen->start(3000, this);
+        setWindowState( windowState() ^ Qt::WindowFullScreen );
+        show();
     }
+    fullScreenOn = false;
     sWidget.setCurrentIndex(0);
-    setFocus();
 }
 
 void MediaPlayer::setCurrentSource(const QString &source)
