@@ -45,10 +45,16 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     const char * const vlc_args[] = {
         "--intf=dummy",
         "--ignore-config",
-        //        "--extraintf=logger",
-        //        "--verbose=2",
-        //        "--no-mouse-events",
-        //        "--no-keyboard-events",
+//        "--extraintf=logger",
+//        "--verbose=3",
+
+        "--no-mouse-events",
+//        "--mouse-hide-timeout=0",
+        "--no-screen-follow-mouse",
+        "--no-rmtosd-mouse-events",
+//        "--hotkeys-mousewheel-mode=1",
+        "--no-keyboard-events",
+
         "--no-fullscreen",
         "--no-media-library",
         "--reset-plugins-cache",
@@ -61,10 +67,10 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     _curPlayer = _m_player;
 
     _timerState = new QTimer(this);
+    timerFullScreen = new QBasicTimer;
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_videoWidget->setCursor(Qt::PointingHandCursor);
 
     QWidget *wgt = new QWidget;
 
@@ -183,6 +189,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     playListDoc->setMinimumWidth(160);
     addDockWidget(Qt::RightDockWidgetArea, playListDoc);
     playListDoc->hide();
+    playListDoc->setContextMenuPolicy(Qt::CustomContextMenu);
 
     initVideoWindow();
     setCentralWidget(&sWidget);
@@ -219,6 +226,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
+
+    connect(playListDoc, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
 
     connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
     connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
@@ -390,6 +399,18 @@ void MediaPlayer::writeSettings()
     filePL.close();
 
     qDebug() << "closeEventStop";
+}
+
+/*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
+{
+    if (pe->type() == QEvent::MouseButtonPress) {
+        qDebug() << "PressEvent";
+        if (pobj == m_videoWidget) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void MediaPlayer::handleDrop(QDropEvent *e)
@@ -833,11 +854,11 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 void MediaPlayer::setFullScreen(bool enabled)
 {
     static bool viewPlaylist;
-    if (!enabled){
-        m_videoWidget->setCursor(Qt::PointingHandCursor);
-    } else {
-        m_videoWidget->setCursor(Qt::BlankCursor);
-    }
+//    if (!enabled){
+//        m_videoWidget->setCursor(Qt::PointingHandCursor);
+//    } else {
+//        m_videoWidget->setCursor(Qt::BlankCursor);
+//    }
 
     timerFullScreen->stop();
     sWidget.setCurrentIndex(2);
@@ -870,8 +891,8 @@ void MediaPlayer::setCurrentSource(const QString &source)
     _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
     libvlc_media_player_set_media(_m_player, _m);
     _curPlayer = _m_player;
-    //        libvlc_video_set_key_input(_m_player, false);
-    //        libvlc_video_set_mouse_input(_m_player, false);
+    libvlc_video_set_key_input(_m_player, false);
+//    libvlc_video_set_mouse_input(_m_player, false);
 
     //        libvlc_media_track_info_t *tracks = NULL;
     //        int num = libvlc_media_get_tracks_info(_m, &tracks);

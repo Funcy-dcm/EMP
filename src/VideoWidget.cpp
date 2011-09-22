@@ -8,18 +8,18 @@ VlcVideoWidget::VlcVideoWidget(QWidget *parent)
       _currentCrop(""),
       _currentFilter("")
 {
-    setMouseTracking(true);
+//    setMouseTracking(true);
     setCursor(Qt::PointingHandCursor);
     _widget = new QWidget(this);
     _widget->setCursor(Qt::PointingHandCursor);
     _widget->setMouseTracking(true);
 
-    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
-    _widget->setAttribute(Qt::WA_PaintOnScreen);
-    _widget->setAttribute(Qt::WA_NoSystemBackground);
-    QPalette p = palette();
-    p.setColor(backgroundRole(), Qt::black);
-    _widget->setPalette(p);
+//    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
+//    _widget->setAttribute(Qt::WA_PaintOnScreen);
+//    _widget->setAttribute(Qt::WA_NoSystemBackground);
+//    QPalette p = palette();
+//    p.setColor(backgroundRole(), Qt::black);
+//    _widget->setPalette(p);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
@@ -42,12 +42,13 @@ VlcVideoWidget::~VlcVideoWidget()
 void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
 {
     event->ignore();
+    qDebug() << "MoveEvent";
     if(isFullScreen()) {
         emit mouseShow(event->globalPos());
     }
 
     if(isFullScreen() && _hide) {
-        qApp->setOverrideCursor(Qt::ArrowCursor);
+        qApp->setOverrideCursor(Qt::PointingHandCursor);
 
         _timerMouse->start(1000);
     }
@@ -55,6 +56,7 @@ void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
 void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
 {
     event->ignore();
+    qDebug() << "PressEvent";
 
     if(event->button() == Qt::RightButton) {
         qApp->setOverrideCursor(Qt::ArrowCursor);
@@ -64,6 +66,7 @@ void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
 void VlcVideoWidget::wheelEvent(QWheelEvent *event)
 {
     event->ignore();
+    qDebug() << "wheelEvent";
 
     if(event->delta() > 0)
         emit wheel(true);
@@ -73,9 +76,9 @@ void VlcVideoWidget::wheelEvent(QWheelEvent *event)
 
 void VlcVideoWidget::hideMouse()
 {
-    if(isFullScreen() && _hide) {
-        qApp->setOverrideCursor(Qt::BlankCursor);
-        _timerMouse->stop();
-        emit mouseHide();
-    }
+//    if(isFullScreen() && _hide) {
+//        qApp->setOverrideCursor(Qt::BlankCursor);
+//        _timerMouse->stop();
+//        emit mouseHide();
+//    }
 }

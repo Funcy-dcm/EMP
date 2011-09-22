@@ -92,6 +92,7 @@ private slots:
     void playing(bool,bool);
 
 protected:
+    virtual bool eventFilter(QObject*, QEvent*);
     virtual void closeEvent(QCloseEvent*);
     virtual void resizeEvent(QResizeEvent*);
     virtual void moveEvent(QMoveEvent*);
