@@ -43,7 +43,7 @@ class MediaPlayer : public QMainWindow {
     Q_OBJECT
 
 public:
-    MediaPlayer(const QString &fileName);
+    MediaPlayer(const QString&);
     virtual ~MediaPlayer();
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
@@ -69,6 +69,9 @@ public:
     QRect nGeometryWindows;
     QBasicTimer *timerFullScreen;
     int curPlayList;
+    QString getCurrentSourceName();
+    int getCurrentTime();
+    int getTotalTime();
 
 public slots:
     void receiveMessage(const QString&);
@@ -81,7 +84,7 @@ public slots:
     void forward();
     void playlistShow();
     void playListDoubleClicked(QModelIndex);
-    void setCurrentSource(const QString &source);
+    void setCurrentSource(const QString&, bool);
     void setFullScreen(bool);
 
 private slots:

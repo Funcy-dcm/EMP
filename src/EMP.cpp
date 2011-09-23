@@ -10,6 +10,7 @@
 #include <QtGui>
 #include <QtNetwork>
 #include "VersionNo.h"
+#include "SocketServer.h"
 #include "EMP.h"
 
 libvlc_media_player_t *_curPlayer = NULL;
@@ -30,7 +31,7 @@ void MediaPlayer::receiveMessage(const QString& message)
 
         curPlayList = 0;
         addFile(message);
-        setCurrentSource(message);
+        setCurrentSource(message, true);
     }
 }
 
@@ -246,7 +247,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
     if (!filePath.isEmpty()) {
         addFile(filePath);
-        setCurrentSource(filePath);
+        setCurrentSource(filePath, true);
     } else {
         QFile filePL(qApp->applicationDirPath()+ "/default.epl");
         if (filePL.open(QIODevice::ReadOnly)){
@@ -273,6 +274,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
     qApp->installEventFilter( this );
     activateWindow();
+
+    new SocketServer(this);
 
     curPlayList = 0;
 
@@ -464,7 +467,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
                 addFile(urls[i].toLocalFile());
         }
         if (newPlayList)
-            setCurrentSource(fileName);
+            setCurrentSource(fileName, true);
     }
     qDebug() << "handleDropStop";
 }
@@ -592,16 +595,16 @@ void MediaPlayer::stateChanged()
         case libvlc_Playing:
         {
             if (state_t == libvlc_Opening) {
-                QModelIndex indexNew = model->index(curPlayList, 3);
-                QString fileName = model->data(indexNew).toString();
-                for (int i = 0; i < MAX_FILE_POS; ++i) {
-                    if (fileNameP[i] == fileName) {
-                        //                if (m_pmedia.isSeekable())
-                        libvlc_media_player_set_time(_m_player, filePos[i]);
-                        qDebug() << "set_time:" << filePos[i];
-                        break;
-                    }
-                }
+//                QModelIndex indexNew = model->index(curPlayList, 3);
+//                QString fileName = model->data(indexNew).toString();
+//                for (int i = 0; i < MAX_FILE_POS; ++i) {
+//                    if (fileNameP[i] == fileName) {
+//                        //                if (m_pmedia.isSeekable())
+//                        libvlc_media_player_set_time(_m_player, filePos[i]);
+//                        qDebug() << "set_time:" << filePos[i];
+//                        break;
+//                    }
+//                }
                 statusLabel->setText("");
             }
 
@@ -670,7 +673,7 @@ void MediaPlayer::openFile()
         addFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
             addFile(fileNames[i]);
-        setCurrentSource(fileName);
+        setCurrentSource(fileName, true);
     }
 }
 
@@ -698,18 +701,7 @@ void MediaPlayer::playPause()
         }
         indexNew = model->index(curPlayList, 3);
         QString fileName = model->data(indexNew).toString();
-
-        _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(fileName).toEncoded());
-        libvlc_media_player_set_media(_m_player, _m);
-#if defined(Q_WS_WIN)
-        libvlc_media_player_set_hwnd(_m_player, m_videoWidget->winId());
-#elif defined(Q_WS_MAC)
-        libvlc_media_player_set_agl(_m_player, m_videoWidget->winId());
-#else // Q_WS_X11
-        int windid = m_videoWidget->winId();
-        libvlc_media_player_set_xwindow(_m_player, windid);
-#endif // Q_WS_*
-        libvlc_media_player_play(_m_player);
+        setCurrentSource(fileName, true);
     }
 
     //    if (m_player.state() == Phonon::PlayingState) {
@@ -764,63 +756,56 @@ void MediaPlayer::stop()
 
 void MediaPlayer::rewind()
 {
-    //    QString fileName;
-    //    QModelIndex index;
-    //    if (curPlayList > 0){
-    //        index = model->index(curPlayList, 1);
-    //        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
-    //        index = model->index(curPlayList, 2);
-    //        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
-    //        curPlayList--;
-    //        index = model->index(curPlayList, 1);
-    //        model->setData(index, Qt::white, Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
-    //        index = model->index(curPlayList, 2);
-    //        model->setData(index, Qt::white, Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+    QString fileName;
+    QModelIndex index;
+    if (curPlayList > 0){
+        index = model->index(curPlayList, 1);
+        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+        index = model->index(curPlayList, 2);
+        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+        curPlayList--;
+        index = model->index(curPlayList, 1);
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+        index = model->index(curPlayList, 2);
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
 
-    //        index = model->index(curPlayList, 3);
-    //        fileName = model->data(index).toString();
-    //        m_player.setCurrentSource(Phonon::MediaSource(fileName));
-    //    } else {
-    //        m_player.setTickInterval(50);
-    //        m_player.seek(0);
-    //    }
+        index = model->index(curPlayList, 3);
+        fileName = model->data(index).toString();
+        setCurrentSource(fileName, true);
+    } else {
+        libvlc_media_player_set_time(_m_player, 0);
+    }
 }
 
 void MediaPlayer::forward()
 {
-    ////    QList<Phonon::MediaSource> queue = m_player.queue();
-    ////    if (queue.size() > 0) {
-    ////        setCurrentSource(queue[0].fileName());
-    ////        forwardButton->setEnabled(queue.size() > 1);
-    ////        cWidget->forwardButton->setEnabled(queue.size() > 1);
-    ////    }
-    //    QString fileName;
-    //    QModelIndex index;
+    QString fileName;
+    QModelIndex index;
 
-    //    int row = model->rowCount();
-    //    if ((curPlayList < row-1) && (curPlayList >= 0)){
-    //        index = model->index(curPlayList, 1);
-    //        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
-    //        index = model->index(curPlayList, 2);
-    //        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
-    //        curPlayList++;
-    //        index = model->index(curPlayList, 1);
-    //        model->setData(index, Qt::white, Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
-    //        index = model->index(curPlayList, 2);
-    //        model->setData(index, Qt::white, Qt::TextColorRole);
-    //        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+    int row = model->rowCount();
+    if ((curPlayList < row-1) && (curPlayList >= 0)){
+        index = model->index(curPlayList, 1);
+        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+        index = model->index(curPlayList, 2);
+        model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
+        curPlayList++;
+        index = model->index(curPlayList, 1);
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
+        index = model->index(curPlayList, 2);
+        model->setData(index, Qt::white, Qt::TextColorRole);
+        model->setData(index, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
 
-    //        index = model->index(curPlayList, 3);
-    //        fileName = model->data(index).toString();
-    //        m_player.setCurrentSource(Phonon::MediaSource(fileName));
-    //    }
+        index = model->index(curPlayList, 3);
+        fileName = model->data(index).toString();
+        setCurrentSource(fileName, true);
+    }
 }
 
 void MediaPlayer::playlistShow()
@@ -861,7 +846,7 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 
     indexNew = model->index(curPlayList, 3);
     fileName = model->data(indexNew).toString();
-    //    m_pmedia.setCurrentSource(Phonon::MediaSource(fileName));
+    setCurrentSource(fileName, true);
 }
 
 void MediaPlayer::setFullScreen(bool enabled)
@@ -897,7 +882,7 @@ void MediaPlayer::setFullScreen(bool enabled)
     sWidget.setCurrentIndex(0);
 }
 
-void MediaPlayer::setCurrentSource(const QString &source)
+void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 {
     _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
     libvlc_media_player_set_media(_m_player, _m);
@@ -917,19 +902,26 @@ void MediaPlayer::setCurrentSource(const QString &source)
     int windid = m_videoWidget->winId();
     libvlc_media_player_set_xwindow(_m_player, windid);
 #endif // Q_WS_*
-
     /* Play */
     libvlc_media_player_play(_m_player);
-    //        _isPlaying=true;
-    //        sWidget.setCurrentIndex(0);
+
+    if (setPosOn) {
+        for (int i = 0; i < MAX_FILE_POS; ++i) {
+            if (fileNameP[i] == source) {
+                libvlc_media_player_set_time(_m_player, filePos[i]);
+                qDebug() << "set_time:" << filePos[i];
+                break;
+            }
+        }
+    }
 }
 
 void MediaPlayer::addFile(QString fileName)
 {
+    fileName = QUrl::fromLocalFile(fileName).toLocalFile();
+    qDebug() << fileName;
     QString Name = fileName;
-    int t = Name.lastIndexOf('\\');
-    if (t < 0) t = Name.lastIndexOf('/');
-    Name = Name.right(Name.length() - t - 1);
+    Name = Name.right(Name.length() - Name.lastIndexOf('/') - 1);
 
     int row = model->rowCount();
     model->insertRows(row, 1);
@@ -959,6 +951,21 @@ void MediaPlayer::addFile(QString fileName)
     forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
     //    cWidget->forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
 }
+
+QString MediaPlayer::getCurrentSourceName () {
+    QString fileName = "";
+    QModelIndex index = model->index(curPlayList, 3);
+    fileName = model->data(index).toString();
+    return fileName;
+}
+int MediaPlayer::getCurrentTime () {
+    return libvlc_media_player_get_length(_m_player);
+}
+
+int MediaPlayer::getTotalTime () {
+    return libvlc_media_player_get_time(_m_player);
+}
+
 
 void MediaPlayer::playing(bool play, bool buffering)
 {

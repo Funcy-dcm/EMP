@@ -11,7 +11,8 @@ HEADERS	     = \
     src/VersionNo.h \
     src/VideoWidget.h \
     src/VolumeSlider.h \
-    src/SeekSlider.h
+    src/SeekSlider.h \
+    src/SocketServer.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -22,7 +23,8 @@ SOURCES	     = \
     src/qtsingleapplication/qtlocalpeer.cpp \
     src/VideoWidget.cpp \
     src/VolumeSlider.cpp \
-    src/SeekSlider.cpp
+    src/SeekSlider.cpp \
+    src/SocketServer.cpp
 
 LIBS     += -L$$PWD/libvlc -lvlc
 
@@ -38,6 +40,8 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
+
+
 
 
 
