@@ -70,8 +70,8 @@ public:
     QBasicTimer *timerFullScreen;
     int curPlayList;
     QString getCurrentSourceName();
-    int getCurrentTime();
-    int getTotalTime();
+    quint64 getCurrentTime();
+    quint64 getTotalTime();
 
 public slots:
     void receiveMessage(const QString&);
@@ -92,7 +92,7 @@ private slots:
     void showContextMenu(const QPoint &);
     void slotWindowNormal();
     void addFile(QString fileName);
-    void playing(bool,bool);
+    void resizeWindow(int);
 
 protected:
     virtual bool eventFilter(QObject*, QEvent*);
@@ -104,6 +104,7 @@ private:
     QString lang;
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
+    bool serverOn;
 
     QStandardItemModel *model;
     QTableView *playListView;
@@ -126,10 +127,9 @@ private:
     VlcVolumeSlider *volumeSlider;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
+    bool newSourceOn;
 
     QTimer *_timerState;
-
-    quint16     m_nNextBlockSize;
 
 signals:
     void signalWindowNormal();

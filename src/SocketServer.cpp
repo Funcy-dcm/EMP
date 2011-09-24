@@ -18,8 +18,7 @@ SocketServer::SocketServer(MediaPlayer *player, QObject *parent) :
         close();
     } else {
         connect(this, SIGNAL(newConnection()),
-                this,         SLOT(slotNewConnection())
-               );
+                this, SLOT(slotNewConnection()));
         qDebug() << "Connection";
     }
 }
@@ -29,11 +28,9 @@ SocketServer::SocketServer(MediaPlayer *player, QObject *parent) :
     qDebug() << "NewConnection";
     QTcpSocket* pClientSocket = nextPendingConnection();
     connect(pClientSocket, SIGNAL(disconnected()),
-            pClientSocket, SLOT(deleteLater())
-           );
+            pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
-            this,          SLOT(slotReadClient())
-           );
+            this,          SLOT(slotReadClient()));
 
     sendToClient(pClientSocket, "*OK", NULL);
 }
