@@ -93,6 +93,7 @@ private slots:
     void slotWindowNormal();
     void addFile(QString fileName);
     void resizeWindow(int);
+    void saveFilePos();
 
 protected:
     virtual bool eventFilter(QObject*, QEvent*);
@@ -127,7 +128,6 @@ private:
     VlcVolumeSlider *volumeSlider;
     QWidget *buttonPanelWidget;
     bool fullScreenOn;
-    bool newSourceOn;
 
     QTimer *_timerState;
 

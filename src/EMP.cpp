@@ -349,36 +349,7 @@ void MediaPlayer::writeSettings()
     qDebug() << "closeEventStart";
     if (libvlc_video_get_track_count(_m_player)) {
         qDebug() << "closeEvent(1)";
-        bool findOk = 0;
-        QModelIndex indexNew = model->index(curPlayList, 3);
-        QString fileName = model->data(indexNew).toString();
-        int fullTime = libvlc_media_player_get_length(_curPlayer);
-        int currentTime = libvlc_media_player_get_time(_curPlayer);
-        for (int i = 0; i < MAX_FILE_POS; ++i) {
-            if (fileNameP[i] == fileName) {
-                filePos[i] = currentTime;
-                findOk = 1;
-                break;
-            }
-        }
-
-        if (!findOk) {
-            for (int i = MAX_FILE_POS-1; i > 0 ; --i) {
-                fileNameP[i] = fileNameP[i-1];
-                filePos[i] = filePos[i-1];
-            }
-            fileNameP[0] = fileName;
-            filePos[0] = currentTime;
-        }
-
-        if (currentTime >= fullTime-2000) {
-            for (int i = 0; i < MAX_FILE_POS; ++i) {
-                if (fileNameP[i] == fileName) {
-                    filePos[i] = 0;
-                    break;
-                }
-            }
-        }
+        saveFilePos();
     }
     fullScreenAction->setChecked(false);
     writeSettings();
@@ -402,6 +373,39 @@ void MediaPlayer::writeSettings()
     filePL.close();
 
     qDebug() << "closeEventStop";
+}
+
+void MediaPlayer::saveFilePos() {
+    bool findOk = 0;
+    QModelIndex indexNew = model->index(curPlayList, 3);
+    QString fileName = model->data(indexNew).toString();
+    int fullTime = libvlc_media_player_get_length(_curPlayer);
+    int currentTime = libvlc_media_player_get_time(_curPlayer);
+    for (int i = 0; i < MAX_FILE_POS; ++i) {
+        if (fileNameP[i] == fileName) {
+            filePos[i] = currentTime;
+            findOk = 1;
+            break;
+        }
+    }
+
+    if (!findOk) {
+        for (int i = MAX_FILE_POS-1; i > 0 ; --i) {
+            fileNameP[i] = fileNameP[i-1];
+            filePos[i] = filePos[i-1];
+        }
+        fileNameP[0] = fileName;
+        filePos[0] = currentTime;
+    }
+
+    if (currentTime >= fullTime-2000) {
+        for (int i = 0; i < MAX_FILE_POS; ++i) {
+            if (fileNameP[i] == fileName) {
+                filePos[i] = 0;
+                break;
+            }
+        }
+    }
 }
 
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
@@ -744,6 +748,7 @@ void MediaPlayer::rewind()
     QString fileName;
     QModelIndex index;
     if (curPlayList > 0){
+        saveFilePos();
         index = model->index(curPlayList, 1);
         model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
         model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
@@ -770,9 +775,9 @@ void MediaPlayer::forward()
 {
     QString fileName;
     QModelIndex index;
-
     int row = model->rowCount();
     if ((curPlayList < row-1) && (curPlayList >= 0)){
+        saveFilePos();
         index = model->index(curPlayList, 1);
         model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
         model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
@@ -813,6 +818,7 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 {
     QString fileName;
     if ((curPlayList < model->rowCount()-1) && (curPlayList >= 0)) {
+        saveFilePos();
         QModelIndex indexOld = model->index(curPlayList, 1);
         model->setData(indexOld, QColor(187, 187, 187), Qt::TextColorRole);
         model->setData(indexOld, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
@@ -895,13 +901,16 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 
     if (setPosOn) {
         for (int i = 0; i < MAX_FILE_POS; ++i) {
-            if (fileNameP[i] == source) {
+            if (fileNameP[i] == QUrl::fromLocalFile(source).toLocalFile()) {
                 libvlc_media_player_set_time(_m_player, filePos[i]);
                 qDebug() << "set_time:" << filePos[i];
                 break;
             }
         }
     }
+    int row = model->rowCount();
+    forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
+//    cWidget->forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
 }
 
 void MediaPlayer::addFile(QString fileName)
