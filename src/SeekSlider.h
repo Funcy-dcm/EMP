@@ -35,10 +35,6 @@ public:
     ~VlcSeekSlider();
     QString timeString;
 
-public:
-    bool autoHide() const { return _autoHide; }
-    void setAutoHide(const bool &autoHide) { _autoHide = autoHide; }
-
 protected:
     virtual bool eventFilter(QObject*, QEvent*);
 
@@ -48,7 +44,6 @@ private slots:
     void updateTime();
 
 private:
-    bool _autoHide;
     QSlider *_seek;
     QTimer *_timer;
 };
