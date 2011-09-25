@@ -15,6 +15,7 @@
 #include "VideoWidget.h"
 #include "SeekSlider.h"
 #include "VolumeSlider.h"
+#include "Explorer.h"
 
 #define EXTENSIONS_AUDIO " *.a52 *.aac *.ac3 *.adt *.adts *.aif *.aifc *.aiff *.amr *.aob"\
     " *.ape *.cda *.dts *.flac *.it *.m4a *.m4p *.mid *.mka *.mlp *.mod *.mp1 *.mp2"\
@@ -110,6 +111,7 @@ private:
 
     QStandardItemModel *model;
     QTableView *playListView;
+    ExplorerWidget *explorerView;
 
     QStackedWidget sWidget;
     QLabel *logoLabel;

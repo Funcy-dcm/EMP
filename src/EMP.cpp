@@ -604,12 +604,16 @@ void MediaPlayer::initVideoWindow()
 //    textb->setText(QString("v")+STRFILEVER);
 //    textb->move(5, 5);
 
+    explorerView = new ExplorerWidget(this);
+
     sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
     sWidget.addWidget(m_videoWidget);   //0
     sWidget.addWidget(logoLabel);       //1
     sWidget.addWidget(blackWidget);     //2
-    sWidget.setCurrentIndex(1);
+    sWidget.addWidget(explorerView);     //3
+//    sWidget.setCurrentIndex(1);
+    sWidget.setCurrentIndex(3);
     //
     blackWidget->setAttribute(Qt::WA_OpaquePaintEvent);
     blackWidget->setAttribute(Qt::WA_PaintOnScreen);

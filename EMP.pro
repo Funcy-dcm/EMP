@@ -12,7 +12,8 @@ HEADERS	     = \
     src/VideoWidget.h \
     src/VolumeSlider.h \
     src/SeekSlider.h \
-    src/SocketServer.h
+    src/SocketServer.h \
+    src/Explorer.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -24,7 +25,8 @@ SOURCES	     = \
     src/VideoWidget.cpp \
     src/VolumeSlider.cpp \
     src/SeekSlider.cpp \
-    src/SocketServer.cpp
+    src/SocketServer.cpp \
+    src/Explorer.cpp
 
 LIBS     += -L$$PWD/libvlc -lvlc
 
@@ -40,6 +42,8 @@ RCC_DIR = build/rcc/
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
+
+
 
 
 
