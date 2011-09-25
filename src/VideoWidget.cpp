@@ -42,7 +42,6 @@ VlcVideoWidget::~VlcVideoWidget()
 void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
 {
     event->ignore();
-    qDebug() << "MoveEvent";
     if(isFullScreen()) {
         emit mouseShow(event->globalPos());
     }

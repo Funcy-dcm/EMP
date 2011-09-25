@@ -106,6 +106,7 @@ private:
     QString fileNameP[MAX_FILE_POS];
     long filePos[MAX_FILE_POS];
     bool serverOn;
+    QString openFilePath;
 
     QStandardItemModel *model;
     QTableView *playListView;

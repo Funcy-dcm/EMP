@@ -301,6 +301,7 @@ void MediaPlayer::readSettings()
     m_settings->beginGroup("/Settings");
     lang = m_settings->value("/Lang", strLocalLang).toString();
     serverOn = m_settings->value("/Server", false).toBool();
+    openFilePath = m_settings->value("/OpenFilePath", QDir::homePath()).toString();
     m_settings->endGroup();
 
     m_settings->beginGroup("/FilePosition");
@@ -327,6 +328,7 @@ void MediaPlayer::writeSettings()
     m_settings->beginGroup("/Settings");
     m_settings->setValue("/Lang", lang);
     m_settings->setValue("/Server", serverOn);
+    m_settings->setValue("/OpenFilePath", openFilePath);
     m_settings->endGroup();
 
     m_settings->beginGroup("/FilePosition");
@@ -746,9 +748,12 @@ void MediaPlayer::openFile()
     //    filters += tr("Playlist files") + " (" + EXTENSIONS_PLAYLIST + ");;";
     filters += tr("All files") + " (*)";
 
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), QDir::homePath(), filters);
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), openFilePath, filters);
 
     if (fileNames.size() > 0) {
+        QFileInfo file(fileNames[0]);
+        openFilePath = file.path();
+
         model->clear();
         model->setColumnCount(4);
         playListView->setColumnHidden(0, true);
