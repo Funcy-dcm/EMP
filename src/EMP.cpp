@@ -416,6 +416,68 @@ void MediaPlayer::saveFilePos() {
         }
     }
 
+    if (pe->type() == QEvent::KeyPress) {
+        if (!((QKeyEvent*)pe)->modifiers()) {
+            if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
+                if (isFullScreen()) {
+                    fullScreenAction->setChecked(false);
+                    playPause();
+                    return true;
+                }
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11) {
+                fullScreenAction->setChecked(!isFullScreen());
+                return true;
+            } else {
+                bool keyOk = false;
+                if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
+                    playPause();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Delete) {
+                    if (playListView->selectionModel()->hasSelection()) {
+                        int count = playListView->selectionModel()->selectedRows().count();
+                        int row = 0;
+                        for(int i = count-1; i >= 0; --i) {
+                            row = playListView->selectionModel()->selectedRows().at(i).row();
+                            playListView->model()->removeRow(row, QModelIndex());
+                            if (curPlayList == row) {
+                                curPlayList = -1;
+                                libvlc_media_player_stop(_m_player);
+                                statusLabel->setText("");
+//                                cWidget->statusLabel->setText("");
+                                timeLabel->setText("");
+//                                cWidget->timeLabel->setText("");
+                            }
+                        }
+
+                        if (!model->rowCount()) {
+                            libvlc_media_player_stop(_m_player);
+                            playButton->setEnabled(false);
+                            rewindButton->setEnabled(false);
+                            statusLabel->setText("");
+//                            cWidget->statusLabel->setText("");
+                            timeLabel->setText("");
+//                            cWidget->timeLabel->setText("");
+                        } else {
+                            if (row == model->rowCount()){
+                                playListView->selectRow(row-1);
+                            } else {
+                                playListView->selectRow(row);
+                            }
+                        }
+                    }
+                    return true;
+                }
+                if (keyOk) {
+                    if (isFullScreen()) {
+                        //cWidget->show();
+                        //timerFullScreen->start(5000, this);
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+
     if(pe->type() == QEvent::WindowStateChange) {
         int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
         int newState = windowState();
@@ -597,7 +659,7 @@ void MediaPlayer::stateChanged()
         has_vout_t = has_vout;
     }
 
-    timeLabel->setText(seekSlider->timeString);
+    if (curPlayList >= 0) timeLabel->setText(seekSlider->timeString);
 
     if (state != state_t) {
         switch (state) {
@@ -620,6 +682,12 @@ void MediaPlayer::stateChanged()
             break;
         }
         case libvlc_Stopped:
+            if (curPlayList < 0) {
+                sWidget.setCurrentIndex(1);
+                playButton->setIcon(playIcon);
+                playButton->setToolTip(tr("Play"));
+                break;
+            }
             sWidget.setCurrentIndex(2);
         case libvlc_Paused:
             playButton->setIcon(playIcon);
@@ -702,8 +770,9 @@ void MediaPlayer::playPause()
 {
     if (libvlc_media_player_get_state(_m_player) == libvlc_Playing) {
         libvlc_media_player_pause(_m_player);
-    } else if ((libvlc_media_player_get_state(_m_player) == libvlc_Paused) ||
-               (libvlc_media_player_get_state(_m_player) == libvlc_Stopped)) {
+    } else if (((libvlc_media_player_get_state(_m_player) == libvlc_Paused) ||
+               (libvlc_media_player_get_state(_m_player) == libvlc_Stopped)) &&
+               (curPlayList >= 0)) {
         libvlc_media_player_play(_m_player);
     } else {
         QModelIndex indexNew;
@@ -718,9 +787,11 @@ void MediaPlayer::playPause()
             model->setData(indexNew, Qt::white, Qt::TextColorRole);
             model->setData(indexNew, QBrush(QColor(100, 100, 100), Qt::SolidPattern), Qt::BackgroundRole);
         }
-        indexNew = model->index(curPlayList, 3);
-        QString fileName = model->data(indexNew).toString();
-        setCurrentSource(fileName, true);
+        if (curPlayList >= 0) {
+            indexNew = model->index(curPlayList, 3);
+            QString fileName = model->data(indexNew).toString();
+            setCurrentSource(fileName, true);
+        }
     }
 }
 
