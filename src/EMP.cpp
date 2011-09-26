@@ -11,8 +11,10 @@
 #include <QtNetwork>
 #include "VersionNo.h"
 #include "SocketServer.h"
+#include "Explorer.h"
 #include "EMP.h"
 
+ExplorerWidget *explorerView;
 libvlc_media_player_t *_curPlayer = NULL;
 
 void MediaPlayer::receiveMessage(const QString& message)
@@ -270,10 +272,10 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     resize(minimumSizeHint());
     moveWindowToCenter();
 
-    qApp->installEventFilter( this );
+    qApp->installEventFilter(this);
     activateWindow();
 
-    if (serverOn) new SocketServer(this);
+    if (serverOn) new SocketServer(this, this);
 
     curPlayList = 0;
 
@@ -468,6 +470,18 @@ void MediaPlayer::saveFilePos() {
                         }
                     }
                     return true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+                    explorerView->slotKeyLeft();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+                    explorerView->slotKeyRight();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Up) {
+                    explorerView->slotKeyUp();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
+                    explorerView->slotKeyDown();
+                    keyOk = true;
                 }
                 if (keyOk) {
                     if (isFullScreen()) {
@@ -604,14 +618,14 @@ void MediaPlayer::initVideoWindow()
 //    textb->setText(QString("v")+STRFILEVER);
 //    textb->move(5, 5);
 
-    explorerView = new ExplorerWidget(this);
+    explorerView = new ExplorerWidget(this, this);
 
     sWidget.setMinimumSize(250, 200);
     sWidget.setContentsMargins(0, 0, 0, 0);
     sWidget.addWidget(m_videoWidget);   //0
     sWidget.addWidget(logoLabel);       //1
     sWidget.addWidget(blackWidget);     //2
-    sWidget.addWidget(explorerView);     //3
+    sWidget.addWidget(explorerView);    //3
 //    sWidget.setCurrentIndex(1);
     sWidget.setCurrentIndex(3);
     //

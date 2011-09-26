@@ -231,16 +231,19 @@ QMenu::separator {
 }
 
 #ExplorerWidget {
-	border: 1px solid #999999;
-	font: normal 18px "Arial";
+	/*background-color: #8000FF;*/
+	border: 0px;
+	font: normal 16px "Arial";
+	margin: 2px;
 	border-radius: 4px;
-	padding: 2px;
+	/*padding: 2px;*/
 }
 
 #ExplorerWidget::item:selected {
 	color: #B1B1B1;
-	/*border: 1px solid #999999;*/
+	border: 1px solid #999999;
 	background: #424242;/*qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #424242);*/
+	border-radius: 6px;
 }
 
 #ExplorerWidget::item:hover {
