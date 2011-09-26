@@ -54,6 +54,8 @@ public:
     libvlc_media_player_t *_m_player;
     libvlc_media_t *_m;
 
+    QStackedWidget sWidget;
+
     void writeSettings();
     void readSettings ();
 
@@ -79,6 +81,7 @@ public slots:
     void moveWindowToCenter();
     void openFile();
     void playPause();
+    void pause();
     void stop();
     void rewind();
     void forward();
@@ -87,6 +90,7 @@ public slots:
     void addFile(QString fileName);
     void setCurrentSource(const QString&, bool);
     void setFullScreen(bool);
+    void initPlayList();
 
 private slots:
     void stateChanged();
@@ -111,7 +115,6 @@ private:
     QStandardItemModel *model;
     QTableView *playListView;
 
-    QStackedWidget sWidget;
     QLabel *logoLabel;
     VlcVideoWidget *m_videoWidget;
 

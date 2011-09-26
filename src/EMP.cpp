@@ -23,15 +23,7 @@ void MediaPlayer::receiveMessage(const QString& message)
     if (!message.isEmpty()){
         activateWindow();
 
-        model->clear();
-        model->setColumnCount(4);
-        playListView->setColumnHidden(0, true);
-        playListView->setColumnHidden(3, true);
-        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-
-        curPlayList = 0;
+        initPlayList();
         addFile(message);
         setCurrentSource(message, true);
     }
@@ -171,22 +163,17 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
     playListView->setModel(model);
     playListView->setObjectName("playList");
-    playListView->setColumnHidden(0, true);
-    playListView->setColumnHidden(3, true);
+
     playListView->horizontalHeader()->hide();
     playListView->verticalHeader()->hide();
     playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
     playListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-    playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-    playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
     playListView->setShowGrid(false);
     playListView->verticalHeader()->setDefaultSectionSize ( playListView->verticalHeader()->minimumSectionSize () );
-
     playListView->setFocusPolicy(Qt::NoFocus);
     playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    initPlayList();
 
     playListDoc->setWidget(playListView);
     playListDoc->setMinimumWidth(160);
@@ -522,14 +509,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
         // Добавляем в плейлист
     } else {
         // Создаём новый плейлист
-        model->clear();
-        model->setColumnCount(4);
-        playListView->setColumnHidden(0, true);
-        playListView->setColumnHidden(3, true);
-        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-        curPlayList = 0;
+        initPlayList();
         newPlayList = true;
     }
     if (urls.size() > 0) {
@@ -626,8 +606,8 @@ void MediaPlayer::initVideoWindow()
     sWidget.addWidget(logoLabel);       //1
     sWidget.addWidget(blackWidget);     //2
     sWidget.addWidget(explorerView);    //3
-//    sWidget.setCurrentIndex(1);
-    sWidget.setCurrentIndex(3);
+    sWidget.setCurrentIndex(1);
+//    sWidget.setCurrentIndex(3);
     //
     blackWidget->setAttribute(Qt::WA_OpaquePaintEvent);
     blackWidget->setAttribute(Qt::WA_PaintOnScreen);
@@ -667,6 +647,8 @@ void MediaPlayer::stateChanged()
         if (!isFullScreen() && (state != libvlc_Stopped)) {
             resizeWindow(has_vout);
         }
+        if ((has_vout == 1) && (sWidget.currentIndex() != 3))
+            sWidget.setCurrentIndex(0);
         QString fileName = "";
         if (state != libvlc_NothingSpecial) {
             QModelIndex index = model->index(curPlayList, 3);
@@ -756,6 +738,19 @@ void MediaPlayer::stateChanged()
     }
 }
 
+void MediaPlayer::initPlayList()
+{
+    model->clear();
+    model->setColumnCount(4);
+    playListView->setColumnHidden(0, true);
+    playListView->setColumnHidden(3, true);
+    playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+    playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+
+    curPlayList = 0;
+}
+
 // ----------------------------------------------------------------------
 void MediaPlayer::openFile()
 {
@@ -771,16 +766,8 @@ void MediaPlayer::openFile()
     if (fileNames.size() > 0) {
         QFileInfo file(fileNames[0]);
         openFilePath = file.path();
+        initPlayList();
 
-        model->clear();
-        model->setColumnCount(4);
-        playListView->setColumnHidden(0, true);
-        playListView->setColumnHidden(3, true);
-        playListView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-        playListView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-        playListView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-
-        curPlayList = 0;
         QString fileName = fileNames[0];
         addFile(fileName);
         for (int i=1; i<fileNames.size(); i++)
@@ -796,6 +783,7 @@ void MediaPlayer::playPause()
     } else if (((libvlc_media_player_get_state(_m_player) == libvlc_Paused) ||
                (libvlc_media_player_get_state(_m_player) == libvlc_Stopped)) &&
                (curPlayList >= 0)) {
+        if (sWidget.currentIndex() == 3) sWidget.setCurrentIndex(0);
         libvlc_media_player_play(_m_player);
     } else {
         QModelIndex indexNew;
@@ -815,6 +803,13 @@ void MediaPlayer::playPause()
             QString fileName = model->data(indexNew).toString();
             setCurrentSource(fileName, true);
         }
+    }
+}
+
+void MediaPlayer::pause()
+{
+    if (libvlc_media_player_get_state(_m_player) == libvlc_Playing) {
+        libvlc_media_player_pause(_m_player);
     }
 }
 
@@ -1059,6 +1054,7 @@ quint64 MediaPlayer::getTotalTime () {
 
 void MediaPlayer::resizeWindow(int has_vout)
 {
+    if (windowState() == Qt::WindowMaximized) return;
     QPoint posCOld = frameGeometry().center();
     if (has_vout == 1) {
         qDebug() << "processEvents (resize)";
@@ -1098,7 +1094,7 @@ void MediaPlayer::resizeWindow(int has_vout)
                         newVideoRect.height());
         }
         move(posNew);
-        sWidget.setCurrentIndex(0);
+//        sWidget.setCurrentIndex(0);
     } else {
         resize(minimumSize());
         QSize frame = frameSize();
