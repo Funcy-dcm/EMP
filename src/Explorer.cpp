@@ -7,11 +7,17 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
 {
     setObjectName("ExplorerWidget");
     model = new QDirModel(this);
-    model->setSorting(QDir::DirsFirst);
+    model->setSorting(QDir::DirsFirst | QDir::Name);
+//    QStringList listFilters;
+//    listFilters << "*.flv" << "*./";
+//    model->setNameFilters(listFilters);
+    model->setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+
+    model->setLazyChildCount(true);
 
     setModel(model);
 
-    QModelIndex index = model->index("e:\\");
+    QModelIndex index = model->index(m_player->homeFilePath);
     setRootIndex(index);
     setColumnHidden(1, true);
     setColumnHidden(2, true);
@@ -20,7 +26,9 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
     verticalHeader()->hide();
     setSelectionBehavior( QAbstractItemView::SelectRows );
     setSelectionMode(QAbstractItemView::SingleSelection);
+//    verticalHeader()->setMinimumSectionSize(50);
     horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+//    horizontalHeader()->setLineWidth(50);
     setShowGrid(false);
     setFocusPolicy(Qt::NoFocus);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -63,7 +71,11 @@ void ExplorerWidget::slotKeyLeft()
 {
     if (m_player->sWidget.currentIndex() == 3) {
         setRootIndex(model->parent(oldIndex));
-        selectRow(oldIndex.row());
+//        qDebug() << model->parent(oldIndex).row();
+//        qDebug() << oldIndex.row();
+        int row = oldIndex.row();
+        if (row == -1) row = 0;
+        selectRow(row);
         oldIndex = model->parent(oldIndex);
     } else {
         m_player->pause();

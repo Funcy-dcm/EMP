@@ -71,6 +71,7 @@ public:
     QRect nGeometryWindows;
     QBasicTimer *timerFullScreen;
     int curPlayList;
+    QString homeFilePath;
     QString getCurrentSourceName();
     quint64 getCurrentTime();
     quint64 getTotalTime();

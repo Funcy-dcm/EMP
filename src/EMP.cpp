@@ -181,9 +181,6 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     playListDoc->hide();
     playListDoc->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    initVideoWindow();
-    setCentralWidget(&sWidget);
-
     // Create menu bar:
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open File..."));
@@ -230,6 +227,10 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     setAcceptDrops(true);
 
     readSettings();
+
+    initVideoWindow();
+    setCentralWidget(&sWidget);
+
     controlPanel->show();
 
     if (!filePath.isEmpty()) {
@@ -291,6 +292,7 @@ void MediaPlayer::readSettings()
     lang = m_settings->value("/Lang", strLocalLang).toString();
     serverOn = m_settings->value("/Server", false).toBool();
     openFilePath = m_settings->value("/OpenFilePath", QDir::homePath()).toString();
+    homeFilePath = m_settings->value("/HomeFilePath", QDir::homePath()).toString();
     m_settings->endGroup();
 
     m_settings->beginGroup("/FilePosition");
@@ -409,13 +411,13 @@ void MediaPlayer::saveFilePos() {
 
     if (pe->type() == QEvent::KeyPress) {
         if (!((QKeyEvent*)pe)->modifiers()) {
-            if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
+            /*if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
                 if (isFullScreen()) {
                     fullScreenAction->setChecked(false);
                     playPause();
                     return true;
                 }
-            } else if (((QKeyEvent*)pe)->key() == Qt::Key_F11) {
+            } else*/ if (((QKeyEvent*)pe)->key() == Qt::Key_F11) {
                 fullScreenAction->setChecked(!isFullScreen());
                 return true;
             } else {
@@ -468,6 +470,19 @@ void MediaPlayer::saveFilePos() {
                     keyOk = true;
                 } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
                     explorerView->slotKeyDown();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Return) {
+                    explorerView->slotKeyRight();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Backspace) {
+                    explorerView->slotKeyLeft();
+                    keyOk = true;
+                } else if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
+                    if (sWidget.currentIndex() == 3) {
+                        if (libvlc_media_player_get_state(_m_player) == libvlc_Paused)
+                            sWidget.setCurrentIndex(0);
+                        else sWidget.setCurrentIndex(1);
+                    }
                     keyOk = true;
                 }
                 if (keyOk) {
@@ -929,11 +944,16 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 
 void MediaPlayer::setFullScreen(bool enabled)
 {
+    QFont font;
+    font = explorerView->font();
+    int curIndex = sWidget.currentIndex();
     static bool viewPlaylist;
     fullScreenOn = true;
     timerFullScreen->stop();
     sWidget.setCurrentIndex(2);
     if (!isFullScreen()){
+//        font.setPixelSize(48);
+        explorerView->setFont(font);
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();
         playListDoc->hide();
@@ -949,6 +969,8 @@ void MediaPlayer::setFullScreen(bool enabled)
 //        //        cWidget->show();
 //        timerFullScreen->start(3000, this);
     } else if (isFullScreen()) {
+//        font.setPixelSize(16);
+        explorerView->setFont(font);
         //        mLabel->hide();
         //        cWidget->hide();
         controlPanel->show();
@@ -957,7 +979,8 @@ void MediaPlayer::setFullScreen(bool enabled)
         show();
     }
     fullScreenOn = false;
-    sWidget.setCurrentIndex(0);
+    if (curIndex != 3) sWidget.setCurrentIndex(0);
+    else sWidget.setCurrentIndex(3);
 }
 
 void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
