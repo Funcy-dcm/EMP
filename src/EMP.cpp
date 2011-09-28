@@ -951,9 +951,10 @@ void MediaPlayer::setFullScreen(bool enabled)
     fullScreenOn = true;
     timerFullScreen->stop();
     sWidget.setCurrentIndex(2);
-    if (!isFullScreen()){
-//        font.setPixelSize(48);
+    if (!isFullScreen()) {
+        font.setPixelSize(48);
         explorerView->setFont(font);
+        explorerView->verticalHeader()->setDefaultSectionSize(48 + 24);
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();
         playListDoc->hide();
@@ -969,8 +970,9 @@ void MediaPlayer::setFullScreen(bool enabled)
 //        //        cWidget->show();
 //        timerFullScreen->start(3000, this);
     } else if (isFullScreen()) {
-//        font.setPixelSize(16);
+        font.setPixelSize(20);
         explorerView->setFont(font);
+        explorerView->verticalHeader()->setDefaultSectionSize(20 + 10);
         //        mLabel->hide();
         //        cWidget->hide();
         controlPanel->show();

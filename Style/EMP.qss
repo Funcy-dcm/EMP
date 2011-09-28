@@ -233,13 +233,14 @@ QMenu::separator {
 #ExplorerWidget {
 	/*background-color: #8000FF;*/
 	border: 0px;
-	font: normal 16px "Arial";
+	font: normal 20px "Tahoma";
 	margin: 2px;
 	border-radius: 4px;
 	/*padding: 2px;*/
 }
 
 #ExplorerWidget::item:selected {
+	font: bold 20px "Tahoma";
 	color: #B1B1B1;
 	border: 1px solid #999999;
 	background: #424242;/*qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #424242);*/

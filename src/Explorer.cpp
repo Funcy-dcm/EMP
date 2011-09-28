@@ -17,18 +17,22 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
 
     setModel(model);
 
+    QFont font = this->font();
+    font.setPixelSize(20);
+    setFont(font);
+    verticalHeader()->setDefaultSectionSize(20 + 10);
+
     QModelIndex index = model->index(m_player->homeFilePath);
     setRootIndex(index);
     setColumnHidden(1, true);
     setColumnHidden(2, true);
     setColumnHidden(3, true);
-    this->horizontalHeader()->hide();
+    horizontalHeader()->hide();
     verticalHeader()->hide();
     setSelectionBehavior( QAbstractItemView::SelectRows );
     setSelectionMode(QAbstractItemView::SingleSelection);
-//    verticalHeader()->setMinimumSectionSize(50);
     horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-//    horizontalHeader()->setLineWidth(50);
+
     setShowGrid(false);
     setFocusPolicy(Qt::NoFocus);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -103,4 +107,6 @@ void ExplorerWidget::slotKeyDown()
     if (currentIndex().row() < (model->rowCount(rootIndex()) - 1)) {
         selectRow(currentIndex().row() + 1);
     }
+//    int  current = verticalScrollBar()->value();
+//    verticalScrollBar()->setValue(++current);
 }
