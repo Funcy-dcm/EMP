@@ -423,8 +423,10 @@ void MediaPlayer::saveFilePos() {
             } else {
                 bool keyOk = false;
                 if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
-                    playPause();
-                    keyOk = true;
+                    if (sWidget.currentIndex() != 3) {
+                        playPause();
+                        keyOk = true;
+                    }
                 } else if (((QKeyEvent*)pe)->key() == Qt::Key_Delete) {
                     if (playListView->selectionModel()->hasSelection()) {
                         int count = playListView->selectionModel()->selectedRows().count();
@@ -482,6 +484,7 @@ void MediaPlayer::saveFilePos() {
                         if (libvlc_media_player_get_state(_m_player) == libvlc_Paused)
                             sWidget.setCurrentIndex(0);
                         else sWidget.setCurrentIndex(1);
+                        controlPanel->show();
                     }
                     keyOk = true;
                 }
