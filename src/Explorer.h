@@ -21,14 +21,17 @@ public slots:
     void slotKeyRight();
     void slotKeyUp();
     void slotKeyDown();
+    void onFullScreen(bool);
 
 private slots:
     void slotSetIndex(const QModelIndex&);
+    void setFilters();
 
 private:
     MediaPlayer *m_player;
     QDirModel *model;
     QModelIndex oldIndex;
+    QStringList strFilters;
 
 };
 

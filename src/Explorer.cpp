@@ -8,19 +8,10 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
     setObjectName("ExplorerWidget");
     model = new QDirModel(this);
     model->setSorting(QDir::DirsFirst | QDir::Name);
-//    QStringList listFilters;
-//    listFilters << "*.flv" << "*./";
-//    model->setNameFilters(listFilters);
     model->setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-
     model->setLazyChildCount(true);
 
     setModel(model);
-
-    QFont font = this->font();
-    font.setPixelSize(20);
-    setFont(font);
-    verticalHeader()->setDefaultSectionSize(20 + 10);
 
     QModelIndex index = model->index(m_player->homeFilePath);
     setRootIndex(index);
@@ -41,8 +32,12 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
     QObject::connect(this, SIGNAL(activated(const QModelIndex&)),
                      this,  SLOT(slotSetIndex(QModelIndex)));
 
-    oldIndex = rootIndex();
     selectRow(0);
+    oldIndex = currentIndex();
+    onFullScreen(false);
+    QString strF = QString(EXTENSIONS_VIDEO) + QString(EXTENSIONS_AUDIO);
+    strFilters = strF.split(" *", QString::SkipEmptyParts);
+    setFilters();
 }
 
 ExplorerWidget::~ExplorerWidget()
@@ -60,6 +55,9 @@ ExplorerWidget::~ExplorerWidget()
 void ExplorerWidget::slotSetIndex(const QModelIndex& newIndex)
 {
     if (model->isDir(newIndex)) {
+        for (int i = 0; i < model->rowCount(rootIndex()); i++) {
+            if (isRowHidden(i)) showRow(i);
+        }
         setRootIndex(newIndex);
         selectRow(0);
     } else {
@@ -74,39 +72,129 @@ void ExplorerWidget::slotSetIndex(const QModelIndex& newIndex)
 void ExplorerWidget::slotKeyLeft()
 {
     if (m_player->sWidget.currentIndex() == 3) {
+        for (int i = 0; i < model->rowCount(rootIndex()); i++) {
+            if (isRowHidden(i)) showRow(i);
+        }
         setRootIndex(model->parent(oldIndex));
-//        qDebug() << model->parent(oldIndex).row();
-//        qDebug() << oldIndex.row();
-        int row = oldIndex.row();
-        if (row == -1) row = 0;
-        selectRow(row);
-        oldIndex = model->parent(oldIndex);
+
     } else {
         m_player->pause();
-        m_player->sWidget.setCurrentIndex(3);
-        oldIndex = model->parent(oldIndex);
+        m_player->sWidget.setCurrentIndex(3);     
     }
+
+    int row = oldIndex.row();
+    if (row == -1) row = 0;
+    selectRow(row-1);
+    setFilters();
+    selectRow(row);
+    oldIndex = model->parent(oldIndex);
 }
 
 void ExplorerWidget::slotKeyRight()
 {
     if (m_player->sWidget.currentIndex() != 3) return;
     slotSetIndex(currentIndex());
+    setFilters();
 }
 
 void ExplorerWidget::slotKeyUp()
 {
     if (m_player->sWidget.currentIndex() != 3) return;
-    if (currentIndex().row() > 0)
-        selectRow(currentIndex().row() - 1);
+    bool ok = false;
+    int row = currentIndex().row();
+    if (row > 0) {
+        for (int i = row-1; i >= 0; --i) {
+            if (!isRowHidden(i)) {
+                selectRow(i);
+                ok = true;
+                break;
+            }
+        }
+    }
+    if (!ok) {
+        row = model->rowCount(rootIndex())-1;
+        for (int i = row; i >= 0; --i) {
+            if (!isRowHidden(i)) {
+                selectRow(i); break;
+            }
+        }
+    }
+//    if (currentIndex().row() > 0)
+//        selectRow(currentIndex().row() - 1);
+//    else selectRow(model->rowCount(rootIndex())-1);
 }
 
 void ExplorerWidget::slotKeyDown()
 {
     if (m_player->sWidget.currentIndex() != 3) return;
-    if (currentIndex().row() < (model->rowCount(rootIndex()) - 1)) {
-        selectRow(currentIndex().row() + 1);
+    bool ok = false;
+    int row = currentIndex().row();
+    if (row < (model->rowCount(rootIndex()) - 1)) {
+        for (int i = row+1; i < model->rowCount(rootIndex()); i++) {
+            if (!isRowHidden(i)) {
+                selectRow(i);
+                ok = true;
+                break;
+            }
+        }
     }
+    if (!ok) {
+        row = 0;
+        for (int i = row; i < model->rowCount(rootIndex()); i++) {
+            if (!isRowHidden(i)) {
+                selectRow(i); break;
+            }
+        }
+    }
+//    if (currentIndex().row() < (model->rowCount(rootIndex()) - 1)) {
+//        selectRow(currentIndex().row() + 1);
+//    } else selectRow(0);
 //    int  current = verticalScrollBar()->value();
 //    verticalScrollBar()->setValue(++current);
+}
+
+void ExplorerWidget::onFullScreen(bool on)
+{
+    QFont font;
+    font = this->font();
+    int fontSize;
+    int itemSise;
+    if (on) {
+        fontSize = 48;
+        itemSise = fontSize + 24;
+        setIconSize(QSize(48, 48));
+    } else {
+        fontSize = 24;
+        itemSise = fontSize + 10;
+        setIconSize(QSize(16, 16));
+    }
+    font.setPixelSize(fontSize);
+    setFont(font);
+    verticalHeader()->setDefaultSectionSize(itemSise);
+
+    int row = currentIndex().row();
+    selectRow(row+1);
+    selectRow(row);
+}
+
+void ExplorerWidget::setFilters()
+{
+    bool ok;
+    QModelIndex index;
+
+    for (int i = 0; i < model->rowCount(rootIndex()); i++) {
+        index = model->index(i, 0 ,rootIndex());
+        if (!model->isDir(index)) {
+            QString str = model->fileName(index);
+            ok = false;
+            foreach (QString strFilter, strFilters) {
+                if (str.contains(strFilter, Qt::CaseInsensitive)) {
+                    ok = true; break;
+                }
+            }
+            if (!ok) {
+                hideRow(i);
+            }
+        }
+    }
 }

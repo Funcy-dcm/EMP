@@ -234,17 +234,33 @@ QMenu::separator {
 	/*background-color: #8000FF;*/
 	border: 0px;
 	font: normal 20px "Tahoma";
-	margin: 2px;
+	margin: 5px 0px 5px 0px;
 	border-radius: 4px;
 	/*padding: 2px;*/
 }
 
+#ExplorerWidget::item {
+	border-bottom: 1px solid qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+							 stop:0 #202020, 
+							 stop:0.2 #424242,
+							 stop:0.5 #888888,
+							 stop:0.8 #424242,
+							 stop:1 #202020);
+/*	border-top: 1px solid qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+							 stop:0 #202020, 
+							 stop:0.2 #424242,
+							 stop:0.5 #999999,
+							 stop:0.8 #424242,
+							 stop:1 #202020);*/
+	margin: 0px 5px 0px 5px;
+}
+
 #ExplorerWidget::item:selected {
 	font: bold 20px "Tahoma";
-	color: #B1B1B1;
+	color: #FFFFFF;
 	border: 1px solid #999999;
 	background: #424242;/*qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d6d6d6, stop:1 #424242);*/
-	border-radius: 6px;
+	border-radius: 8px;
 }
 
 #ExplorerWidget::item:hover {

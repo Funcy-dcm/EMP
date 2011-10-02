@@ -944,17 +944,12 @@ void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
 
 void MediaPlayer::setFullScreen(bool enabled)
 {
-    QFont font;
-    font = explorerView->font();
     int curIndex = sWidget.currentIndex();
     static bool viewPlaylist;
     fullScreenOn = true;
     timerFullScreen->stop();
     sWidget.setCurrentIndex(2);
     if (!isFullScreen()) {
-        font.setPixelSize(48);
-        explorerView->setFont(font);
-        explorerView->verticalHeader()->setDefaultSectionSize(48 + 24);
         controlPanel->hide();
         viewPlaylist = playListDoc->isVisible();
         playListDoc->hide();
@@ -969,16 +964,15 @@ void MediaPlayer::setFullScreen(bool enabled)
 #endif
 //        //        cWidget->show();
 //        timerFullScreen->start(3000, this);
+        explorerView->onFullScreen(true);
     } else if (isFullScreen()) {
-        font.setPixelSize(20);
-        explorerView->setFont(font);
-        explorerView->verticalHeader()->setDefaultSectionSize(20 + 10);
         //        mLabel->hide();
         //        cWidget->hide();
         controlPanel->show();
         if (viewPlaylist) playListDoc->show();
         setWindowState( windowState() ^ Qt::WindowFullScreen );
         show();
+        explorerView->onFullScreen(false);
     }
     fullScreenOn = false;
     if (curIndex != 3) sWidget.setCurrentIndex(0);
