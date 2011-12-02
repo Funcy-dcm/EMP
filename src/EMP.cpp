@@ -60,6 +60,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
     _m_player = libvlc_media_player_new (_vlcinstance);
     _curPlayer = _m_player;
+    libvlc_video_set_key_input(_m_player, false);
+//    libvlc_video_set_mouse_input(_m_player, false);
 
     _timerState = new QTimer(this);
     timerFullScreen = new QBasicTimer;
@@ -495,6 +497,28 @@ void MediaPlayer::saveFilePos() {
                     }
                     return true;
                 }
+            }
+        } else if (((QKeyEvent*)pe)->modifiers() == Qt::ControlModifier) {
+            if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+                qint64 pos = libvlc_media_player_get_time(_m_player);
+                libvlc_media_player_set_time(_m_player, pos-10000);
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+                qint64 pos = libvlc_media_player_get_time(_m_player);
+                libvlc_media_player_set_time(_m_player, pos+10000);
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_A) {
+                int audio_type = libvlc_audio_output_get_device_type(_curPlayer);
+                int audio_type_t = audio_type;
+                switch (audio_type) {
+                case libvlc_AudioOutputDevice_Stereo:
+                    audio_type = libvlc_AudioOutputDevice_5_1;
+                    break;
+                default:
+                    audio_type = libvlc_AudioOutputDevice_Stereo;
+                    break;
+                }
+
+                libvlc_audio_output_set_device_type(_curPlayer, audio_type);
+                qDebug() << audio_type_t << "->" <<libvlc_audio_output_get_device_type(_curPlayer);
             }
         }
     }
@@ -990,8 +1014,6 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 
     libvlc_media_player_set_media(_m_player, _m);
     _curPlayer = _m_player;
-    libvlc_video_set_key_input(_m_player, false);
-//    libvlc_video_set_mouse_input(_m_player, false);
 
 //    QString title;
 //    title = libvlc_media_get_meta(_m, libvlc_meta_Title);
