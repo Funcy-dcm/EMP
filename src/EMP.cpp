@@ -40,15 +40,18 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     const char * const vlc_args[] = {
         "--intf=dummy",
         "--ignore-config",
+//      "--qt-minimal-view",
+//      "--no-qt-notification",
+//      "--no-embedded-video",
 //        "--extraintf=logger",
 //        "--verbose=3",
 
-        "--no-mouse-events",
+//        "--no-mouse-events",
 //        "--mouse-hide-timeout=0",
-        "--no-screen-follow-mouse",
-        "--no-rmtosd-mouse-events",
-//        "--hotkeys-mousewheel-mode=1",
-        "--no-keyboard-events",
+//        "--no-screen-follow-mouse",
+//        "--no-rmtosd-mouse-events",
+//        "--hotkeys-mousewheel-mode=2",
+//        "--no-keyboard-events",
 
         "--no-fullscreen",
         "--no-media-library",
@@ -502,9 +505,11 @@ void MediaPlayer::saveFilePos() {
             if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
                 qint64 pos = libvlc_media_player_get_time(_m_player);
                 libvlc_media_player_set_time(_m_player, pos-10000);
+                return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
                 qint64 pos = libvlc_media_player_get_time(_m_player);
                 libvlc_media_player_set_time(_m_player, pos+10000);
+                return true;
             } else if (((QKeyEvent*)pe)->key() == Qt::Key_A) {
                 int audio_type = libvlc_audio_output_get_device_type(_curPlayer);
                 int audio_type_t = audio_type;
@@ -516,9 +521,20 @@ void MediaPlayer::saveFilePos() {
                     audio_type = libvlc_AudioOutputDevice_Stereo;
                     break;
                 }
-
                 libvlc_audio_output_set_device_type(_curPlayer, audio_type);
                 qDebug() << audio_type_t << "->" <<libvlc_audio_output_get_device_type(_curPlayer);
+                return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_T) {
+              int track = libvlc_audio_get_track(_curPlayer);
+              int cnt_track = libvlc_audio_get_track_count(_curPlayer);
+              if (track < cnt_track-1) track++;
+              else track = 0;
+              qDebug() << "SetTrack:" << track << "-" << libvlc_audio_set_track(_curPlayer, track);
+              return true;
+            } else if (((QKeyEvent*)pe)->key() == Qt::Key_S) {
+//              libvlc_media_track_info_t *pInfo = NULL;
+//              qDebug() << libvlc_media_get_tracks_info(_m, &pInfo);
+//              delete pInfo;
             }
         }
     }
@@ -1011,7 +1027,6 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
     sWidget.setCurrentIndex(1);
     statusLabel->setText(tr("Opening File..."));
     _m = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
-
     libvlc_media_player_set_media(_m_player, _m);
     _curPlayer = _m_player;
 
