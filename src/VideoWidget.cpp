@@ -14,15 +14,15 @@ VlcVideoWidget::VlcVideoWidget(QWidget *parent)
     _widget->setCursor(Qt::PointingHandCursor);
     _widget->setMouseTracking(true);
 
-//    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
-//    _widget->setAttribute(Qt::WA_PaintOnScreen);
-//    _widget->setAttribute(Qt::WA_NoSystemBackground);
-//    QPalette p = palette();
-//    p.setColor(backgroundRole(), Qt::black);
-//    _widget->setPalette(p);
+    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
+    _widget->setAttribute(Qt::WA_PaintOnScreen);
+    _widget->setAttribute(Qt::WA_NoSystemBackground);
+    QPalette p = palette();
+    p.setColor(backgroundRole(), Qt::black);
+    _widget->setPalette(p);
 
     QVBoxLayout *layout = new QVBoxLayout;
-//    layout->setMargin(0);
+    layout->setMargin(0);
     layout->addWidget(_widget);
     setLayout(layout);
 
