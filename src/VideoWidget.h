@@ -33,7 +33,7 @@ private slots:
 private:
     QWidget *_widget;
     QTimer *_timerMouse;
-    QTimer *_timerSettings;
+//    QTimer *_timerSettings;
 
     bool _hide;
 

@@ -52,7 +52,7 @@ public:
 
     libvlc_instance_t *_vlcinstance;
     libvlc_media_player_t *_m_player;
-    libvlc_media_t *_m;
+//    libvlc_media_t *vlcMedia_;
 
     QStackedWidget sWidget;
 

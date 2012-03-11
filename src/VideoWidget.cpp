@@ -28,7 +28,7 @@ VlcVideoWidget::VlcVideoWidget(QWidget *parent)
 
     _timerMouse = new QTimer(this);
     connect(_timerMouse, SIGNAL(timeout()), this, SLOT(hideMouse()));
-    _timerSettings = new QTimer(this);
+//    _timerSettings = new QTimer(this);
 
 //    qApp->setOverrideCursor(Qt::ArrowCursor);
 }
@@ -36,7 +36,7 @@ VlcVideoWidget::VlcVideoWidget(QWidget *parent)
 VlcVideoWidget::~VlcVideoWidget()
 {
     delete _timerMouse;
-    delete _timerSettings;
+//    delete _timerSettings;
     delete _widget;
 }
 
@@ -77,9 +77,9 @@ void VlcVideoWidget::wheelEvent(QWheelEvent *event)
 
 void VlcVideoWidget::hideMouse()
 {
-//    if(isFullScreen() && _hide) {
-//        qApp->setOverrideCursor(Qt::BlankCursor);
-//        _timerMouse->stop();
-//        emit mouseHide();
-//    }
+    if(isFullScreen() && _hide) {
+        qApp->setOverrideCursor(Qt::BlankCursor);
+        _timerMouse->stop();
+        emit mouseHide();
+    }
 }

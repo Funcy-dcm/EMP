@@ -19,7 +19,6 @@
 #ifndef _VOLUMESLIDER_H_
 #define _VOLUMESLIDER_H_
 
-#include <QtCore/QTimer>
 #include <QtGui/QPushButton>
 #include <QtGui/QSlider>
 #include <QtGui/QWidget>
