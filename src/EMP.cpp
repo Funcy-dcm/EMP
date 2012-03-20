@@ -550,9 +550,7 @@ void MediaPlayer::saveFilePos() {
         qDebug() << spu_description->i_id << "-" << str.toAscii();
         spu_description = spu_description->p_next;
         while(spu_description){
-          str = "";
-          str.fromUtf8(spu_description->psz_name, 4);
-//        memcpy(str1, spu_description->psz_name, sizeof(spu_description->psz_name));
+          str = QString::fromUtf8(spu_description->psz_name);
           qDebug() << spu_description->i_id << "-" << str;
           spu_description = spu_description->p_next;
         }
