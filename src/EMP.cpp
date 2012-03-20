@@ -13,7 +13,9 @@
 #include "SocketServer.h"
 #include "Explorer.h"
 #include "EMP.h"
+#include "VideoWidget.h"
 
+VlcVideoWidget *videoWidget_;
 ExplorerWidget *explorerView;
 libvlc_media_player_t *_curPlayer = NULL;
 
@@ -35,7 +37,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   setWindowTitle(QString("EMP v") + STRFILEVER);
   qDebug() << "start app";
 
-  m_videoWidget = new VlcVideoWidget(this);
+  videoWidget_ = new VlcVideoWidget(this, this);
 
   const char * const vlc_args[] = {
     "--intf=dummy",
@@ -53,17 +55,17 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     //        "--hotkeys-mousewheel-mode=2",
     //        "--no-keyboard-events",
 
-    "--no-fullscreen",
+//    "--no-fullscreen",
     "--no-media-library",
     "--reset-plugins-cache",
     "--no-stats",
     "--no-osd",
-    //      "--no-spu",
+//    "--no-spu",
     "--no-video-title-show"
   };
-  _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
-  _m_player = libvlc_media_player_new (_vlcinstance);
-  _curPlayer = _m_player;
+  vlc_instance_=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
+  media_player_ = libvlc_media_player_new (vlc_instance_);
+  _curPlayer = media_player_;
   libvlc_video_set_key_input(_curPlayer, false);
   libvlc_video_set_mouse_input(_curPlayer, false);
 
@@ -73,7 +75,6 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   timerFullScreen = new QBasicTimer;
 
   setContextMenuPolicy(Qt::CustomContextMenu);
-  m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
   QWidget *wgt = new QWidget;
 
@@ -213,7 +214,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   fileMenu->addAction(fullScreenAction);
 
   connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
-  connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
+  connect(this, SIGNAL(signalWindowNormal()),
+          SLOT(slotWindowNormal()), Qt::QueuedConnection);
 
   connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
   connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
@@ -222,12 +224,18 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
   connect(playlistButton, SIGNAL(clicked()), this, SLOT(playlistShow()));
 
-  connect(playListDoc, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
+  connect(playListDoc, SIGNAL(customContextMenuRequested(const QPoint &)),
+          SLOT(showContextMenu(const QPoint &)));
 
-  connect(this, SIGNAL(signalWindowNormal()), this, SLOT(slotWindowNormal()), Qt::QueuedConnection);
-  connect(playListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(playListDoubleClicked(QModelIndex)));
+  connect(this, SIGNAL(signalWindowNormal()),
+          SLOT(slotWindowNormal()), Qt::QueuedConnection);
+  connect(playListView, SIGNAL(doubleClicked(QModelIndex)),
+          this, SLOT(playListDoubleClicked(QModelIndex)));
 
   connect(_timerState, SIGNAL(timeout()), this, SLOT(stateChanged()));
+
+  connect(videoWidget_, SIGNAL(customContextMenuRequested(const QPoint &)),
+          SLOT(showContextMenu(const QPoint &)));
 
   playButton->setEnabled(false);
   rewindButton->setEnabled(false);
@@ -283,7 +291,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 {
   libvlc_media_player_stop (_curPlayer);
   libvlc_media_player_release (_curPlayer);
-  libvlc_release (_vlcinstance);
+  libvlc_release (vlc_instance_);
   qDebug() << "~MediaPlayer";
 }
 
@@ -411,13 +419,6 @@ void MediaPlayer::saveFilePos() {
 
 /*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
 {
-//  if (pe->type() == QEvent::MouseButtonPress) {
-//    if (pobj == m_videoWidget) {
-//      qDebug() << "*01";
-//      return true;
-//    }
-//  }
-
   if (pe->type() == QEvent::KeyPress) {
     if (!((QKeyEvent*)pe)->modifiers()) {
       /*if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
@@ -605,8 +606,10 @@ void MediaPlayer::handleDrop(QDropEvent *e)
       for (int i = 0; i < urls.size(); i++)
         addFile(urls[i].toLocalFile());
     }
-    if (newPlayList)
+    if (newPlayList) {
+      sWidget.setCurrentIndex(1);
       setCurrentSource(fileName, true);
+    }
   }
   qDebug() << "handleDropStop";
 }
@@ -662,7 +665,7 @@ void MediaPlayer::initVideoWindow()
 {
   QLabel *blackWidget = new QLabel(this);
   blackWidget->setObjectName("blackWidget");
-  blackWidget->setCursor(Qt::BlankCursor);
+//  blackWidget->setCursor(Qt::BlankCursor);
 
   logoLabel = new QLabel(this);
   logoLabel->setObjectName("logoLabel");
@@ -680,7 +683,7 @@ void MediaPlayer::initVideoWindow()
 
   sWidget.setMinimumSize(250, 200);
   sWidget.setContentsMargins(0, 0, 0, 0);
-  sWidget.addWidget(m_videoWidget);   //0
+  sWidget.addWidget(videoWidget_);   //0
   sWidget.addWidget(logoLabel);       //1
   sWidget.addWidget(blackWidget);     //2
   sWidget.addWidget(explorerView);    //3
@@ -713,9 +716,7 @@ bool MediaPlayer::isActive()
 void MediaPlayer::stateChanged()
 {
   static int state_t = -1;
-  static int has_vout_t = -1;
 
-  qApp->processEvents();
   if (_curPlayer == NULL)
     return;
 
@@ -1015,7 +1016,8 @@ void MediaPlayer::setFullScreen(bool enabled)
   fullScreenOn = true;
   timerFullScreen->stop();
   sWidget.setCurrentIndex(2);
-  if (!isFullScreen()) {
+  if (enabled/*!isFullScreen()*/) {
+    videoWidget_->setCursor(Qt::BlankCursor);
     controlPanel->hide();
     viewPlaylist = playListDoc->isVisible();
     playListDoc->hide();
@@ -1028,12 +1030,12 @@ void MediaPlayer::setFullScreen(bool enabled)
     show();
     raise();
 #endif
-    //        //        cWidget->show();
-    //        timerFullScreen->start(3000, this);
+//cWidget->show();
     explorerView->onFullScreen(true);
   } else if (isFullScreen()) {
-    //        mLabel->hide();
-    //        cWidget->hide();
+    videoWidget_->setCursor(Qt::PointingHandCursor);
+//mLabel->hide();
+//cWidget->hide();
     controlPanel->show();
     if (viewPlaylist) playListDoc->show();
     setWindowState( windowState() ^ Qt::WindowFullScreen );
@@ -1049,17 +1051,13 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 {
   sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
-  libvlc_media_t *vlcMedia_ = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
-//  vlcMedia_ = libvlc_media_new_path(_vlcinstance, QUrl::fromLocalFile(source).toEncoded());
-  libvlc_media_player_set_media(_m_player, vlcMedia_);
-  _curPlayer = _m_player;
-
-  //    QString title;
-  //    title = libvlc_media_get_meta(_m, libvlc_meta_Title);
-  //    qDebug() << QUrl::fromLocalFile(title).toString();
+  libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
+  libvlc_media_player_set_media(media_player_, vlcMedia_);
+  libvlc_media_release(vlcMedia_);
+  _curPlayer = media_player_;
 
 #if defined(Q_WS_WIN)
-  libvlc_media_player_set_hwnd(_curPlayer, m_videoWidget->winId());
+  libvlc_media_player_set_hwnd(_curPlayer, videoWidget_->winId());
 #elif defined(Q_WS_MAC)
   libvlc_media_player_set_agl(_curPlayer, m_videoWidget->winId());
 #else // Q_WS_X11
@@ -1067,10 +1065,8 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   libvlc_media_player_set_xwindow(_curPlayer, windid);
 #endif // Q_WS_*
   /* Play */
+  has_vout_t = -1;
   libvlc_media_player_play(_curPlayer);
-//  libvlc_media_release(vlcMedia_);
-
-  qDebug() << "*01" << libvlc_get_fullscreen(_curPlayer);
 
   if (setPosOn) {
     for (int i = 0; i < MAX_FILE_POS; ++i) {
@@ -1193,6 +1189,6 @@ void MediaPlayer::resizeWindow(int has_vout)
 
 void MediaPlayer::showContextMenu(const QPoint &p)
 {
-  m_videoWidget->setCursor(Qt::ArrowCursor);
+  videoWidget_->setCursor(Qt::ArrowCursor);
   fileMenu->popup(isFullScreen() ? p : mapToGlobal(p));
 }

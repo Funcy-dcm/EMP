@@ -1,85 +1,76 @@
-#include <QtGui>
 #include "VideoWidget.h"
 
-VlcVideoWidget::VlcVideoWidget(QWidget *parent)
-    : QWidget(parent),
-      _hide(true),
-      _currentRatio(""),
-      _currentCrop(""),
-      _currentFilter("")
+VlcVideoWidget::VlcVideoWidget(MediaPlayer *player, QWidget *parent)
+  : QWidget(parent),
+    media_player_(player)
 {
-    setMouseTracking(true);
-    setCursor(Qt::PointingHandCursor);
-    _widget = new QWidget(this);
-    _widget->setCursor(Qt::PointingHandCursor);
-    _widget->setMouseTracking(true);
+  setMouseTracking(true);
+  setCursor(Qt::PointingHandCursor);
+  setAcceptDrops(true);
+  setContextMenuPolicy(Qt::CustomContextMenu);
 
-    _widget->setAttribute(Qt::WA_OpaquePaintEvent);
-    _widget->setAttribute(Qt::WA_PaintOnScreen);
-    _widget->setAttribute(Qt::WA_NoSystemBackground);
-    QPalette p = palette();
-    p.setColor(backgroundRole(), Qt::black);
-    _widget->setPalette(p);
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(_widget);
-    setLayout(layout);
-
-    _timerMouse = new QTimer(this);
-    connect(_timerMouse, SIGNAL(timeout()), this, SLOT(hideMouse()));
-//    _timerSettings = new QTimer(this);
-
-//    qApp->setOverrideCursor(Qt::ArrowCursor);
+  timerMouse_ = new QTimer(this);
+  connect(timerMouse_, SIGNAL(timeout()), this, SLOT(hideMouse()));
 }
 
 VlcVideoWidget::~VlcVideoWidget()
 {
-    delete _timerMouse;
-//    delete _timerSettings;
-    delete _widget;
 }
 
 //Events:
 void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    event->ignore();
-    if(isFullScreen()) {
-        emit mouseShow(event->globalPos());
-    }
+  event->ignore();
 
-    if(isFullScreen() && _hide) {
-        qApp->setOverrideCursor(Qt::PointingHandCursor);
-
-        _timerMouse->start(1000);
-    }
+  setCursor(Qt::PointingHandCursor);
+  if(media_player_->isFullScreen()) {
+    timerMouse_->start(1000);
+    emit mouseShow(event->globalPos());
+  }
 }
 void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
 {
-    event->ignore();
-    qDebug() << "PressEvent";
+  event->ignore();
 
-    if(event->button() == Qt::RightButton) {
-        qApp->setOverrideCursor(Qt::ArrowCursor);
-        emit rightClick(event->globalPos());
-    }
+  if (event->button() == Qt::LeftButton) {
+    setCursor(Qt::PointingHandCursor);
+  }
+  if(media_player_->isFullScreen()) {
+    timerMouse_->start(1000);
+    emit mouseShow(event->globalPos());
+  }
 }
-void VlcVideoWidget::wheelEvent(QWheelEvent *event)
-{
-    event->ignore();
-    qDebug() << "wheelEvent";
+//void VlcVideoWidget::wheelEvent(QWheelEvent *event)
+//{
+//    event->ignore();
 
-    if(event->delta() > 0)
-        emit wheel(true);
-    else
-        emit wheel(false);
+//    if(event->delta() > 0)
+//        emit wheel(true);
+//    else
+//        emit wheel(false);
+//}
+
+void VlcVideoWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+  Q_UNUSED(event)
+  media_player_->fullScreenAction->setChecked(!media_player_->isFullScreen());
+}
+
+void VlcVideoWidget::dropEvent(QDropEvent *event)
+{
+  media_player_->handleDrop(event);
+}
+
+void VlcVideoWidget::dragEnterEvent(QDragEnterEvent *event) {
+  if (event->mimeData()->hasUrls())
+    event->acceptProposedAction();
 }
 
 void VlcVideoWidget::hideMouse()
 {
-    if(isFullScreen() && _hide) {
-        qApp->setOverrideCursor(Qt::BlankCursor);
-        _timerMouse->stop();
-        emit mouseHide();
-    }
+  if(media_player_->isFullScreen()) {
+    if (!media_player_->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
+    timerMouse_->stop();
+    emit mouseHide();
+  }
 }

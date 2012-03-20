@@ -26,124 +26,124 @@
 #include "VolumeSlider.h"
 
 VlcVolumeSlider::VlcVolumeSlider(QWidget *parent)
-    : QWidget(parent)
+  : QWidget(parent)
 {
-    _slider = new QSlider(this);
-    _slider->setOrientation(Qt::Horizontal);
-    _slider->setFixedWidth(100);
-    _slider->setMaximum(100);
-    _slider->setCursor(Qt::PointingHandCursor);
-    _slider->setFocusPolicy(Qt::NoFocus);
-    setVolume(50);
+  _slider = new QSlider(this);
+  _slider->setOrientation(Qt::Horizontal);
+  _slider->setFixedWidth(100);
+  _slider->setMaximum(100);
+  _slider->setCursor(Qt::PointingHandCursor);
+  _slider->setFocusPolicy(Qt::NoFocus);
+  setVolume(50);
 
-    _muteButton = new QPushButton(this);
-    _muteButton->setObjectName("volumeButton");
-    _muteButton->setToolTip(tr("Mute"));
-    volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
-    mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
-    _muteButton->setIcon(volumeIcon);
-    _muteButton->setCursor(Qt::PointingHandCursor);
-    _muteButton->setFocusPolicy(Qt::NoFocus);
+  _muteButton = new QPushButton(this);
+  _muteButton->setObjectName("volumeButton");
+  _muteButton->setToolTip(tr("Mute"));
+  volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
+  mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
+  _muteButton->setIcon(volumeIcon);
+  _muteButton->setCursor(Qt::PointingHandCursor);
+  _muteButton->setFocusPolicy(Qt::NoFocus);
 
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(_muteButton);
-    layout->addWidget(_slider);
-    setLayout(layout);
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->setMargin(0);
+  layout->addWidget(_muteButton);
+  layout->addWidget(_slider);
+  setLayout(layout);
 
-    connect(_muteButton, SIGNAL(clicked()), this, SLOT(mute()));
-    connect(_slider, SIGNAL(valueChanged(int)), this, SLOT(setVolume(int)));
+  connect(_muteButton, SIGNAL(clicked()), this, SLOT(mute()));
+  connect(_slider, SIGNAL(valueChanged(int)), this, SLOT(setVolume(int)));
 
-    qApp->installEventFilter(this);
+  qApp->installEventFilter(this);
 }
 
 VlcVolumeSlider::~VlcVolumeSlider()
 {
-    delete _slider;
-    delete _muteButton;
+  delete _slider;
+  delete _muteButton;
 }
 
 /*virtual*/ bool VlcVolumeSlider::eventFilter(QObject* pobj, QEvent* pe)
 {
-    if (pe->type() == QEvent::MouseButtonPress) {
-        if (pobj == _slider) {
-            if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
-                QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
-                                                   Qt::MidButton, Qt::MidButton, Qt::NoModifier);
-                QApplication::sendEvent(pobj, pe1);
-            }
-        }
+  if (pe->type() == QEvent::MouseButtonPress) {
+    if (pobj == _slider) {
+      if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
+        QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
+                                           Qt::MidButton, Qt::MidButton, Qt::NoModifier);
+        QApplication::sendEvent(pobj, pe1);
+      }
     }
+  }
 
-    return false;
+  return false;
 }
 
 void VlcVolumeSlider::mute()
 {
-    bool mute = false;
-    if(_curPlayer) {
-        mute = libvlc_audio_get_mute(_curPlayer);
-        if(libvlc_errmsg()) {
-            qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
-            libvlc_clearerr();
-        }
+  bool mute = false;
+  if(_curPlayer) {
+    mute = libvlc_audio_get_mute(_curPlayer);
+    if(libvlc_errmsg()) {
+      qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
+      libvlc_clearerr();
     }
+  }
 
-    if(mute) {
-        _slider->setDisabled(false);
-        _muteButton->setIcon(volumeIcon);
-    } else {
-        _slider->setDisabled(true);
-        _muteButton->setIcon(mutedIcon);
-    }
+  if(mute) {
+    _slider->setDisabled(false);
+    _muteButton->setIcon(volumeIcon);
+  } else {
+    _slider->setDisabled(true);
+    _muteButton->setIcon(mutedIcon);
+  }
 
-    libvlc_audio_toggle_mute(_curPlayer);
+  libvlc_audio_toggle_mute(_curPlayer);
 }
 
 void VlcVolumeSlider::setVolume(const int &volume)
 {
-    if (_curPlayer == NULL) return;
-    _currentVolume = volume;
-    _slider->setValue(_currentVolume);
-    QString vol = tr("Volume") + " [" + QString::number(_currentVolume) + "%]";
-    _slider->setToolTip(vol);
-    libvlc_audio_set_volume(_curPlayer, _currentVolume);
+  if (_curPlayer == NULL) return;
+  _currentVolume = volume;
+  _slider->setValue(_currentVolume);
+  QString vol = tr("Volume") + " [" + QString::number(_currentVolume) + "%]";
+  _slider->setToolTip(vol);
+  libvlc_audio_set_volume(_curPlayer, _currentVolume);
 }
 
 void VlcVolumeSlider::updateVolume()
 {
-    //    if(_curPlayer) {
-    int volume = -1;
-    volume = libvlc_audio_get_volume(_curPlayer);
-    if(libvlc_errmsg()) {
-        qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
-        libvlc_clearerr();
-    }
+  //    if(_curPlayer) {
+  int volume = -1;
+  volume = libvlc_audio_get_volume(_curPlayer);
+  if(libvlc_errmsg()) {
+    qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
+    libvlc_clearerr();
+  }
 
-    if(volume != _currentVolume) {
-        libvlc_audio_set_volume(_curPlayer, _currentVolume);
-        if(libvlc_errmsg()) {
-            qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
-            libvlc_clearerr();
-        }
+  if(volume != _currentVolume) {
+    libvlc_audio_set_volume(_curPlayer, _currentVolume);
+    if(libvlc_errmsg()) {
+      qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
+      libvlc_clearerr();
     }
-    //    }
+  }
+  //    }
 }
 
 int VlcVolumeSlider::volume() const
 {
-    return _currentVolume;
+  return _currentVolume;
 }
 
 void VlcVolumeSlider::volumeControl(const bool &up)
 {
-    if(up) {
-        if(_currentVolume != 100) {
-            setVolume(_currentVolume+1);
-        }
-    } else {
-        if(_currentVolume != 0) {
-            setVolume(_currentVolume-1);
-        }
+  if(up) {
+    if(_currentVolume != 100) {
+      setVolume(_currentVolume+1);
     }
+  } else {
+    if(_currentVolume != 0) {
+      setVolume(_currentVolume-1);
+    }
+  }
 }

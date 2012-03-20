@@ -26,98 +26,98 @@
 #include "SeekSlider.h"
 
 VlcSeekSlider::VlcSeekSlider(QWidget *parent)
-    : QWidget(parent)
+  : QWidget(parent)
 {
-    _seek = new QSlider(this);
-    _seek->setOrientation(Qt::Horizontal);
-    _seek->setMaximum(0);
-    _seek->setPageStep(1000);
-    _seek->setCursor(Qt::PointingHandCursor);
-    _seek->setFocusPolicy(Qt::NoFocus);
+  _seek = new QSlider(this);
+  _seek->setOrientation(Qt::Horizontal);
+  _seek->setMaximum(0);
+  _seek->setPageStep(1000);
+  _seek->setCursor(Qt::PointingHandCursor);
+  _seek->setFocusPolicy(Qt::NoFocus);
 
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(_seek);
-    setLayout(layout);
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->setMargin(0);
+  layout->addWidget(_seek);
+  setLayout(layout);
 
-    timeString = "";
+  timeString = "";
 
-    _timer = new QTimer(this);
+  _timer = new QTimer(this);
 
-    connect(_seek, SIGNAL(sliderPressed()), this, SLOT(sliderPressed()));
-    connect(_seek, SIGNAL(sliderMoved(int)), this, SLOT(changeTime(int)));
-    connect(_timer, SIGNAL(timeout()), this, SLOT(updateTime()));
+  connect(_seek, SIGNAL(sliderPressed()), this, SLOT(sliderPressed()));
+  connect(_seek, SIGNAL(sliderMoved(int)), this, SLOT(changeTime(int)));
+  connect(_timer, SIGNAL(timeout()), this, SLOT(updateTime()));
 
-    _timer->start(250);
+  _timer->start(250);
 
-    qApp->installEventFilter(this);
+  qApp->installEventFilter(this);
 }
 
 VlcSeekSlider::~VlcSeekSlider()
 {
-    delete _seek;
-    delete _timer;
+  delete _seek;
+  delete _timer;
 }
 
 /*virtual*/ bool VlcSeekSlider::eventFilter(QObject* pobj, QEvent* pe)
 {
-    if (pe->type() == QEvent::MouseButtonPress) {
-        if (pobj == _seek) {
-            if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
-                QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
-                                                   Qt::MidButton, Qt::MidButton, Qt::NoModifier);
-                QApplication::sendEvent(pobj, pe1);
-            }
-        }
+  if (pe->type() == QEvent::MouseButtonPress) {
+    if (pobj == _seek) {
+      if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
+        QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
+                                           Qt::MidButton, Qt::MidButton, Qt::NoModifier);
+        QApplication::sendEvent(pobj, pe1);
+      }
     }
+  }
 
-    return false;
+  return false;
 }
 
 void VlcSeekSlider::updateTime()
 {
-    static int fullTime_t = 0;
-    static int currentTime_t = 0;
-    if(MediaPlayer::isActive()) {
-        libvlc_state_t state;
-        state = libvlc_media_player_get_state(_curPlayer);
-        int fullTime = libvlc_media_player_get_length(_curPlayer);
-        if (state != libvlc_Stopped) {
-            int currentTime = libvlc_media_player_get_time(_curPlayer);
-            fullTime_t = fullTime;
-            currentTime_t = currentTime;
-        } else {
-            currentTime_t = 0;
-        }
-        _seek->setMaximum(fullTime_t);
-        if (!_seek->isSliderDown())
-            _seek->setValue(currentTime_t);
-        timeString = QTime(0,0,0,0).addMSecs(currentTime_t).toString("hh:mm:ss");
-        timeString += " (-" +
-                QTime(0,0,0,0).addMSecs(fullTime_t-currentTime_t).toString("hh:mm:ss") +
-                ")";
-        timeString += " / " + QTime(0,0,0,0).addMSecs(fullTime_t).toString("hh:mm:ss");
-
-        if (currentTime_t < 1000) {
-            _seek->setSliderDown(false);
-        }
-
+  static int fullTime_t = 0;
+  static int currentTime_t = 0;
+  if(MediaPlayer::isActive()) {
+    libvlc_state_t state;
+    state = libvlc_media_player_get_state(_curPlayer);
+    int fullTime = libvlc_media_player_get_length(_curPlayer);
+    if (state != libvlc_Stopped) {
+      int currentTime = libvlc_media_player_get_time(_curPlayer);
+      fullTime_t = fullTime;
+      currentTime_t = currentTime;
     } else {
-        _seek->setMaximum(0);
-        _seek->setValue(0);
+      currentTime_t = 0;
     }
+    _seek->setMaximum(fullTime_t);
+    if (!_seek->isSliderDown())
+      _seek->setValue(currentTime_t);
+    timeString = QTime(0,0,0,0).addMSecs(currentTime_t).toString("hh:mm:ss");
+    timeString += " (-" +
+        QTime(0,0,0,0).addMSecs(fullTime_t-currentTime_t).toString("hh:mm:ss") +
+        ")";
+    timeString += " / " + QTime(0,0,0,0).addMSecs(fullTime_t).toString("hh:mm:ss");
+
+    if (currentTime_t < 1000) {
+      _seek->setSliderDown(false);
+    }
+
+  } else {
+    _seek->setMaximum(0);
+    _seek->setValue(0);
+  }
 }
 
 void VlcSeekSlider::sliderPressed()
 {
-    if(_curPlayer == NULL)
-        return;
-    libvlc_media_player_set_time(_curPlayer, _seek->value());
+  if(_curPlayer == NULL)
+    return;
+  libvlc_media_player_set_time(_curPlayer, _seek->value());
 }
 
 void VlcSeekSlider::changeTime(int value)
 {
-    if(_curPlayer == NULL)
-        return;
-    libvlc_media_player_set_time(_curPlayer, value);
+  if(_curPlayer == NULL)
+    return;
+  libvlc_media_player_set_time(_curPlayer, value);
 }

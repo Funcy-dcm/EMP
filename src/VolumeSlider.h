@@ -28,32 +28,32 @@ extern libvlc_media_player_t *_curPlayer;
 
 class VlcVolumeSlider : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    VlcVolumeSlider(QWidget *parent = 0);
-    ~VlcVolumeSlider();
+  VlcVolumeSlider(QWidget *parent = 0);
+  ~VlcVolumeSlider();
 
 public slots:
-    void mute();
-    void setVolume(const int &volume);
-    int volume() const;
-    void volumeControl(const bool &up);
-    void volumeDown() { volumeControl(false); }
-    void volumeUp() { volumeControl(true); }
+  void mute();
+  void setVolume(const int &volume);
+  int volume() const;
+  void volumeControl(const bool &up);
+  void volumeDown() { volumeControl(false); }
+  void volumeUp() { volumeControl(true); }
 
 protected:
-    virtual bool eventFilter(QObject*, QEvent*);
+  virtual bool eventFilter(QObject*, QEvent*);
 
 private slots:
-    void updateVolume();
+  void updateVolume();
 
 private:
-    int _currentVolume;
+  int _currentVolume;
 
-    QPushButton *_muteButton;
-    QIcon volumeIcon;
-    QIcon mutedIcon;
-    QSlider *_slider;
+  QPushButton *_muteButton;
+  QIcon volumeIcon;
+  QIcon mutedIcon;
+  QSlider *_slider;
 };
 
 #endif // _VOLUMESLIDER_H_

@@ -9,17 +9,17 @@ class MediaPlayer;
 
 class SocketServer : public QTcpServer
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-    SocketServer(MediaPlayer *player, QObject *parent = 0);
+  SocketServer(MediaPlayer *player, QObject *parent = 0);
 public slots:
-    virtual void slotNewConnection();
-    void slotReadClient();
+  virtual void slotNewConnection();
+  void slotReadClient();
 private slots:
-    void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
+  void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
 private:
-    MediaPlayer *m_player;
-    quint16     m_nNextBlockSize;
+  MediaPlayer *m_player;
+  quint16     m_nNextBlockSize;
 
 };
 

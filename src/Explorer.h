@@ -8,30 +8,30 @@
 
 class ExplorerWidget : public QTableView
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    ExplorerWidget(MediaPlayer *player, QWidget *parent = 0);
-    ~ExplorerWidget();
+  ExplorerWidget(MediaPlayer *player, QWidget *parent = 0);
+  ~ExplorerWidget();
 
 protected:
-    /*virtual*/ void keyPressEvent(QKeyEvent*);
+  /*virtual*/ void keyPressEvent(QKeyEvent*);
 
 public slots:
-    void slotKeyLeft();
-    void slotKeyRight();
-    void slotKeyUp();
-    void slotKeyDown();
-    void onFullScreen(bool);
+  void slotKeyLeft();
+  void slotKeyRight();
+  void slotKeyUp();
+  void slotKeyDown();
+  void onFullScreen(bool);
 
 private slots:
-    void slotSetIndex(const QModelIndex&);
-    void setFilters();
+  void slotSetIndex(const QModelIndex&);
+  void setFilters();
 
 private:
-    MediaPlayer *m_player;
-    QDirModel *model;
-    QModelIndex oldIndex;
-    QStringList strFilters;
+  MediaPlayer *m_player;
+  QDirModel *model;
+  QModelIndex oldIndex;
+  QStringList strFilters;
 
 };
 

@@ -29,23 +29,23 @@ extern libvlc_media_player_t *_curPlayer;
 
 class VlcSeekSlider : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    VlcSeekSlider(QWidget *parent = 0);
-    ~VlcSeekSlider();
-    QString timeString;
+  VlcSeekSlider(QWidget *parent = 0);
+  ~VlcSeekSlider();
+  QString timeString;
 
 protected:
-    virtual bool eventFilter(QObject*, QEvent*);
+  virtual bool eventFilter(QObject*, QEvent*);
 
 private slots:
-    void changeTime(int);
-    void sliderPressed();
-    void updateTime();
+  void changeTime(int);
+  void sliderPressed();
+  void updateTime();
 
 private:
-    QSlider *_seek;
-    QTimer *_timer;
+  QSlider *_seek;
+  QTimer *_timer;
 };
 
 #endif // _SEEKWIDGET_H_
