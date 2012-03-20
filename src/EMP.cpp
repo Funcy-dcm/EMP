@@ -606,10 +606,8 @@ void MediaPlayer::handleDrop(QDropEvent *e)
       for (int i = 0; i < urls.size(); i++)
         addFile(urls[i].toLocalFile());
     }
-    if (newPlayList) {
-      sWidget.setCurrentIndex(1);
+    if (newPlayList)
       setCurrentSource(fileName, true);
-    }
   }
   qDebug() << "handleDropStop";
 }
@@ -752,7 +750,7 @@ void MediaPlayer::stateChanged()
       break;
     case libvlc_Opening:
       qDebug() << "libvlc_Opening";
-      has_vout_t = -1;
+//      has_vout_t = -1;
       break;
     case libvlc_Buffering:
       qDebug() << "libvlc_Buffering";
@@ -1049,7 +1047,7 @@ void MediaPlayer::setFullScreen(bool enabled)
 
 void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 {
-  sWidget.setCurrentIndex(1);
+//  sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
   libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
   libvlc_media_player_set_media(media_player_, vlcMedia_);
@@ -1065,7 +1063,6 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   libvlc_media_player_set_xwindow(_curPlayer, windid);
 #endif // Q_WS_*
   /* Play */
-  has_vout_t = -1;
   libvlc_media_player_play(_curPlayer);
 
   if (setPosOn) {
@@ -1080,6 +1077,8 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   int row = model->rowCount();
   forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
   //    cWidget->forwardButton->setEnabled((curPlayList < row-1) && (curPlayList >= 0));
+
+  has_vout_t = -1;
 }
 
 void MediaPlayer::addFile(QString fileName)
