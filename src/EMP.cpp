@@ -41,27 +41,15 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
   const char * const vlc_args[] = {
     "--intf=dummy",
-    "--ignore-config",
-    //      "--qt-minimal-view",
-    //      "--no-qt-notification",
-    //      "--no-embedded-video",
-    //        "--extraintf=logger",
-    //        "--verbose=3",
+//    "--qt-minimal-view",
+//    "--no-qt-notification",
+//    "--no-embedded-video",
+//    "--extraintf=logger",
+//    "--verbose=3",
 
-    //        "--no-mouse-events",
-    //        "--mouse-hide-timeout=0",
-    //        "--no-screen-follow-mouse",
-    //        "--no-rmtosd-mouse-events",
-    //        "--hotkeys-mousewheel-mode=2",
-    //        "--no-keyboard-events",
-
-//    "--no-fullscreen",
-    "--no-media-library",
     "--reset-plugins-cache",
     "--no-stats",
-    "--no-osd",
-//    "--no-spu",
-    "--no-video-title-show"
+    "--no-osd"
   };
   vlc_instance_=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
   media_player_ = libvlc_media_player_new (vlc_instance_);
@@ -722,7 +710,7 @@ void MediaPlayer::stateChanged()
     if (!isFullScreen() && (state != libvlc_Stopped)) {
       resizeWindow(has_vout);
     }
-    if ((has_vout == 1) && (sWidget.currentIndex() != 3))
+    if ((has_vout == 1) /*&& (sWidget.currentIndex() != 3)*/)
       sWidget.setCurrentIndex(0);
     QString fileName = "";
     if (state != libvlc_NothingSpecial) {
@@ -1045,7 +1033,7 @@ void MediaPlayer::setFullScreen(bool enabled)
 
 void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 {
-//  sWidget.setCurrentIndex(1);
+  sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
   libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
   libvlc_media_player_set_media(media_player_, vlcMedia_);
