@@ -2,12 +2,19 @@
 
 VlcVideoWidget::VlcVideoWidget(MediaPlayer *player, QWidget *parent)
   : QWidget(parent),
-    media_player_(player)
+    mediaPlayer_(player)
 {
   setMouseTracking(true);
   setCursor(Qt::PointingHandCursor);
   setAcceptDrops(true);
   setContextMenuPolicy(Qt::CustomContextMenu);
+
+  setAttribute(Qt::WA_OpaquePaintEvent);
+  setAttribute(Qt::WA_PaintOnScreen);
+  setAttribute(Qt::WA_NoSystemBackground);
+  QPalette p = palette();
+  p.setColor(backgroundRole(), Qt::black);
+  setPalette(p);
 
   timerMouse_ = new QTimer(this);
   connect(timerMouse_, SIGNAL(timeout()), this, SLOT(hideMouse()));
@@ -23,7 +30,7 @@ void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
   event->ignore();
 
   setCursor(Qt::PointingHandCursor);
-  if(media_player_->isFullScreen()) {
+  if(mediaPlayer_->isFullScreen()) {
     timerMouse_->start(1000);
     emit mouseShow(event->globalPos());
   }
@@ -35,7 +42,7 @@ void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton) {
     setCursor(Qt::PointingHandCursor);
   }
-  if(media_player_->isFullScreen()) {
+  if(mediaPlayer_->isFullScreen()) {
     timerMouse_->start(1000);
     emit mouseShow(event->globalPos());
   }
@@ -53,12 +60,12 @@ void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
 void VlcVideoWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
   Q_UNUSED(event)
-  media_player_->fullScreenAction->setChecked(!media_player_->isFullScreen());
+  mediaPlayer_->fullScreenAction->setChecked(!mediaPlayer_->isFullScreen());
 }
 
 void VlcVideoWidget::dropEvent(QDropEvent *event)
 {
-  media_player_->handleDrop(event);
+  mediaPlayer_->handleDrop(event);
 }
 
 void VlcVideoWidget::dragEnterEvent(QDragEnterEvent *event) {
@@ -68,8 +75,8 @@ void VlcVideoWidget::dragEnterEvent(QDragEnterEvent *event) {
 
 void VlcVideoWidget::hideMouse()
 {
-  if(media_player_->isFullScreen()) {
-    if (!media_player_->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
+  if(mediaPlayer_->isFullScreen()) {
+    if (!mediaPlayer_->fileMenu->isVisible()) setCursor(Qt::BlankCursor);
     timerMouse_->stop();
     emit mouseHide();
   }

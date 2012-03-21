@@ -34,7 +34,7 @@ private slots:
   void hideMouse();
 
 private:
-  MediaPlayer *media_player_;
+  MediaPlayer *mediaPlayer_;
   QTimer *timerMouse_;
 
 };

@@ -52,8 +52,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     "--no-osd"
   };
   vlc_instance_=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
-  media_player_ = libvlc_media_player_new (vlc_instance_);
-  _curPlayer = media_player_;
+  mediaPlayer_ = libvlc_media_player_new (vlc_instance_);
+  _curPlayer = mediaPlayer_;
   libvlc_video_set_key_input(_curPlayer, false);
   libvlc_video_set_mouse_input(_curPlayer, false);
 
@@ -1036,9 +1036,9 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
   libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
-  libvlc_media_player_set_media(media_player_, vlcMedia_);
+  libvlc_media_player_set_media(mediaPlayer_, vlcMedia_);
   libvlc_media_release(vlcMedia_);
-  _curPlayer = media_player_;
+  _curPlayer = mediaPlayer_;
 
 #if defined(Q_WS_WIN)
   libvlc_media_player_set_hwnd(_curPlayer, videoWidget_->winId());
