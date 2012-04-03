@@ -34,7 +34,7 @@ VlcVolumeSlider::VlcVolumeSlider(QWidget *parent)
   _slider->setMaximum(100);
   _slider->setCursor(Qt::PointingHandCursor);
   _slider->setFocusPolicy(Qt::NoFocus);
-  setVolume(50);
+  setVolume(100);
 
   _muteButton = new QPushButton(this);
   _muteButton->setObjectName("volumeButton");
