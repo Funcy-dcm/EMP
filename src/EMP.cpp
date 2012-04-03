@@ -189,7 +189,38 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   playPauseAction->setChecked(true);
 
   fileMenu->addSeparator();
+//
+  QMenu *audioMenu_ = fileMenu->addMenu(tr("Audio"));
+  QAction *audio20Action = audioMenu_->addAction(tr("2.0"));
+  audio20Action->setObjectName("audio20Action");
+  audio20Action->setCheckable(true);
+  audio20Action->setChecked(true);
+  QAction *audio21Action = audioMenu_->addAction(tr("2.1"));
+  audio21Action->setObjectName("audio21Action");
+  audio21Action->setCheckable(true);
+  QAction *audio51Action = audioMenu_->addAction(tr("5.1"));
+  audio51Action->setObjectName("audio51Action");
+  audio51Action->setCheckable(true);
 
+  QActionGroup *audioGroup_ = new QActionGroup(audioMenu_);
+  audioGroup_->setExclusive(true);
+  audioGroup_->addAction(audio20Action);
+  audioGroup_->addAction(audio21Action);
+  audioGroup_->addAction(audio51Action);
+  connect(audioGroup_, SIGNAL(triggered(QAction*)),
+          this, SLOT(audioSetDeviceType(QAction*)));
+  fileMenu->addSeparator();
+//
+  spuMenu_ = fileMenu->addMenu(tr("Subtitles"));
+  spuGroup_ = new QActionGroup(spuMenu_);
+  spuGroup_->setExclusive(true);
+//  QAction *spuAction = new QAction(this);
+//  spuAction->setMenu(spuMenu_);
+
+  connect(spuMenu_, SIGNAL(aboutToShow()),
+          this, SLOT(getSpuDescription()));
+  fileMenu->addSeparator();
+//
   fullScreenAction = new QAction(this);
   fullScreenAction->setText(tr("Full screen"));
   fullScreenAction->setCheckable(true);
@@ -503,18 +534,6 @@ void MediaPlayer::saveFilePos() {
         qint64 pos = libvlc_media_player_get_time(_curPlayer);
         libvlc_media_player_set_time(_curPlayer, pos+10000);
         return true;
-      } else if (((QKeyEvent*)pe)->key() == Qt::Key_A) {
-        int audio_type = libvlc_audio_output_get_device_type(_curPlayer);
-        switch (audio_type) {
-        case libvlc_AudioOutputDevice_Stereo:
-          audio_type = libvlc_AudioOutputDevice_5_1;
-          break;
-        default:
-          audio_type = libvlc_AudioOutputDevice_Stereo;
-          break;
-        }
-        libvlc_audio_output_set_device_type(_curPlayer, audio_type);
-        return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_T) {
         int track = libvlc_audio_get_track(_curPlayer);
         int cnt_track = libvlc_audio_get_track_count(_curPlayer);
@@ -532,16 +551,7 @@ void MediaPlayer::saveFilePos() {
         qDebug()<< libvlc_video_set_spu(_curPlayer, subt);
         return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_Z) {
-        libvlc_track_description_t *spu_description =
-            libvlc_video_get_spu_description(_curPlayer);
-        QString str = spu_description->psz_name;
-        qDebug() << spu_description->i_id << "-" << str.toAscii();
-        spu_description = spu_description->p_next;
-        while(spu_description){
-          str = QString::fromUtf8(spu_description->psz_name);
-          qDebug() << spu_description->i_id << "-" << str;
-          spu_description = spu_description->p_next;
-        }
+        getSpuDescription();
       }
     }
   }
@@ -1176,4 +1186,39 @@ void MediaPlayer::showContextMenu(const QPoint &p)
 {
   videoWidget_->setCursor(Qt::ArrowCursor);
   fileMenu->popup(isFullScreen() ? p : mapToGlobal(p));
+}
+
+void MediaPlayer::audioSetDeviceType(QAction *pAct)
+{
+  int audio_type;
+  if (pAct->objectName() == "audio21Action") {
+    audio_type = 3;
+  }  else if (pAct->objectName() == "audio51Action") {
+    audio_type = libvlc_AudioOutputDevice_5_1;
+  } else {
+    audio_type = libvlc_AudioOutputDevice_Stereo;
+  }
+  libvlc_audio_output_set_device_type(_curPlayer, audio_type);
+}
+
+void MediaPlayer::getSpuDescription()
+{
+  foreach (QAction *action, spuMenu_->actions()) {
+    delete action;
+  }
+
+  libvlc_track_description_t *spu_description =
+      libvlc_video_get_spu_description(_curPlayer);
+  while (spu_description){
+    QString str = QString::fromUtf8(spu_description->psz_name);
+//    qDebug() << spu_description->i_id << "-" << str;
+    QAction *audio20Action = spuMenu_->addAction(str);
+    audio20Action->setObjectName("audio20Action");
+    audio20Action->setCheckable(true);
+    audio20Action->setChecked(true);
+
+    spuGroup_->addAction(audio20Action);
+
+    spu_description = spu_description->p_next;
+  }
 }

@@ -97,6 +97,8 @@ private slots:
   void slotWindowNormal();
   void resizeWindow(int);
   void saveFilePos();
+  void audioSetDeviceType(QAction *pAct);
+  void getSpuDescription();
 
 protected:
   virtual bool eventFilter(QObject*, QEvent*);
@@ -133,6 +135,9 @@ private:
 
   QTimer *_timerState;
   int has_vout_t;
+
+  QMenu *spuMenu_;
+  QActionGroup *spuGroup_;
 
 signals:
   void signalWindowNormal();
