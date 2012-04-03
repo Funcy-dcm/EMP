@@ -214,11 +214,9 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   spuMenu_ = fileMenu->addMenu(tr("Subtitles"));
   spuGroup_ = new QActionGroup(spuMenu_);
   spuGroup_->setExclusive(true);
-//  QAction *spuAction = new QAction(this);
-//  spuAction->setMenu(spuMenu_);
 
-  connect(spuMenu_, SIGNAL(aboutToShow()),
-          this, SLOT(getSpuDescription()));
+  connect(spuGroup_, SIGNAL(triggered(QAction*)),
+          this, SLOT(setSpuDescription(QAction*)));
   fileMenu->addSeparator();
 //
   fullScreenAction = new QAction(this);
@@ -733,8 +731,10 @@ void MediaPlayer::stateChanged()
     statusLabel->setText(fileName);
     qDebug() << "has_vout:" << has_vout;
     has_vout_t = has_vout;
-    if ((has_vout == 1) && libvlc_video_get_spu_count(_curPlayer))
+    if ((has_vout == 1) && libvlc_video_get_spu_count(_curPlayer)) {
       libvlc_video_set_spu(_curPlayer, 0);
+      getSpuDescription();
+    }
   }
 
   if (curPlayList >= 0) timeLabel->setText(seekSlider->timeString);
@@ -1207,18 +1207,25 @@ void MediaPlayer::getSpuDescription()
     delete action;
   }
 
+  int id = 0;
+
   libvlc_track_description_t *spu_description =
       libvlc_video_get_spu_description(_curPlayer);
   while (spu_description){
     QString str = QString::fromUtf8(spu_description->psz_name);
-//    qDebug() << spu_description->i_id << "-" << str;
-    QAction *audio20Action = spuMenu_->addAction(str);
-    audio20Action->setObjectName("audio20Action");
-    audio20Action->setCheckable(true);
-    audio20Action->setChecked(true);
-
-    spuGroup_->addAction(audio20Action);
-
+    QAction *action = spuMenu_->addAction(str);
+    action->setObjectName(QString::number(id++));
+    action->setCheckable(true);
+    spuGroup_->addAction(action);
+    if (spuGroup_->actions().at(0) == action) {
+      spuMenu_->addSeparator();
+      action->setChecked(true);
+    }
     spu_description = spu_description->p_next;
   }
+}
+
+void MediaPlayer::setSpuDescription(QAction *pAct)
+{
+  libvlc_video_set_spu(_curPlayer, pAct->objectName().toInt());
 }

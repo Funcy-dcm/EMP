@@ -99,6 +99,7 @@ private slots:
   void saveFilePos();
   void audioSetDeviceType(QAction *pAct);
   void getSpuDescription();
+  void setSpuDescription(QAction *pAct);
 
 protected:
   virtual bool eventFilter(QObject*, QEvent*);
