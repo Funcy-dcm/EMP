@@ -1030,7 +1030,9 @@ void MediaPlayer::setFullScreen(bool enabled)
     videoWidget_->setCursor(Qt::PointingHandCursor);
 //mLabel->hide();
 //cWidget->hide();
-    controlPanel->show();
+
+    if (curIndex != 3)
+      controlPanel->show();
     if (viewPlaylist) playListDoc->show();
     setWindowState( windowState() ^ Qt::WindowFullScreen );
     show();
