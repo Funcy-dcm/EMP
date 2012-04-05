@@ -13,7 +13,8 @@ HEADERS	     = \
     src/VolumeSlider.h \
     src/SeekSlider.h \
     src/SocketServer.h \
-    src/Explorer.h
+    src/Explorer.h \
+    src/osdwidget.h
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
@@ -26,7 +27,8 @@ SOURCES	     = \
     src/VolumeSlider.cpp \
     src/SeekSlider.cpp \
     src/SocketServer.cpp \
-    src/Explorer.cpp
+    src/Explorer.cpp \
+    src/osdwidget.cpp
 
 LIBS     += -L$$PWD/libvlc -lvlc
 
