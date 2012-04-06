@@ -16,10 +16,18 @@
 #include "osdwidget.h"
 #include "VideoWidget.h"
 
+//class videoWidget_;
+//class volumeSlider;
+//class explorerView;
+//class osdWidget;
+
 VlcVideoWidget *videoWidget_;
+VlcVolumeSlider *volumeSlider;
 ExplorerWidget *explorerView;
 OSDWidget *osdWidget;
-libvlc_media_player_t *_curPlayer = NULL;
+
+class currentPlayer_;
+libvlc_media_player_t *currentPlayer_ = NULL;
 
 void MediaPlayer::receiveMessage(const QString& message)
 {
@@ -43,21 +51,20 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
   const char * const vlc_args[] = {
     "--intf=dummy",
-//    "--qt-minimal-view",
-//    "--no-qt-notification",
-//    "--no-embedded-video",
-//    "--extraintf=logger",
-//    "--verbose=3",
+    //    "--qt-minimal-view",
+    //    "--no-qt-notification",
+    //    "--no-embedded-video",
+    //    "--extraintf=logger",
+    //    "--verbose=3",
 
     "--reset-plugins-cache",
     "--no-stats",
     "--no-osd"
   };
   vlc_instance_=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
-  mediaPlayer_ = libvlc_media_player_new (vlc_instance_);
-  _curPlayer = mediaPlayer_;
-  libvlc_video_set_key_input(_curPlayer, false);
-  libvlc_video_set_mouse_input(_curPlayer, false);
+  currentPlayer_ = libvlc_media_player_new (vlc_instance_);
+  libvlc_video_set_key_input(currentPlayer_, false);
+  libvlc_video_set_mouse_input(currentPlayer_, false);
 
   qDebug() << "VLC Version:" << libvlc_get_version();
 
@@ -81,7 +88,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   timeLabel  = new QLabel(wgt);
   seekSlider = new VlcSeekSlider(wgt);
   seekSlider->setObjectName("seekSlider");
-  volumeSlider = new VlcVolumeSlider(wgt);
+  volumeSlider = new VlcVolumeSlider(currentPlayer_, wgt);
   volumeSlider->setObjectName("volumeSlider");
 
   playListDoc = new QDockWidget("PLAYLIST", this);
@@ -193,7 +200,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   playPauseAction->setChecked(true);
 
   fileMenu->addSeparator();
-//
+  //
   QMenu *audioMenu_ = fileMenu->addMenu(tr("Audio"));
   QAction *audio20Action = audioMenu_->addAction(tr("2.0"));
   audio20Action->setObjectName("audio20Action");
@@ -214,7 +221,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   connect(audioGroup_, SIGNAL(triggered(QAction*)),
           this, SLOT(audioSetDeviceType(QAction*)));
   fileMenu->addSeparator();
-//
+  //
   spuMenu_ = fileMenu->addMenu(tr("Subtitles"));
   spuGroup_ = new QActionGroup(spuMenu_);
   spuGroup_->setExclusive(true);
@@ -222,7 +229,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   connect(spuGroup_, SIGNAL(triggered(QAction*)),
           this, SLOT(setSpuDescription(QAction*)));
   fileMenu->addSeparator();
-//
+  //
   fullScreenAction = new QAction(this);
   fullScreenAction->setText(tr("Full screen"));
   fullScreenAction->setCheckable(true);
@@ -310,8 +317,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 // ----------------------------------------------------------------------
 /*virtual*/ MediaPlayer::~MediaPlayer()
 {
-  libvlc_media_player_stop (_curPlayer);
-  libvlc_media_player_release (_curPlayer);
+  libvlc_media_player_stop (currentPlayer_);
+  libvlc_media_player_release (currentPlayer_);
   libvlc_release (vlc_instance_);
   qDebug() << "~MediaPlayer";
 }
@@ -377,7 +384,7 @@ void MediaPlayer::writeSettings()
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
 {
   qDebug() << "closeEventStart";
-  if (libvlc_video_get_track_count(_curPlayer)) {
+  if (libvlc_video_get_track_count(currentPlayer_)) {
     qDebug() << "closeEvent(1)";
     saveFilePos();
   }
@@ -409,8 +416,8 @@ void MediaPlayer::saveFilePos() {
   bool findOk = 0;
   QModelIndex indexNew = model->index(curPlayList, 3);
   QString fileName = model->data(indexNew).toString();
-  int fullTime = libvlc_media_player_get_length(_curPlayer);
-  int currentTime = libvlc_media_player_get_time(_curPlayer);
+  int fullTime = libvlc_media_player_get_length(currentPlayer_);
+  int currentTime = libvlc_media_player_get_time(currentPlayer_);
   for (int i = 0; i < MAX_FILE_POS; ++i) {
     if (fileNameP[i] == fileName) {
       filePos[i] = currentTime;
@@ -467,7 +474,7 @@ void MediaPlayer::saveFilePos() {
               playListView->model()->removeRow(row, QModelIndex());
               if (curPlayList == row) {
                 curPlayList = -1;
-                libvlc_media_player_stop(_curPlayer);
+                libvlc_media_player_stop(currentPlayer_);
                 statusLabel->setText("");
                 //                                cWidget->statusLabel->setText("");
                 timeLabel->setText("");
@@ -476,7 +483,7 @@ void MediaPlayer::saveFilePos() {
             }
 
             if (!model->rowCount()) {
-              libvlc_media_player_stop(_curPlayer);
+              libvlc_media_player_stop(currentPlayer_);
               playButton->setEnabled(false);
               rewindButton->setEnabled(false);
               statusLabel->setText("");
@@ -512,7 +519,7 @@ void MediaPlayer::saveFilePos() {
           keyOk = true;
         } else if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
           if (sWidget.currentIndex() == 3) {
-            if (libvlc_media_player_get_state(_curPlayer) == libvlc_Paused)
+            if (libvlc_media_player_get_state(currentPlayer_) == libvlc_Paused)
               sWidget.setCurrentIndex(0);
             else sWidget.setCurrentIndex(1);
             if (!isFullScreen())
@@ -530,28 +537,28 @@ void MediaPlayer::saveFilePos() {
       }
     } else if (((QKeyEvent*)pe)->modifiers() == Qt::ControlModifier) {
       if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
-        qint64 pos = libvlc_media_player_get_time(_curPlayer);
-        libvlc_media_player_set_time(_curPlayer, pos-10000);
+        qint64 pos = libvlc_media_player_get_time(currentPlayer_);
+        libvlc_media_player_set_time(currentPlayer_, pos-10000);
         return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
-        qint64 pos = libvlc_media_player_get_time(_curPlayer);
-        libvlc_media_player_set_time(_curPlayer, pos+10000);
+        qint64 pos = libvlc_media_player_get_time(currentPlayer_);
+        libvlc_media_player_set_time(currentPlayer_, pos+10000);
         return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_T) {
-        int track = libvlc_audio_get_track(_curPlayer);
-        int cnt_track = libvlc_audio_get_track_count(_curPlayer);
+        int track = libvlc_audio_get_track(currentPlayer_);
+        int cnt_track = libvlc_audio_get_track_count(currentPlayer_);
         if (track < cnt_track-1) track++;
         else track = 0;
         qDebug()<< "*track" << track << cnt_track;
-        libvlc_audio_set_track(_curPlayer, track);
+        libvlc_audio_set_track(currentPlayer_, track);
         return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_S) {
-        int subt = libvlc_video_get_spu(_curPlayer);
-        int cnt_subt = libvlc_video_get_spu_count(_curPlayer);
+        int subt = libvlc_video_get_spu(currentPlayer_);
+        int cnt_subt = libvlc_video_get_spu_count(currentPlayer_);
         if (subt < cnt_subt-1) subt++;
         else subt = 0;
         qDebug()<< "*spu" << subt << cnt_subt;
-        qDebug()<< libvlc_video_set_spu(_curPlayer, subt);
+        qDebug()<< libvlc_video_set_spu(currentPlayer_, subt);
         return true;
       } else if (((QKeyEvent*)pe)->key() == Qt::Key_Z) {
         getSpuDescription();
@@ -674,7 +681,7 @@ void MediaPlayer::initVideoWindow()
 {
   QLabel *blackWidget = new QLabel(this);
   blackWidget->setObjectName("blackWidget");
-//  blackWidget->setCursor(Qt::BlankCursor);
+  //  blackWidget->setCursor(Qt::BlankCursor);
 
   logoLabel = new QLabel(this);
   logoLabel->setObjectName("logoLabel");
@@ -710,11 +717,11 @@ void MediaPlayer::initVideoWindow()
 
 bool MediaPlayer::isActive()
 {
-  if (_curPlayer == NULL)
+  if (currentPlayer_ == NULL)
     return false;
 
   libvlc_state_t state;
-  state = libvlc_media_player_get_state(_curPlayer);
+  state = libvlc_media_player_get_state(currentPlayer_);
 
   if (state == libvlc_NothingSpecial || state == libvlc_Ended || state == libvlc_Error)
     return false;
@@ -726,11 +733,11 @@ void MediaPlayer::stateChanged()
 {
   static int state_t = -1;
 
-  if (_curPlayer == NULL)
+  if (currentPlayer_ == NULL)
     return;
 
-  int state = libvlc_media_player_get_state(_curPlayer);
-  int has_vout = libvlc_media_player_has_vout(_curPlayer);
+  int state = libvlc_media_player_get_state(currentPlayer_);
+  int has_vout = libvlc_media_player_has_vout(currentPlayer_);
   if (has_vout_t != has_vout) {
     if (!isFullScreen() && (state != libvlc_Stopped)) {
       resizeWindow(has_vout);
@@ -748,8 +755,8 @@ void MediaPlayer::stateChanged()
     statusLabel->setText(fileName);
     qDebug() << "has_vout:" << has_vout;
     has_vout_t = has_vout;
-    if ((has_vout == 1) && libvlc_video_get_spu_count(_curPlayer)) {
-      libvlc_video_set_spu(_curPlayer, 0);
+    if ((has_vout == 1) && libvlc_video_get_spu_count(currentPlayer_)) {
+      libvlc_video_set_spu(currentPlayer_, 0);
       getSpuDescription();
     }
   }
@@ -763,7 +770,7 @@ void MediaPlayer::stateChanged()
       break;
     case libvlc_Opening:
       qDebug() << "libvlc_Opening";
-//      has_vout_t = -1;
+      //      has_vout_t = -1;
       break;
     case libvlc_Buffering:
       qDebug() << "libvlc_Buffering";
@@ -871,14 +878,14 @@ void MediaPlayer::openFile()
 
 void MediaPlayer::playPause()
 {
-  if (libvlc_media_player_get_state(_curPlayer) == libvlc_Playing) {
-    libvlc_media_player_pause(_curPlayer);
+  if (libvlc_media_player_get_state(currentPlayer_) == libvlc_Playing) {
+    libvlc_media_player_pause(currentPlayer_);
     if (isFullScreen()) osdWidget->showWidget(tr("Pause"));
-  } else if (((libvlc_media_player_get_state(_curPlayer) == libvlc_Paused) ||
-              (libvlc_media_player_get_state(_curPlayer) == libvlc_Stopped)) &&
+  } else if (((libvlc_media_player_get_state(currentPlayer_) == libvlc_Paused) ||
+              (libvlc_media_player_get_state(currentPlayer_) == libvlc_Stopped)) &&
              (curPlayList >= 0)) {
     if (sWidget.currentIndex() == 3) sWidget.setCurrentIndex(0);
-    libvlc_media_player_play(_curPlayer);
+    libvlc_media_player_play(currentPlayer_);
     if (isFullScreen()) osdWidget->showWidget(tr("Play"));
   } else {
     QModelIndex indexNew;
@@ -903,8 +910,8 @@ void MediaPlayer::playPause()
 
 void MediaPlayer::pause()
 {
-  if (libvlc_media_player_get_state(_curPlayer) == libvlc_Playing) {
-    libvlc_media_player_pause(_curPlayer);
+  if (libvlc_media_player_get_state(currentPlayer_) == libvlc_Playing) {
+    libvlc_media_player_pause(currentPlayer_);
   }
 }
 
@@ -920,7 +927,7 @@ void MediaPlayer::stop()
         break;
       }
     }
-    libvlc_media_player_stop(_curPlayer);
+    libvlc_media_player_stop(currentPlayer_);
   }
   playPauseAction->setChecked(false);
 }
@@ -949,7 +956,7 @@ void MediaPlayer::rewind()
     fileName = model->data(index).toString();
     setCurrentSource(fileName, true);
   } else {
-    libvlc_media_player_set_time(_curPlayer, 0);
+    libvlc_media_player_set_time(currentPlayer_, 0);
   }
 }
 
@@ -1043,12 +1050,12 @@ void MediaPlayer::setFullScreen(bool enabled)
     show();
     raise();
 #endif
-//cWidget->show();
+    //cWidget->show();
     explorerView->onFullScreen(true);
   } else if (isFullScreen()) {
     videoWidget_->setCursor(Qt::PointingHandCursor);
     osdWidget->hide();
-//cWidget->hide();
+    //cWidget->hide();
 
     if (curIndex != 3)
       controlPanel->show();
@@ -1067,12 +1074,11 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
   libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
-  libvlc_media_player_set_media(mediaPlayer_, vlcMedia_);
+  libvlc_media_player_set_media(currentPlayer_, vlcMedia_);
   libvlc_media_release(vlcMedia_);
-  _curPlayer = mediaPlayer_;
 
 #if defined(Q_WS_WIN)
-  libvlc_media_player_set_hwnd(_curPlayer, videoWidget_->winId());
+  libvlc_media_player_set_hwnd(currentPlayer_, videoWidget_->winId());
 #elif defined(Q_WS_MAC)
   libvlc_media_player_set_agl(_curPlayer, m_videoWidget->winId());
 #else // Q_WS_X11
@@ -1080,12 +1086,12 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
   libvlc_media_player_set_xwindow(_curPlayer, windid);
 #endif // Q_WS_*
   /* Play */
-  libvlc_media_player_play(_curPlayer);
+  libvlc_media_player_play(currentPlayer_);
 
   if (setPosOn) {
     for (int i = 0; i < MAX_FILE_POS; ++i) {
       if (fileNameP[i] == QUrl::fromLocalFile(source).toLocalFile()) {
-        libvlc_media_player_set_time(_curPlayer, filePos[i]);
+        libvlc_media_player_set_time(currentPlayer_, filePos[i]);
         qDebug() << "set_time:" << filePos[i];
         break;
       }
@@ -1143,11 +1149,11 @@ QString MediaPlayer::getCurrentSourceName () {
   return fileName;
 }
 quint64 MediaPlayer::getCurrentTime () {
-  return libvlc_media_player_get_time(_curPlayer);
+  return libvlc_media_player_get_time(currentPlayer_);
 }
 
 quint64 MediaPlayer::getTotalTime () {
-  return libvlc_media_player_get_length(_curPlayer);
+  return libvlc_media_player_get_length(currentPlayer_);
 }
 
 void MediaPlayer::resizeWindow(int has_vout)
@@ -1161,7 +1167,7 @@ void MediaPlayer::resizeWindow(int has_vout)
     QSize newSize;
     unsigned int width = 0;
     unsigned int height = 0;
-    libvlc_video_get_size(_curPlayer, 0, &width, &height);
+    libvlc_video_get_size(currentPlayer_, 0, &width, &height);
     qDebug() << width << height;
 
     frame.setWidth(frameSize().width() - size().width());
@@ -1219,7 +1225,7 @@ void MediaPlayer::audioSetDeviceType(QAction *pAct)
   } else {
     audio_type = libvlc_AudioOutputDevice_Stereo;
   }
-  libvlc_audio_output_set_device_type(_curPlayer, audio_type);
+  libvlc_audio_output_set_device_type(currentPlayer_, audio_type);
 }
 
 void MediaPlayer::getSpuDescription()
@@ -1231,7 +1237,7 @@ void MediaPlayer::getSpuDescription()
   int id = 0;
 
   libvlc_track_description_t *spu_description =
-      libvlc_video_get_spu_description(_curPlayer);
+      libvlc_video_get_spu_description(currentPlayer_);
   while (spu_description){
     QString str = QString::fromUtf8(spu_description->psz_name);
     QAction *action = spuMenu_->addAction(str);
@@ -1248,5 +1254,5 @@ void MediaPlayer::getSpuDescription()
 
 void MediaPlayer::setSpuDescription(QAction *pAct)
 {
-  libvlc_video_set_spu(_curPlayer, pAct->objectName().toInt());
+  libvlc_video_set_spu(currentPlayer_, pAct->objectName().toInt());
 }

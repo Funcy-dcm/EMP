@@ -52,7 +52,8 @@ int main(int argc, char** argv)
   MediaPlayer  mediaPlayer(fileString);
 
   app.setActivationWindow(&mediaPlayer, true);
-  QObject::connect(&app, SIGNAL(messageReceived(const QString&)), &mediaPlayer, SLOT(receiveMessage(const QString&)));
+  QObject::connect(&app, SIGNAL(messageReceived(const QString&)),
+                   &mediaPlayer, SLOT(receiveMessage(const QString&)));
 
   mediaPlayer.show();
   return app.exec();

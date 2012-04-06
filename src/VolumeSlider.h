@@ -19,18 +19,18 @@
 #ifndef _VOLUMESLIDER_H_
 #define _VOLUMESLIDER_H_
 
-#include <QtGui/QPushButton>
-#include <QtGui/QSlider>
-#include <QtGui/QWidget>
+#include <QtGui>
+#include <vlc/vlc.h>
+#include "EMP.h"
 
-struct libvlc_media_player_t;
-extern libvlc_media_player_t *_curPlayer;
+//struct libvlc_media_player_t;
+//extern libvlc_media_player_t *currentPlayer_;
 
 class VlcVolumeSlider : public QWidget
 {
   Q_OBJECT
 public:
-  VlcVolumeSlider(QWidget *parent = 0);
+  VlcVolumeSlider(libvlc_media_player_t *player, QWidget *parent = 0);
   ~VlcVolumeSlider();
 
 public slots:
@@ -48,12 +48,14 @@ private slots:
   void updateVolume();
 
 private:
+  libvlc_media_player_t *currentPlayer_;
   int _currentVolume;
 
-  QPushButton *_muteButton;
+  QPushButton *muteButton_;
   QIcon volumeIcon;
   QIcon mutedIcon;
-  QSlider *_slider;
+  QSlider *slider_;
+
 };
 
 #endif // _VOLUMESLIDER_H_

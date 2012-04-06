@@ -25,7 +25,7 @@
 #include <QtGui/QWidget>
 
 struct libvlc_media_player_t;
-extern libvlc_media_player_t *_curPlayer;
+extern libvlc_media_player_t *currentPlayer_;
 
 class VlcSeekSlider : public QWidget
 {
@@ -44,8 +44,8 @@ private slots:
   void updateTime();
 
 private:
-  QSlider *_seek;
-  QTimer *_timer;
+  QSlider *seek_;
+  QTimer *timer_;
 };
 
 #endif // _SEEKWIDGET_H_

@@ -16,57 +16,52 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#include <QtGui/QHBoxLayout>
-#include <QStyle>
-#include <QDebug>
-#include <QApplication>
-#include <QEvent>
-#include <QMouseEvent>
 #include <vlc/vlc.h>
 #include "VolumeSlider.h"
 
-VlcVolumeSlider::VlcVolumeSlider(QWidget *parent)
-  : QWidget(parent)
+VlcVolumeSlider::VlcVolumeSlider(libvlc_media_player_t *player, QWidget *parent)
+  : currentPlayer_(player),
+    QWidget(parent)
 {
-  _slider = new QSlider(this);
-  _slider->setOrientation(Qt::Horizontal);
-  _slider->setFixedWidth(100);
-  _slider->setMaximum(100);
-  _slider->setCursor(Qt::PointingHandCursor);
-  _slider->setFocusPolicy(Qt::NoFocus);
+  slider_ = new QSlider(this);
+  slider_->setOrientation(Qt::Horizontal);
+  slider_->setFixedWidth(100);
+  slider_->setMaximum(100);
+  slider_->setCursor(Qt::PointingHandCursor);
+  slider_->setFocusPolicy(Qt::NoFocus);
   setVolume(100);
 
-  _muteButton = new QPushButton(this);
-  _muteButton->setObjectName("volumeButton");
-  _muteButton->setToolTip(tr("Mute"));
+  muteButton_ = new QPushButton(this);
+  muteButton_->setObjectName("volumeButton");
+  muteButton_->setToolTip(tr("Mute"));
   volumeIcon = style()->standardIcon(QStyle::SP_MediaVolume);
   mutedIcon = style()->standardIcon(QStyle::SP_MediaVolumeMuted);
-  _muteButton->setIcon(volumeIcon);
-  _muteButton->setCursor(Qt::PointingHandCursor);
-  _muteButton->setFocusPolicy(Qt::NoFocus);
+  muteButton_->setIcon(volumeIcon);
+  muteButton_->setCursor(Qt::PointingHandCursor);
+  muteButton_->setFocusPolicy(Qt::NoFocus);
 
   QHBoxLayout *layout = new QHBoxLayout;
   layout->setMargin(0);
-  layout->addWidget(_muteButton);
-  layout->addWidget(_slider);
+  layout->addWidget(muteButton_);
+  layout->addWidget(slider_);
   setLayout(layout);
 
-  connect(_muteButton, SIGNAL(clicked()), this, SLOT(mute()));
-  connect(_slider, SIGNAL(valueChanged(int)), this, SLOT(setVolume(int)));
+  connect(muteButton_, SIGNAL(clicked()), this, SLOT(mute()));
+  connect(slider_, SIGNAL(valueChanged(int)), this, SLOT(setVolume(int)));
 
   qApp->installEventFilter(this);
 }
 
 VlcVolumeSlider::~VlcVolumeSlider()
 {
-  delete _slider;
-  delete _muteButton;
+  delete slider_;
+  delete muteButton_;
 }
 
 /*virtual*/ bool VlcVolumeSlider::eventFilter(QObject* pobj, QEvent* pe)
 {
   if (pe->type() == QEvent::MouseButtonPress) {
-    if (pobj == _slider) {
+    if (pobj == slider_) {
       if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
         QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
                                            Qt::MidButton, Qt::MidButton, Qt::NoModifier);
@@ -81,8 +76,8 @@ VlcVolumeSlider::~VlcVolumeSlider()
 void VlcVolumeSlider::mute()
 {
   bool mute = false;
-  if(_curPlayer) {
-    mute = libvlc_audio_get_mute(_curPlayer);
+  if(currentPlayer_) {
+    mute = libvlc_audio_get_mute(currentPlayer_);
     if(libvlc_errmsg()) {
       qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
       libvlc_clearerr();
@@ -90,38 +85,38 @@ void VlcVolumeSlider::mute()
   }
 
   if(mute) {
-    _slider->setDisabled(false);
-    _muteButton->setIcon(volumeIcon);
+    slider_->setDisabled(false);
+    muteButton_->setIcon(volumeIcon);
   } else {
-    _slider->setDisabled(true);
-    _muteButton->setIcon(mutedIcon);
+    slider_->setDisabled(true);
+    muteButton_->setIcon(mutedIcon);
   }
 
-  libvlc_audio_toggle_mute(_curPlayer);
+  libvlc_audio_toggle_mute(currentPlayer_);
 }
 
 void VlcVolumeSlider::setVolume(const int &volume)
 {
-  if (_curPlayer == NULL) return;
+  if (currentPlayer_ == NULL) return;
   _currentVolume = volume;
-  _slider->setValue(_currentVolume);
+  slider_->setValue(_currentVolume);
   QString vol = tr("Volume") + " [" + QString::number(_currentVolume) + "%]";
-  _slider->setToolTip(vol);
-  libvlc_audio_set_volume(_curPlayer, _currentVolume);
+  slider_->setToolTip(vol);
+  libvlc_audio_set_volume(currentPlayer_, _currentVolume);
 }
 
 void VlcVolumeSlider::updateVolume()
 {
   //    if(_curPlayer) {
   int volume = -1;
-  volume = libvlc_audio_get_volume(_curPlayer);
+  volume = libvlc_audio_get_volume(currentPlayer_);
   if(libvlc_errmsg()) {
     qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
     libvlc_clearerr();
   }
 
   if(volume != _currentVolume) {
-    libvlc_audio_set_volume(_curPlayer, _currentVolume);
+    libvlc_audio_set_volume(currentPlayer_, _currentVolume);
     if(libvlc_errmsg()) {
       qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
       libvlc_clearerr();

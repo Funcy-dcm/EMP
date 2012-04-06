@@ -32,11 +32,6 @@
 
 #define MAX_FILE_POS    20
 
-class MediaPlayer;
-
-struct libvlc_media_player_t;
-extern libvlc_media_player_t *_curPlayer;
-
 // ======================================================================
 class MediaPlayer : public QMainWindow {
   Q_OBJECT
@@ -50,7 +45,6 @@ public:
   void handleDrop(QDropEvent *e);
 
   libvlc_instance_t *vlc_instance_;
-  libvlc_media_player_t *mediaPlayer_;
 
   QStackedWidget sWidget;
 
@@ -130,7 +124,6 @@ private:
   VlcSeekSlider *seekSlider;
   QLabel *statusLabel;
   QLabel *timeLabel;
-  VlcVolumeSlider *volumeSlider;
   QWidget *buttonPanelWidget;
   bool fullScreenOn;
 

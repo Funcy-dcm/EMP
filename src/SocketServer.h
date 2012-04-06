@@ -18,8 +18,8 @@ public slots:
 private slots:
   void sendToClient(QTcpSocket* pSocket, const QString& cmd, const QString& str);
 private:
-  MediaPlayer *m_player;
-  quint16     m_nNextBlockSize;
+  MediaPlayer *mediaPlayer_;
+  quint16     nextBlockSize_;
 
 };
 

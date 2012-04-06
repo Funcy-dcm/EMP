@@ -6,9 +6,9 @@
 
 SocketServer::SocketServer(MediaPlayer *player, QObject *parent) :
   QTcpServer(parent),
-  m_player(player)
+  mediaPlayer_(player)
 {
-  m_nNextBlockSize = 0;
+  nextBlockSize_ = 0;
   if (!listen(QHostAddress::Any, 13551)) {
     QMessageBox::critical(0,
                           "Server Error",
@@ -42,14 +42,14 @@ void SocketServer::slotReadClient()
   QTcpSocket* pClientSocket = (QTcpSocket*)sender();
   QDataStream in(pClientSocket);
   for (;;) {
-    if (!m_nNextBlockSize) {
+    if (!nextBlockSize_) {
       if (pClientSocket->bytesAvailable() < sizeof(quint16)) {
         break;
       }
-      in >> m_nNextBlockSize;
+      in >> nextBlockSize_;
     }
 
-    if (pClientSocket->bytesAvailable() < m_nNextBlockSize) {
+    if (pClientSocket->bytesAvailable() < nextBlockSize_) {
       break;
     }
 
@@ -58,10 +58,10 @@ void SocketServer::slotReadClient()
     in >> str1;
     cmd.sprintf("%s", str1);
 
-    m_nNextBlockSize = 0;
+    nextBlockSize_ = 0;
 
     if (cmd == "Name") {
-      str = m_player->getCurrentSourceName();
+      str = mediaPlayer_->getCurrentSourceName();
     }
 
     sendToClient(pClientSocket, cmd, str);
@@ -80,8 +80,8 @@ void SocketServer::sendToClient(QTcpSocket* pSocket, const QString& cmd, const Q
     fileName = fileName.right(fileName.length() - fileName.lastIndexOf('/') - 1);
     fileName = fileName.left(fileName.lastIndexOf('.'));
     out << fileName;
-    out << m_player->getCurrentTime();
-    out << m_player->getTotalTime();
+    out << mediaPlayer_->getCurrentTime();
+    out << mediaPlayer_->getTotalTime();
   }
 
   out.device()->seek(0);
