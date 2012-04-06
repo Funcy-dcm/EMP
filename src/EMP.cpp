@@ -515,7 +515,8 @@ void MediaPlayer::saveFilePos() {
             if (libvlc_media_player_get_state(_curPlayer) == libvlc_Paused)
               sWidget.setCurrentIndex(0);
             else sWidget.setCurrentIndex(1);
-            controlPanel->show();
+            if (!isFullScreen())
+              controlPanel->show();
           }
           keyOk = true;
         }
@@ -878,6 +879,7 @@ void MediaPlayer::playPause()
              (curPlayList >= 0)) {
     if (sWidget.currentIndex() == 3) sWidget.setCurrentIndex(0);
     libvlc_media_player_play(_curPlayer);
+    if (isFullScreen()) osdWidget->showWidget(tr("Play"));
   } else {
     QModelIndex indexNew;
     if (curPlayList >= 0) {
@@ -985,13 +987,13 @@ void MediaPlayer::playlistShow()
   } else {
     playListDoc->show();
   }
-  //    if (osdWidget->isVisible()) {
-  //        QPoint pos;
-  //        pos.setX(geometry().x() + width() - osdWidget->width() - 25);
-  //        if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
-  //        pos.setY(geometry().y() + 25);
-  //        osdWidget->move(pos);
-  //    }
+  if (osdWidget->isVisible()) {
+    QPoint pos;
+    pos.setX(geometry().x() + width() - osdWidget->width() - 25);
+    if (playListDoc->isVisible()) pos.setX(pos.x() - playListDoc->width());
+    pos.setY(geometry().y() + 25);
+    osdWidget->move(pos);
+  }
 }
 
 void MediaPlayer::playListDoubleClicked(QModelIndex indexNew)
@@ -1045,7 +1047,7 @@ void MediaPlayer::setFullScreen(bool enabled)
     explorerView->onFullScreen(true);
   } else if (isFullScreen()) {
     videoWidget_->setCursor(Qt::PointingHandCursor);
-//osdWidget->hide();
+    osdWidget->hide();
 //cWidget->hide();
 
     if (curIndex != 3)
