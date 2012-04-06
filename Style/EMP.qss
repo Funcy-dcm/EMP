@@ -201,7 +201,7 @@ QMenu::separator {
 	margin: 1px 10px 1px 5px;
 }
 
-#mLabel {
+#osdLabel {
 	border: 6px solid #404040;
 	border-radius: 20px;
 	color: #FFFFFF;

@@ -6,20 +6,20 @@
 
 class OSDWidget : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    OSDWidget(MediaPlayer *player, QWidget * parent = 0);
-    QLabel *mLabel;
+  OSDWidget(MediaPlayer *player, QWidget * parent = 0);
+  QLabel *generalLabel_;
 public slots:
-    void slotShowLocalTime();
-    void slotShowEndTime();
-    void showWidget(QString);
+  void slotShowLocalTime();
+  void slotShowEndTime();
+  void showWidget(QString);
 
 protected:
-    void timerEvent(QTimerEvent *);
+  void timerEvent(QTimerEvent *);
 private:
-    MediaPlayer *m_player;
-    QBasicTimer timerShowWidget;
+  MediaPlayer *mediaPlayer_;
+  QBasicTimer timerShowWidget;
 
 };
 

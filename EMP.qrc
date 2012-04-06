@@ -19,5 +19,9 @@
         <file>res/Logo8.png</file>
         <file>res/Logo1.png</file>
         <file>style/EMP.qss</file>
+        <file>res/pause_32.png</file>
+        <file>res/play_32.png</file>
+        <file>res/play_48.png</file>
+        <file>res/pause_48.png</file>
     </qresource>
 </RCC>
