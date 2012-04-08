@@ -1,11 +1,5 @@
-#include <QtCore/QTime>
-#include <QtGui/QHBoxLayout>
-#include <QApplication>
-#include <QEvent>
-#include <QMouseEvent>
-#include <vlc/vlc.h>
-#include "EMP.h"
 #include "SeekSlider.h"
+#include "EMP.h"
 
 VlcSeekSlider::VlcSeekSlider(libvlc_media_player_t *player, QWidget *parent)
   : QWidget(parent),

@@ -5,9 +5,6 @@ QT          += core gui network
 
 HEADERS	     = \
     src/EMP.h \
-    src/qtsingleapplication/qtsingleapplication.h \
-    src/qtsingleapplication/qtlockedfile.h \
-    src/qtsingleapplication/qtlocalpeer.h \
     src/VersionNo.h \
     src/VideoWidget.h \
     src/VolumeSlider.h \
@@ -18,11 +15,6 @@ HEADERS	     = \
 SOURCES	     = \
     src/main.cpp \
     src/EMP.cpp \
-    src/qtsingleapplication/qtsingleapplication.cpp \
-    src/qtsingleapplication/qtlockedfile_win.cpp \
-    src/qtsingleapplication/qtlockedfile_unix.cpp \
-    src/qtsingleapplication/qtlockedfile.cpp \
-    src/qtsingleapplication/qtlocalpeer.cpp \
     src/VideoWidget.cpp \
     src/VolumeSlider.cpp \
     src/SeekSlider.cpp \
@@ -30,7 +22,8 @@ SOURCES	     = \
     src/Explorer.cpp \
     src/osdwidget.cpp
 
-LIBS     += -L$$PWD/libvlc -lvlc
+INCLUDEPATH += $$PWD/3rdparty
+LIBS     += -L$$PWD/3rdparty/libvlc -lvlc
 
 RESOURCES += \
     EMP.qrc
@@ -40,6 +33,8 @@ DESTDIR = build/target/
 OBJECTS_DIR = build/obj/
 MOC_DIR = build/moc/
 RCC_DIR = build/rcc/
+
+include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
 
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8

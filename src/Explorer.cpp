@@ -1,4 +1,3 @@
-
 #include "Explorer.h"
 
 ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
