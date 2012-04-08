@@ -20,8 +20,8 @@
 #include "VolumeSlider.h"
 
 VlcVolumeSlider::VlcVolumeSlider(libvlc_media_player_t *player, QWidget *parent)
-  : currentPlayer_(player),
-    QWidget(parent)
+  : QWidget(parent),
+    currentPlayer_(player)
 {
   slider_ = new QSlider(this);
   slider_->setOrientation(Qt::Horizontal);
@@ -98,11 +98,11 @@ void VlcVolumeSlider::mute()
 void VlcVolumeSlider::setVolume(const int &volume)
 {
   if (currentPlayer_ == NULL) return;
-  _currentVolume = volume;
-  slider_->setValue(_currentVolume);
-  QString vol = tr("Volume") + " [" + QString::number(_currentVolume) + "%]";
+  currentVolume_ = volume;
+  slider_->setValue(currentVolume_);
+  QString vol = tr("Volume") + " [" + QString::number(currentVolume_) + "%]";
   slider_->setToolTip(vol);
-  libvlc_audio_set_volume(currentPlayer_, _currentVolume);
+  libvlc_audio_set_volume(currentPlayer_, currentVolume_);
 }
 
 void VlcVolumeSlider::updateVolume()
@@ -115,8 +115,8 @@ void VlcVolumeSlider::updateVolume()
     libvlc_clearerr();
   }
 
-  if(volume != _currentVolume) {
-    libvlc_audio_set_volume(currentPlayer_, _currentVolume);
+  if(volume != currentVolume_) {
+    libvlc_audio_set_volume(currentPlayer_, currentVolume_);
     if(libvlc_errmsg()) {
       qDebug() << "libvlc" << "Error:" << libvlc_errmsg();
       libvlc_clearerr();
@@ -127,18 +127,18 @@ void VlcVolumeSlider::updateVolume()
 
 int VlcVolumeSlider::volume() const
 {
-  return _currentVolume;
+  return currentVolume_;
 }
 
 void VlcVolumeSlider::volumeControl(const bool &up)
 {
   if(up) {
-    if(_currentVolume != 100) {
-      setVolume(_currentVolume+1);
+    if(currentVolume_ != 100) {
+      setVolume(currentVolume_+1);
     }
   } else {
-    if(_currentVolume != 0) {
-      setVolume(_currentVolume-1);
+    if(currentVolume_ != 0) {
+      setVolume(currentVolume_-1);
     }
   }
 }

@@ -7,8 +7,9 @@
 #include "EMP.h"
 #include "SeekSlider.h"
 
-VlcSeekSlider::VlcSeekSlider(QWidget *parent)
-  : QWidget(parent)
+VlcSeekSlider::VlcSeekSlider(libvlc_media_player_t *player, QWidget *parent)
+  : QWidget(parent),
+    currentPlayer_(player)
 {
   seek_ = new QSlider(this);
   seek_->setOrientation(Qt::Horizontal);

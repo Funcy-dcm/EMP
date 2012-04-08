@@ -16,13 +16,7 @@
 #include "osdwidget.h"
 #include "VideoWidget.h"
 
-//class videoWidget_;
-//class volumeSlider;
-//class explorerView;
-//class osdWidget;
-
 VlcVideoWidget *videoWidget_;
-VlcVolumeSlider *volumeSlider;
 ExplorerWidget *explorerView;
 OSDWidget *osdWidget;
 
@@ -75,20 +69,18 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
   osdWidget = new OSDWidget(this, this);
 
-  QWidget *wgt = new QWidget;
-
   buttonPanelWidget = new QWidget(this);
-  openButton    = new QPushButton(wgt);
-  playButton    = new QPushButton(wgt);
-  stopButton    = new QPushButton(wgt);
-  rewindButton  = new QPushButton(wgt);
-  forwardButton = new QPushButton(wgt);
-  playlistButton = new QPushButton(wgt);
-  statusLabel  = new QLabel(wgt);
-  timeLabel  = new QLabel(wgt);
-  seekSlider = new VlcSeekSlider(wgt);
+  openButton    = new QPushButton(this);
+  playButton    = new QPushButton(this);
+  stopButton    = new QPushButton(this);
+  rewindButton  = new QPushButton(this);
+  forwardButton = new QPushButton(this);
+  playlistButton = new QPushButton(this);
+  statusLabel  = new QLabel(this);
+  timeLabel  = new QLabel(this);
+  seekSlider = new VlcSeekSlider(currentPlayer_, this);
   seekSlider->setObjectName("seekSlider");
-  volumeSlider = new VlcVolumeSlider(currentPlayer_, wgt);
+  volumeSlider = new VlcVolumeSlider(currentPlayer_, this);
   volumeSlider->setObjectName("volumeSlider");
 
   playListDoc = new QDockWidget("PLAYLIST", this);

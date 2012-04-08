@@ -102,6 +102,9 @@ protected:
   virtual void moveEvent(QMoveEvent*);
 
 private:
+  VlcSeekSlider *seekSlider;
+  VlcVolumeSlider *volumeSlider;
+
   QString lang;
   QString fileNameP[MAX_FILE_POS];
   long filePos[MAX_FILE_POS];
@@ -121,7 +124,6 @@ private:
   QPushButton *rewindButton;
   QPushButton *forwardButton;
   QPushButton *playlistButton;
-  VlcSeekSlider *seekSlider;
   QLabel *statusLabel;
   QLabel *timeLabel;
   QWidget *buttonPanelWidget;

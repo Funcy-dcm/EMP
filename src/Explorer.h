@@ -14,7 +14,7 @@ public:
   ~ExplorerWidget();
 
 protected:
-  /*virtual*/ void keyPressEvent(QKeyEvent*);
+  virtual void keyPressEvent(QKeyEvent*);
 
 public slots:
   void slotKeyLeft();

@@ -21,10 +21,6 @@
 
 #include <QtGui>
 #include <vlc/vlc.h>
-#include "EMP.h"
-
-//struct libvlc_media_player_t;
-//extern libvlc_media_player_t *currentPlayer_;
 
 class VlcVolumeSlider : public QWidget
 {
@@ -49,7 +45,7 @@ private slots:
 
 private:
   libvlc_media_player_t *currentPlayer_;
-  int _currentVolume;
+  int currentVolume_;
 
   QPushButton *muteButton_;
   QIcon volumeIcon;

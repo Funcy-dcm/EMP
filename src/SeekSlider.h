@@ -19,19 +19,14 @@
 #ifndef _SEEKWIDGET_H_
 #define _SEEKWIDGET_H_
 
-#include <QtCore/QTimer>
-#include <QtGui/QLabel>
-#include <QtGui/QSlider>
-#include <QtGui/QWidget>
-
-struct libvlc_media_player_t;
-extern libvlc_media_player_t *currentPlayer_;
+#include <QtGui>
+#include <vlc/vlc.h>
 
 class VlcSeekSlider : public QWidget
 {
   Q_OBJECT
 public:
-  VlcSeekSlider(QWidget *parent = 0);
+  VlcSeekSlider(libvlc_media_player_t *player, QWidget *parent = 0);
   ~VlcSeekSlider();
   QString timeString;
 
@@ -44,6 +39,7 @@ private slots:
   void updateTime();
 
 private:
+  libvlc_media_player_t *currentPlayer_;
   QSlider *seek_;
   QTimer *timer_;
 };
