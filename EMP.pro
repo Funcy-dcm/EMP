@@ -1,7 +1,7 @@
-CONFIG += -static -release -no-exceptions -no-qt3support -nomake demos -nomake examples
+QT          += core gui network
+
 TARGET       = EMP
 TEMPLATE     = app
-QT          += core gui network
 
 HEADERS	     = \
     src/EMP.h \
@@ -22,17 +22,24 @@ SOURCES	     = \
     src/Explorer.cpp \
     src/osdwidget.cpp
 
+CONFIG(debug, debug|release) {
+  BUILD_DIR = debug
+} else {
+  BUILD_DIR = release
+  DEFINES += QT_NO_DEBUG_OUTPUT
+}
+
+DESTDIR = build/target/
+OBJECTS_DIR = build/obj/
+MOC_DIR = build/moc/
+RCC_DIR = build/rcc/
+
 INCLUDEPATH += $$PWD/3rdparty
 LIBS     += -L$$PWD/3rdparty/libvlc -lvlc
 
 RESOURCES += \
     EMP.qrc
 RC_FILE = EMPApp.rc
-
-DESTDIR = build/target/
-OBJECTS_DIR = build/obj/
-MOC_DIR = build/moc/
-RCC_DIR = build/rcc/
 
 include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
 

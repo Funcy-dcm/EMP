@@ -89,15 +89,15 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   model = new QStandardItemModel(0, 4);
   playListView = new QTableView(this);
 
-  openButton->setIcon(QIcon(":/Res/Open.png"));
-  playIcon = QIcon(":/Res/Play1.png");
-  pauseIcon = QIcon(":/Res/Pause1.png");
+  openButton->setIcon(QIcon(":/images/open"));
+  playIcon = QIcon(":/images/play");
+  pauseIcon = QIcon(":/images/pause");
   playButton->setIcon(playIcon);
   playButton->setObjectName("playButton");
-  stopButton->setIcon(QIcon(":/Res/Stop1.png"));
-  rewindButton->setIcon(QIcon(":/Res/Rewind1.png"));
-  forwardButton->setIcon(QIcon(":/Res/Forward1.png"));
-  playlistButton->setIcon(QIcon(":/res/Playlist1.png"));
+  stopButton->setIcon(QIcon(":/images/stop"));
+  rewindButton->setIcon(QIcon(":/images/rewind"));
+  forwardButton->setIcon(QIcon(":/images/forward"));
+  playlistButton->setIcon(QIcon(":/images/playlist"));
 
   openButton->setToolTip(tr("Open"));
   playButton->setToolTip(tr("Play"));
@@ -680,7 +680,7 @@ void MediaPlayer::initVideoWindow()
   logoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   QPixmap pix;
   if (pix.load(qApp->applicationDirPath()+"/logo/logoEx.png") == 0)
-    pix.load(":/res/Logo7.png");
+    pix.load(":/images/logo");
   logoLabel->setPixmap(pix);
 
   //    QLabel *textb = new QLabel(logoLabel);

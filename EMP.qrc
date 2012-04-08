@@ -1,27 +1,17 @@
 <RCC>
-    <qresource prefix="/">
-        <file>Res/Pause.png</file>
-        <file>Res/Play.png</file>
-        <file>Res/Stop.png</file>
-        <file>Res/Rewind.png</file>
-        <file>Res/Forward.png</file>
-        <file>Res/Pause1.png</file>
-        <file>Res/Play1.png</file>
-        <file>Res/Stop1.png</file>
-        <file>Res/Forward1.png</file>
-        <file>Res/Rewind1.png</file>
-        <file>Res/Open.png</file>
-        <file>res/Playlist.png</file>
-        <file>res/Playlist1.png</file>
-        <file>res/Logo3.png</file>
-        <file>res/Logo4.png</file>
-        <file>res/Logo7.png</file>
-        <file>res/Logo8.png</file>
-        <file>res/Logo1.png</file>
-        <file>style/EMP.qss</file>
-        <file>res/pause_32.png</file>
-        <file>res/play_32.png</file>
-        <file>res/play_48.png</file>
-        <file>res/pause_48.png</file>
+    <qresource prefix="/images">
+        <file alias="forward">images/forward.png</file>
+        <file alias="logo">images/logo.png</file>
+        <file alias="open">images/open.png</file>
+        <file alias="pause">images/pause.png</file>
+        <file alias="pause_48">images/pause_48.png</file>
+        <file alias="play">images/play.png</file>
+        <file alias="play_48">images/play_48.png</file>
+        <file alias="playlist">images/playlist.png</file>
+        <file alias="stop">images/stop.png</file>
+        <file alias="rewind">images/rewind.png</file>
+    </qresource>
+    <qresource prefix="/style">
+        <file alias="style">style/emp.qss</file>
     </qresource>
 </RCC>

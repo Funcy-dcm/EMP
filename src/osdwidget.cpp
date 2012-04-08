@@ -37,9 +37,9 @@ void OSDWidget::showWidget(QString str)
 {
   hide();
   if (str == tr("Pause")) {
-    generalLabel_->setPixmap(QPixmap(":/res/pause_48.png"));
+    generalLabel_->setPixmap(QPixmap(":/images/pause_48"));
   } else if (str == tr("Play")) {
-    generalLabel_->setPixmap(QPixmap(":/res/play_48.png"));
+    generalLabel_->setPixmap(QPixmap(":/images/play_48"));
   } else {
     generalLabel_->setText(str);
   }

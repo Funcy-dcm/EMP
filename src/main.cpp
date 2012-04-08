@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
   //    QString dirString = app.applicationDirPath();
   //    QString fileString = dirString + "/Style/EMP.qss";
-  QString fileString = ":/style/EMP.qss";
+  QString fileString = ":/style/style";
   QFile file(fileString);
   file.open(QFile::ReadOnly);
   QString strCSS = QLatin1String(file.readAll());
