@@ -3,24 +3,25 @@ QT          += core gui network
 TARGET       = EMP
 TEMPLATE     = app
 
-HEADERS	     = \
-    src/EMP.h \
-    src/VersionNo.h \
-    src/VideoWidget.h \
-    src/VolumeSlider.h \
-    src/SeekSlider.h \
-    src/SocketServer.h \
-    src/Explorer.h \
-    src/osdwidget.h
-SOURCES	     = \
+HEADERS += \
+    src/volumeslider.h \
+    src/videowidget.h \
+    src/socketserver.h \
+    src/seekslider.h \
+    src/osdwidget.h \
+    src/explorer.h \
+    src/emp.h \
+    src/appversion.h
+
+SOURCES += \
+    src/volumeslider.cpp \
+    src/videowidget.cpp \
+    src/socketserver.cpp \
+    src/seekSlider.cpp \
+    src/osdwidget.cpp \
     src/main.cpp \
-    src/EMP.cpp \
-    src/VideoWidget.cpp \
-    src/VolumeSlider.cpp \
-    src/SeekSlider.cpp \
-    src/SocketServer.cpp \
-    src/Explorer.cpp \
-    src/osdwidget.cpp
+    src/explorer.cpp \
+    src/emp.cpp
 
 CONFIG(debug, debug|release) {
   BUILD_DIR = debug
@@ -29,24 +30,23 @@ CONFIG(debug, debug|release) {
   DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
-DESTDIR = build/target/
-OBJECTS_DIR = build/obj/
-MOC_DIR = build/moc/
-RCC_DIR = build/rcc/
+DESTDIR = $${BUILD_DIR}/target/
+OBJECTS_DIR = $${BUILD_DIR}/obj/
+MOC_DIR = $${BUILD_DIR}/moc/
+RCC_DIR = $${BUILD_DIR}/rcc/
+
+include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
 
 INCLUDEPATH += $$PWD/3rdparty
 LIBS     += -L$$PWD/3rdparty/libvlc -lvlc
 
 RESOURCES += \
-    EMP.qrc
-RC_FILE = EMPApp.rc
-
-include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
+    emp.qrc
+RC_FILE = emp.rc
 
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
 include(lang/lang.pri)
-
 
 
 
