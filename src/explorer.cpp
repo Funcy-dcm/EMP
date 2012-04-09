@@ -28,8 +28,8 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
   setEditTriggers(QAbstractItemView::NoEditTriggers);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-  QObject::connect(this, SIGNAL(activated(const QModelIndex&)),
-                   this,  SLOT(slotSetIndex(QModelIndex)));
+  connect(this, SIGNAL(activated(const QModelIndex&)),
+          SLOT(slotSetIndex(QModelIndex)));
 
   selectRow(0);
   oldIndex = currentIndex();
@@ -59,6 +59,7 @@ void ExplorerWidget::slotSetIndex(const QModelIndex& newIndex)
     }
     setRootIndex(newIndex);
     selectRow(0);
+    setFilters();
   } else {
     if (!m_player->isFullScreen())
       m_player->controlPanel->show();
@@ -95,7 +96,6 @@ void ExplorerWidget::slotKeyRight()
 {
   if (m_player->sWidget.currentIndex() != 3) return;
   slotSetIndex(currentIndex());
-  setFilters();
 }
 
 void ExplorerWidget::slotKeyUp()
@@ -184,7 +184,6 @@ void ExplorerWidget::setFilters()
   QModelIndex index;
   for (int i = 0; i < model->rowCount(rootIndex()); i++) {
     index = model->index(i, 0 ,rootIndex());
-    QString str1 = model->fileName(index);
     if (!model->isDir(index)) {
       QString str = model->fileName(index);
       ok = false;
