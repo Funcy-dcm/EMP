@@ -7,7 +7,7 @@ ExplorerWidget::ExplorerWidget(MediaPlayer *player, QWidget *parent) :
   setObjectName("ExplorerWidget");
   model = new QDirModel(this);
   model->setSorting(QDir::DirsFirst | QDir::IgnoreCase);
-  model->setFilter(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
+  model->setFilter(QDir::NoDot | QDir::Dirs | QDir::Files);
   model->setLazyChildCount(true);
 
   setModel(model);
