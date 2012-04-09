@@ -35,18 +35,18 @@ void VlcVideoWidget::mouseMoveEvent(QMouseEvent *event)
     emit mouseShow(event->globalPos());
   }
 }
+
 void VlcVideoWidget::mousePressEvent(QMouseEvent *event)
 {
   event->ignore();
 
-  if (event->button() == Qt::LeftButton) {
-    setCursor(Qt::PointingHandCursor);
-  }
+  setCursor(Qt::PointingHandCursor);
   if(mediaPlayer_->isFullScreen()) {
     timerMouse_->start(1000);
     emit mouseShow(event->globalPos());
   }
 }
+
 //void VlcVideoWidget::wheelEvent(QWheelEvent *event)
 //{
 //    event->ignore();
@@ -80,4 +80,10 @@ void VlcVideoWidget::hideMouse()
     timerMouse_->stop();
     emit mouseHide();
   }
+}
+
+void VlcVideoWidget::showMouse()
+{
+  if(mediaPlayer_->isFullScreen())
+    timerMouse_->start(1000);
 }

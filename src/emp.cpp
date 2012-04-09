@@ -256,6 +256,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
 
   connect(videoWidget_, SIGNAL(customContextMenuRequested(const QPoint &)),
           SLOT(showContextMenu(const QPoint &)));
+  connect(fileMenu, SIGNAL(aboutToHide()), videoWidget_,
+          SLOT(showMouse()));
 
   playButton->setEnabled(false);
   rewindButton->setEnabled(false);
@@ -1203,7 +1205,6 @@ void MediaPlayer::resizeWindow(int has_vout)
 
 void MediaPlayer::showContextMenu(const QPoint &p)
 {
-  videoWidget_->setCursor(Qt::ArrowCursor);
   fileMenu->popup(isFullScreen() ? p : mapToGlobal(p));
 }
 

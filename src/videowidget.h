@@ -31,6 +31,7 @@ public slots:
 
 private slots:
   void hideMouse();
+  void showMouse();
 
 private:
   MediaPlayer *mediaPlayer_;
