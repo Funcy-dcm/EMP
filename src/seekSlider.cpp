@@ -36,18 +36,31 @@ VlcSeekSlider::~VlcSeekSlider()
   delete timer_;
 }
 
-/*virtual*/ bool VlcSeekSlider::eventFilter(QObject* pobj, QEvent* pe)
+/*virtual*/ bool VlcSeekSlider::eventFilter(QObject* pobj, QEvent* event)
 {
-  if (pe->type() == QEvent::MouseButtonPress) {
+  if (event->type() == QEvent::MouseButtonPress) {
     if (pobj == seek_) {
-      if (((QMouseEvent*)pe)->button() == Qt::LeftButton) {
-        QMouseEvent* pe1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)pe)->pos(),
+      if (((QMouseEvent*)event)->button() == Qt::LeftButton) {
+        QMouseEvent* event1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)event)->pos(),
                                            Qt::MidButton, Qt::MidButton, Qt::NoModifier);
-        QApplication::sendEvent(pobj, pe1);
+        QApplication::sendEvent(pobj, event1);
+        QHelpEvent* event2 = new QHelpEvent(QEvent::ToolTip, ((QMouseEvent*)event)->pos(),
+                                           ((QMouseEvent*)event)->globalPos());
+        QApplication::sendEvent(pobj, event2);
+        return true;
       }
     }
+  } else if ((event->type() == QEvent::MouseMove) && (pobj == seek_) &&
+             (QApplication::mouseButtons() & Qt::LeftButton)) {
+    QHelpEvent* event1 = new QHelpEvent(QEvent::ToolTip, ((QMouseEvent*)event)->pos(),
+                                        ((QMouseEvent*)event)->globalPos());
+    QApplication::sendEvent(pobj, event1);
+  } else if (event->type() == QEvent::ToolTip) {
+    QHoverEvent *hoverEvent = static_cast<QHoverEvent*>(event);
+    int value = seek_->maximum()/seek_->width()*hoverEvent->pos().x();
+    QString timeString = QTime(0,0,0,0).addMSecs(value).toString("hh:mm:ss");
+    seek_->setToolTip(timeString);
   }
-
   return false;
 }
 
@@ -78,7 +91,6 @@ void VlcSeekSlider::updateTime()
     if (currentTime_t < 1000) {
       seek_->setSliderDown(false);
     }
-
   } else {
     seek_->setMaximum(0);
     seek_->setValue(0);

@@ -41,10 +41,10 @@ int main(int argc, char** argv)
   QTranslator translator;
 #if defined(Q_OS_WIN) || defined(Q_OS_OS2)
   translator.load(QCoreApplication::applicationDirPath() +
-                                     QString("/lang/emp_%1").arg(lang));
+                  QString("/lang/emp_%1").arg(lang));
 #else
   translator.load(QString("/usr/share/emp/lang/emp_%1").
-                                     arg(langFileName_));
+                  arg(langFileName_));
 #endif
   app.installTranslator(&translator);
 

@@ -13,7 +13,7 @@ public:
   QString timeString;
 
 protected:
-  virtual bool eventFilter(QObject*, QEvent*);
+  virtual bool eventFilter(QObject*, QEvent *event);
 
 private slots:
   void changeTime(int);
