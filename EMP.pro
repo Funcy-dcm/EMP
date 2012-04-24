@@ -17,11 +17,11 @@ SOURCES += \
     src/volumeslider.cpp \
     src/videowidget.cpp \
     src/socketserver.cpp \
-    src/seekSlider.cpp \
     src/osdwidget.cpp \
     src/main.cpp \
     src/explorer.cpp \
-    src/emp.cpp
+    src/emp.cpp \
+    src/seekslider.cpp
 
 CONFIG(debug, debug|release) {
   BUILD_DIR = debug
