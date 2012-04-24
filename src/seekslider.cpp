@@ -38,28 +38,31 @@ VlcSeekSlider::~VlcSeekSlider()
 
 /*virtual*/ bool VlcSeekSlider::eventFilter(QObject* pobj, QEvent* event)
 {
+  if (event->type() == QEvent::MouseButtonPress ||
+      event->type() == QEvent::MouseMove ||
+      event->type() == QEvent::MouseButtonRelease) {
+    if (pobj == seek_) {
+      QPoint point = ((QMouseEvent*)event)->pos();
+      int value = seek_->maximum()/seek_->width()*point.x();
+      if (value > 0) {
+        QString timeString = QTime(0,0,0,0).addMSecs(value).toString("hh:mm:ss");
+        seek_->setToolTip(timeString);
+
+        point.setX(point.x()-25);
+        point.setY(-50);
+        QHelpEvent* event1 = new QHelpEvent(QEvent::ToolTip, point, mapToGlobal(point));
+        QApplication::sendEvent(pobj, event1);
+      }
+    }
+  }
   if (event->type() == QEvent::MouseButtonPress) {
     if (pobj == seek_) {
       if (((QMouseEvent*)event)->button() == Qt::LeftButton) {
         QMouseEvent* event1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)event)->pos(),
-                                           Qt::MidButton, Qt::MidButton, Qt::NoModifier);
+                                              Qt::MidButton, Qt::MidButton, Qt::NoModifier);
         QApplication::sendEvent(pobj, event1);
-        QHelpEvent* event2 = new QHelpEvent(QEvent::ToolTip, ((QMouseEvent*)event)->pos(),
-                                           ((QMouseEvent*)event)->globalPos());
-        QApplication::sendEvent(pobj, event2);
-        return true;
       }
     }
-  } else if ((event->type() == QEvent::MouseMove) && (pobj == seek_) &&
-             (QApplication::mouseButtons() & Qt::LeftButton)) {
-    QHelpEvent* event1 = new QHelpEvent(QEvent::ToolTip, ((QMouseEvent*)event)->pos(),
-                                        ((QMouseEvent*)event)->globalPos());
-    QApplication::sendEvent(pobj, event1);
-  } else if (event->type() == QEvent::ToolTip) {
-    QHoverEvent *hoverEvent = static_cast<QHoverEvent*>(event);
-    int value = seek_->maximum()/seek_->width()*hoverEvent->pos().x();
-    QString timeString = QTime(0,0,0,0).addMSecs(value).toString("hh:mm:ss");
-    seek_->setToolTip(timeString);
   }
   return false;
 }
