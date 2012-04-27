@@ -169,7 +169,8 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   playListView->setSelectionBehavior( QAbstractItemView::SelectRows );
   playListView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   playListView->setShowGrid(false);
-  playListView->verticalHeader()->setDefaultSectionSize ( playListView->verticalHeader()->minimumSectionSize () );
+  playListView->verticalHeader()->setDefaultSectionSize(
+        playListView->verticalHeader()->minimumSectionSize());
   playListView->setFocusPolicy(Qt::NoFocus);
   playListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   playListView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -179,7 +180,6 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   playListDoc->setMinimumWidth(160);
   addDockWidget(Qt::RightDockWidgetArea, playListDoc);
   playListDoc->hide();
-  playListDoc->setContextMenuPolicy(Qt::CustomContextMenu);
 
   // Create menu bar:
   fileMenu = new QMenu(this);
