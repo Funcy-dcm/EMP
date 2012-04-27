@@ -125,6 +125,7 @@ private:
 
   QMenu *spuMenu_;
   QActionGroup *spuGroup_;
+  QActionGroup *audioGroup_;
 
 signals:
   void signalWindowNormal();

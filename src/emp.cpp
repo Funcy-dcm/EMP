@@ -205,7 +205,7 @@ MediaPlayer::MediaPlayer(const QString &filePath)
   audio51Action->setObjectName("audio51Action");
   audio51Action->setCheckable(true);
 
-  QActionGroup *audioGroup_ = new QActionGroup(audioMenu_);
+  audioGroup_ = new QActionGroup(audioMenu_);
   audioGroup_->setExclusive(true);
   audioGroup_->addAction(audio20Action);
   audioGroup_->addAction(audio21Action);
@@ -331,6 +331,16 @@ void MediaPlayer::readSettings()
   serverOn = m_settings->value("/Server", false).toBool();
   openFilePath = m_settings->value("/OpenFilePath", QDir::homePath()).toString();
   homeFilePath = m_settings->value("/HomeFilePath", QDir::homePath()).toString();
+
+  QString str = m_settings->value("AudioChanel", "audio20Action").toString();
+  QList<QAction*> listActions = audioGroup_->actions();
+  foreach(QAction *action, listActions) {
+    if (action->objectName() == str) {
+      action->setChecked(true);
+      break;
+    }
+  }
+  audioSetDeviceType(audioGroup_->checkedAction());
   m_settings->endGroup();
 
   m_settings->beginGroup("/FilePosition");
@@ -358,6 +368,9 @@ void MediaPlayer::writeSettings()
   m_settings->setValue("/Lang", lang);
   m_settings->setValue("/Server", serverOn);
   m_settings->setValue("/OpenFilePath", openFilePath);
+
+  m_settings->setValue("AudioChanel",
+                      audioGroup_->checkedAction()->objectName());
   m_settings->endGroup();
 
   m_settings->beginGroup("/FilePosition");
@@ -752,6 +765,14 @@ void MediaPlayer::stateChanged()
     if ((has_vout == 1) && libvlc_video_get_spu_count(currentPlayer_)) {
       libvlc_video_set_spu(currentPlayer_, 0);
       getSpuDescription();
+    } else {
+      foreach (QAction *action, spuMenu_->actions()) {
+        delete action;
+      }
+      QAction *action = spuMenu_->addAction("Disable");
+      action->setCheckable(true);
+      action->setChecked(true);
+      action->setEnabled(false);
     }
   }
 
@@ -1231,6 +1252,7 @@ void MediaPlayer::getSpuDescription()
 
   libvlc_track_description_t *spu_description =
       libvlc_video_get_spu_description(currentPlayer_);
+
   while (spu_description){
     QString str = QString::fromUtf8(spu_description->psz_name);
     QAction *action = spuMenu_->addAction(str);
