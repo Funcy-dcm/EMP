@@ -202,13 +202,12 @@ QMenu::separator {
 }
 
 #osdLabel {
-	border: 6px solid #404040;
-	border-radius: 20px;
+	border: 12px solid #505050;
+	border-radius: 26px;
 	color: #FFFFFF;
 	font: bold 44px "Arial";
 	background-color: rgba(32, 32, 32, 100);
 	padding: 10px;
-
 }
 
 #buttonPanelWidget {

@@ -51,8 +51,11 @@ void OSDWidget::showWidget(QString str)
   pos.setY(mediaPlayer_->geometry().y() + 25);
   move(pos);
 
-  if (str != tr("Pause"))
+  if (str != tr("Pause")) {
     timerShowWidget.start(5000, this);
+  } else {
+    timerShowWidget.stop();
+  }
 }
 
 void OSDWidget::timerEvent(QTimerEvent *pe)
