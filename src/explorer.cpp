@@ -64,6 +64,7 @@ void ExplorerWidget::slotSetIndex(const QModelIndex& newIndex)
     if (!m_player->isFullScreen())
       m_player->controlPanel->show();
     QString filePath = model->filePath(newIndex);
+    m_player->saveFilePos();
     m_player->initPlayList();
     m_player->addFile(filePath);
     m_player->setCurrentSource(filePath, true);

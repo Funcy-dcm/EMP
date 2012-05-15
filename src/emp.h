@@ -59,6 +59,8 @@ public:
   quint64 getCurrentTime();
   quint64 getTotalTime();
 
+  void saveFilePos();
+
 public slots:
   void receiveMessage(const QString&);
 
@@ -81,7 +83,6 @@ private slots:
   void showContextMenu(const QPoint &);
   void slotWindowNormal();
   void resizeWindow(int);
-  void saveFilePos();
   void audioSetDeviceType(QAction *pAct);
   void getSpuDescription();
   void setSpuDescription(QAction *pAct);

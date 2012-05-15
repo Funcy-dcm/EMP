@@ -29,6 +29,10 @@ void MediaPlayer::receiveMessage(const QString& message)
   if (!message.isEmpty()){
     activateWindow();
 
+    if (!isFullScreen())
+     controlPanel->show();
+
+    saveFilePos();
     initPlayList();
     addFile(message);
     setCurrentSource(message, true);
@@ -391,10 +395,9 @@ void MediaPlayer::writeSettings()
 /*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
 {
   qDebug() << "closeEventStart";
-  if (libvlc_video_get_track_count(currentPlayer_)) {
-    qDebug() << "closeEvent(1)";
-    saveFilePos();
-  }
+
+  saveFilePos();
+
   fullScreenAction->setChecked(false);
   writeSettings();
 
@@ -420,6 +423,8 @@ void MediaPlayer::writeSettings()
 }
 
 void MediaPlayer::saveFilePos() {
+  if (!libvlc_video_get_track_count(currentPlayer_)) return;
+
   bool findOk = 0;
   QModelIndex indexNew = model->index(curPlayList, 3);
   QString fileName = model->data(indexNew).toString();
@@ -601,6 +606,7 @@ void MediaPlayer::handleDrop(QDropEvent *e)
     // Добавляем в плейлист
   } else {
     // Создаём новый плейлист
+    saveFilePos();
     initPlayList();
     newPlayList = true;
   }
@@ -826,6 +832,7 @@ void MediaPlayer::stateChanged()
       }
       int row = model->rowCount();
       if ((curPlayList < row-1) && (curPlayList >= 0)){
+        saveFilePos();
         index = model->index(curPlayList, 1);
         model->setData(index, QColor(187, 187, 187), Qt::TextColorRole);
         model->setData(index, QBrush(QColor(32, 32, 32), Qt::SolidPattern), Qt::BackgroundRole);
@@ -876,11 +883,15 @@ void MediaPlayer::openFile()
   //    filters += tr("Playlist files") + " (" + EXTENSIONS_PLAYLIST + ");;";
   filters += tr("All files") + " (*)";
 
-  QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File..."), openFilePath, filters);
+  QStringList fileNames = QFileDialog::getOpenFileNames(this,
+                                                        tr("Open File..."),
+                                                        openFilePath,
+                                                        filters);
 
   if (fileNames.size() > 0) {
     QFileInfo file(fileNames[0]);
     openFilePath = file.path();
+    saveFilePos();
     initPlayList();
 
     QString fileName = fileNames[0];
