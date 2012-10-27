@@ -39,7 +39,7 @@
 # define LIBVLC_VERSION_MINOR    (0)
 
 /** LibVLC revision */
-# define LIBVLC_VERSION_REVISION (1)
+# define LIBVLC_VERSION_REVISION (4)
 
 # define LIBVLC_VERSION_EXTRA    (0)
 
