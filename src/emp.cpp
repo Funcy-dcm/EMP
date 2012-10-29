@@ -780,6 +780,7 @@ void MediaPlayer::stateChanged()
       action->setChecked(true);
       action->setEnabled(false);
     }
+    audioSetDeviceType(audioGroup_->checkedAction());
   }
 
   if (curPlayList >= 0) timeLabel->setText(seekSlider->timeString);
