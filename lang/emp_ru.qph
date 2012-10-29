@@ -76,4 +76,20 @@
     <source>All files</source>
     <target>Все файлы</target>
 </phrase>
+<phrase>
+    <source>Audio</source>
+    <target>Аудио</target>
+</phrase>
+<phrase>
+    <source>Subtitles</source>
+    <target>Субтитры</target>
+</phrase>
+<phrase>
+    <source>Opening File...</source>
+    <target>Открытие файла...</target>
+</phrase>
+<phrase>
+    <source>Disable</source>
+    <target>Отключить</target>
+</phrase>
 </QPH>

@@ -775,7 +775,7 @@ void MediaPlayer::stateChanged()
       foreach (QAction *action, spuMenu_->actions()) {
         delete action;
       }
-      QAction *action = spuMenu_->addAction("Disable");
+      QAction *action = spuMenu_->addAction(tr("Disable"));
       action->setCheckable(true);
       action->setChecked(true);
       action->setEnabled(false);
