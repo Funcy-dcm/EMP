@@ -42,7 +42,7 @@ void MediaPlayer::receiveMessage(const QString& message)
 // ----------------------------------------------------------------------
 MediaPlayer::MediaPlayer(const QString &filePath)
 {
-  setWindowTitle(QString("EMP v") + STRFILEVER);
+  setWindowTitle(QString("EMP v") + STRPRODUCTVER);
   qDebug() << "start app";
 
   videoWidget_ = new VlcVideoWidget(this, this);
