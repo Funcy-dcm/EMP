@@ -42,7 +42,10 @@ LIBS     += -L$$PWD/3rdparty/libvlc -lvlc
 
 RESOURCES += \
     emp.qrc
+
+win32 {
 RC_FILE = emp.rc
+}
 
 CODECFORTR  = UTF-8
 CODECFORSRC = UTF-8
