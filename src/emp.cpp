@@ -1107,10 +1107,10 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 #if defined(Q_WS_WIN)
   libvlc_media_player_set_hwnd(currentPlayer_, videoWidget_->winId());
 #elif defined(Q_WS_MAC)
-  libvlc_media_player_set_agl(_curPlayer, m_videoWidget->winId());
+  libvlc_media_player_set_agl(currentPlayer_, videoWidget_->winId());
 #else // Q_WS_X11
-  int windid = m_videoWidget->winId();
-  libvlc_media_player_set_xwindow(_curPlayer, windid);
+  int windid = videoWidget_->winId();
+  libvlc_media_player_set_xwindow(currentPlayer_, windid);
 #endif // Q_WS_*
   /* Play */
   libvlc_media_player_play(currentPlayer_);
