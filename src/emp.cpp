@@ -54,10 +54,17 @@ MediaPlayer::MediaPlayer(const QString &filePath)
     //    "--no-embedded-video",
     //    "--extraintf=logger",
     //    "--verbose=3",
-
-    "--reset-plugins-cache",
+    "--no-media-library",
+    "--no-one-instance",
+    "--no-plugins-cache",
     "--no-stats",
-    "--no-osd"
+    "--no-osd",
+    "--no-loop",
+    "--no-video-title-show",
+#if defined(Q_OS_MAC)
+    "--vout=macosx",
+#endif
+    "--drop-late-frames"
   };
   vlc_instance_=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args);
   currentPlayer_ = libvlc_media_player_new (vlc_instance_);
