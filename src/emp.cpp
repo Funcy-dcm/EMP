@@ -464,27 +464,27 @@ void MediaPlayer::saveFilePos() {
   }
 }
 
-/*virtual*/ bool MediaPlayer::eventFilter(QObject*, QEvent* pe)
+/*virtual*/ bool MediaPlayer::eventFilter(QObject *obj, QEvent *event)
 {
-  if (pe->type() == QEvent::KeyPress) {
-    if (!((QKeyEvent*)pe)->modifiers()) {
+  if (event->type() == QEvent::KeyPress) {
+    if (!((QKeyEvent*)event)->modifiers()) {
       /*if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
                 if (isFullScreen()) {
                     fullScreenAction->setChecked(false);
                     playPause();
                     return true;
                 }
-            } else*/ if (((QKeyEvent*)pe)->key() == Qt::Key_F11) {
+            } else*/ if (((QKeyEvent*)event)->key() == Qt::Key_F11) {
         fullScreenAction->setChecked(!isFullScreen());
         return true;
       } else {
         bool keyOk = false;
-        if (((QKeyEvent*)pe)->key() == Qt::Key_Space) {
+        if (((QKeyEvent*)event)->key() == Qt::Key_Space) {
           if (sWidget.currentIndex() != 3) {
             playPause();
             keyOk = true;
           }
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Delete) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Delete) {
           if (playListView->selectionModel()->hasSelection()) {
             int count = playListView->selectionModel()->selectedRows().count();
             int row = 0;
@@ -518,25 +518,25 @@ void MediaPlayer::saveFilePos() {
             }
           }
           return true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Left) {
           explorerView->slotKeyLeft();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Right) {
           explorerView->slotKeyRight();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Up) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Up) {
           explorerView->slotKeyUp();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Down) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Down) {
           explorerView->slotKeyDown();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Return) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Return) {
           explorerView->slotKeyRight();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Backspace) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Backspace) {
           explorerView->slotKeyLeft();
           keyOk = true;
-        } else if (((QKeyEvent*)pe)->key() == Qt::Key_Escape) {
+        } else if (((QKeyEvent*)event)->key() == Qt::Key_Escape) {
           if (sWidget.currentIndex() == 3) {
             if (libvlc_media_player_get_state(currentPlayer_) == libvlc_Paused)
               sWidget.setCurrentIndex(0);
@@ -554,16 +554,16 @@ void MediaPlayer::saveFilePos() {
           return true;
         }
       }
-    } else if (((QKeyEvent*)pe)->modifiers() == Qt::ControlModifier) {
-      if (((QKeyEvent*)pe)->key() == Qt::Key_Left) {
+    } else if (((QKeyEvent*)event)->modifiers() == Qt::ControlModifier) {
+      if (((QKeyEvent*)event)->key() == Qt::Key_Left) {
         qint64 pos = libvlc_media_player_get_time(currentPlayer_);
         libvlc_media_player_set_time(currentPlayer_, pos-10000);
         return true;
-      } else if (((QKeyEvent*)pe)->key() == Qt::Key_Right) {
+      } else if (((QKeyEvent*)event)->key() == Qt::Key_Right) {
         qint64 pos = libvlc_media_player_get_time(currentPlayer_);
         libvlc_media_player_set_time(currentPlayer_, pos+10000);
         return true;
-      } else if (((QKeyEvent*)pe)->key() == Qt::Key_T) {
+      } else if (((QKeyEvent*)event)->key() == Qt::Key_T) {
         int track = libvlc_audio_get_track(currentPlayer_);
         int cnt_track = libvlc_audio_get_track_count(currentPlayer_);
         if (track < cnt_track-1) track++;
@@ -571,7 +571,7 @@ void MediaPlayer::saveFilePos() {
         qDebug()<< "*track" << track << cnt_track;
         libvlc_audio_set_track(currentPlayer_, track);
         return true;
-      } else if (((QKeyEvent*)pe)->key() == Qt::Key_S) {
+      } else if (((QKeyEvent*)event)->key() == Qt::Key_S) {
         int subt = libvlc_video_get_spu(currentPlayer_);
         int cnt_subt = libvlc_video_get_spu_count(currentPlayer_);
         if (subt < cnt_subt-1) subt++;
@@ -579,17 +579,17 @@ void MediaPlayer::saveFilePos() {
         qDebug()<< "*spu" << subt << cnt_subt;
         qDebug()<< libvlc_video_set_spu(currentPlayer_, subt);
         return true;
-      } else if (((QKeyEvent*)pe)->key() == Qt::Key_Z) {
+      } else if (((QKeyEvent*)event)->key() == Qt::Key_Z) {
         getSpuDescription();
       }
     }
   }
 
-  if(pe->type() == QEvent::WindowStateChange) {
-    int oldState = ((QWindowStateChangeEvent*)pe)->oldState();
+  if(event->type() == QEvent::WindowStateChange) {
+    int oldState = ((QWindowStateChangeEvent*)event)->oldState();
     int newState = windowState();
     if ((oldState == Qt::WindowMaximized) && (newState == Qt::WindowNoState) && !fullScreenOn){
-      pe->ignore();
+      event->ignore();
       emit signalWindowNormal();
       return true;
     }
@@ -598,7 +598,7 @@ void MediaPlayer::saveFilePos() {
     }
   }
 
-  return false;
+  return QMainWindow::eventFilter(obj, event);
 }
 
 void MediaPlayer::handleDrop(QDropEvent *e)

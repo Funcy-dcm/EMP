@@ -50,21 +50,26 @@ VlcSeekSlider::~VlcSeekSlider()
 
         point.setX(point.x()-25);
         point.setY(-50);
-        QHelpEvent* event1 = new QHelpEvent(QEvent::ToolTip, point, mapToGlobal(point));
-        QApplication::sendEvent(pobj, event1);
+        QHelpEvent* newEvent = new QHelpEvent(QEvent::ToolTip, point, mapToGlobal(point));
+        QApplication::sendEvent(pobj, newEvent);
       }
     }
   }
   if (event->type() == QEvent::MouseButtonPress) {
     if (pobj == seek_) {
       if (((QMouseEvent*)event)->button() == Qt::LeftButton) {
-        QMouseEvent* event1 = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)event)->pos(),
+        QMouseEvent* newEvent = new QMouseEvent(QEvent::MouseButtonPress, ((QMouseEvent*)event)->pos(),
                                               Qt::MidButton, Qt::MidButton, Qt::NoModifier);
-        QApplication::sendEvent(pobj, event1);
+        QApplication::sendEvent(pobj, newEvent);
+        return false;
       }
     }
   }
-  return false;
+  if (event->type() == QEvent::MouseButtonRelease) {
+    seek_->setSliderDown(false);
+  }
+
+  return QWidget::eventFilter(pobj, event);
 }
 
 void VlcSeekSlider::updateTime()

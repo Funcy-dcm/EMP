@@ -88,7 +88,7 @@ private slots:
   void setSpuDescription(QAction *pAct);
 
 protected:
-  virtual bool eventFilter(QObject*, QEvent*);
+  virtual bool eventFilter(QObject *obj, QEvent *event);
   virtual void closeEvent(QCloseEvent*);
   virtual void resizeEvent(QResizeEvent*);
   virtual void moveEvent(QMoveEvent*);
