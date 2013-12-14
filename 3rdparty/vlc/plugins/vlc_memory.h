@@ -1,11 +1,9 @@
 /*****************************************************************************
- * vlc_acl.h: interface to the network Access Control List internal API
+ * vlc_memory.h: Memory functions
  *****************************************************************************
- * Copyright (C) 2005 Rémi Denis-Courmont
- * Copyright (C) 2005 VLC authors and VideoLAN
- * $Id: 6c979af7cec8feb60b66103019d161ad90b109b6 $
+ * Copyright (C) 2009 VLC authors and VideoLAN
  *
- * Authors: Rémi Denis-Courmont <rem # videolan.org>
+ * Authors: JP Dinger <jpd at videolan dot org>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,19 +20,38 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_ACL_H
-# define VLC_ACL_H
+#ifndef VLC_MEMORY_H
+#define VLC_MEMORY_H 1
 
+#include <stdlib.h>
 
-VLC_API int ACL_Check( vlc_acl_t *p_acl, const char *psz_ip );
-VLC_API vlc_acl_t * ACL_Create( vlc_object_t *p_this, bool b_allow ) VLC_USED VLC_MALLOC;
-#define ACL_Create(a, b) ACL_Create(VLC_OBJECT(a), b)
-VLC_API vlc_acl_t * ACL_Duplicate( vlc_object_t *p_this, const vlc_acl_t *p_acl ) VLC_USED VLC_MALLOC;
-#define ACL_Duplicate(a,b) ACL_Duplicate(VLC_OBJECT(a),b)
-VLC_API void ACL_Destroy( vlc_acl_t *p_acl );
+/**
+ * \file
+ * This file deals with memory fixups
+ */
 
-#define ACL_AddHost(a,b,c) ACL_AddNet(a,b,-1,c)
-VLC_API int ACL_AddNet( vlc_acl_t *p_acl, const char *psz_ip, int i_len, bool b_allow );
-VLC_API int ACL_LoadFile( vlc_acl_t *p_acl, const char *path );
+/**
+ * \defgroup memory Memory
+ * @{
+ */
+
+/**
+ * This wrapper around realloc() will free the input pointer when
+ * realloc() returns NULL. The use case ptr = realloc(ptr, newsize) will
+ * cause a memory leak when ptr pointed to a heap allocation before,
+ * leaving the buffer allocated but unreferenced. vlc_realloc() is a
+ * drop-in replacement for that use case (and only that use case).
+ */
+static inline void *realloc_or_free( void *p, size_t sz )
+{
+    void *n = realloc(p,sz);
+    if( !n )
+        free(p);
+    return n;
+}
+
+/**
+ * @}
+ */
 
 #endif

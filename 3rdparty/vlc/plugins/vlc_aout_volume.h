@@ -1,7 +1,11 @@
 /*****************************************************************************
- * vlc_inhibit.h: VLC screen saver inhibition
+ * vlc_aout_volume.h: audio volume module
  *****************************************************************************
- * Copyright (C) 2009 Rémi Denis-Courmont
+ * Copyright (C) 2002-2009 VLC authors and VideoLAN
+ * $Id: 051413ba105d5f7ee552679bf7fcd3a053db112c $
+ *
+ * Authors: Christophe Massiot <massiot@via.ecp.fr>
+ *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -18,37 +22,33 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
+#ifndef VLC_AOUT_MIXER_H
+#define VLC_AOUT_MIXER_H 1
+
 /**
  * \file
- * This file defines the interface for screen-saver inhibition modules
+ * This file defines functions, structures and macros for audio output mixer object
  */
 
-#ifndef VLC_INHIBIT_H
-# define VLC_INHIBIT_H 1
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct vlc_inhibit vlc_inhibit_t;
-typedef struct vlc_inhibit_sys vlc_inhibit_sys_t;
+typedef struct audio_volume audio_volume_t;
 
-enum vlc_inhibit_flags
-{
-    VLC_INHIBIT_NONE=0 /*< No inhibition */,
-    VLC_INHIBIT_SUSPEND=0x1 /*< Processor is in use - do not suspend */,
-    VLC_INHIBIT_DISPLAY=0x2 /*< Display is in use - do not blank/lock */,
-#define VLC_INHIBIT_AUDIO (VLC_INHIBIT_SUSPEND)
-#define VLC_INHIBIT_VIDEO (VLC_INHIBIT_SUSPEND|VLC_INHIBIT_DISPLAY)
-};
-
-struct vlc_inhibit
+/**
+ * Audio volume
+ */
+struct audio_volume
 {
     VLC_COMMON_MEMBERS
 
-    vlc_inhibit_sys_t *p_sys;
-    void (*inhibit) (vlc_inhibit_t *, unsigned flags);
+    vlc_fourcc_t format; /**< Audio samples format */
+    void (*amplify)(audio_volume_t *, block_t *, float); /**< Amplifier */
 };
 
-static inline void vlc_inhibit_Set (vlc_inhibit_t *ih, unsigned flags)
-{
-    ih->inhibit (ih, flags);
+#ifdef __cplusplus
 }
+#endif
 
 #endif

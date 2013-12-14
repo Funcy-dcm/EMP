@@ -1,11 +1,7 @@
 /*****************************************************************************
- * vlc_aout_mixer.h : audio output mixer interface
+ * vlc_mime.h: Mime type recognition
  *****************************************************************************
- * Copyright (C) 2002-2009 VLC authors and VideoLAN
- * $Id: ad0d12e7282b07050d2707ecaf01863fcdaa7599 $
- *
- * Authors: Christophe Massiot <massiot@via.ecp.fr>
- *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
+ * Copyright (C) 2012 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -22,34 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_AOUT_MIXER_H
-#define VLC_AOUT_MIXER_H 1
+#ifndef VLC_MIME_H
+#define VLC_MIME_H 1
 
 /**
  * \file
- * This file defines functions, structures and macros for audio output mixer object
+ * Mime type recognition helpers.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+VLC_API const char * vlc_mime_Ext2Mime( const char *psz_url );
 
-typedef struct audio_mixer audio_mixer_t;
-
-/** 
- * audio output mixer
- */
-struct audio_mixer
-{
-    VLC_COMMON_MEMBERS
-
-    module_t *module; /**< Module handle */
-    vlc_fourcc_t format; /**< Audio samples format */
-    void (*mix)(audio_mixer_t *, block_t *, float); /**< Amplifier */
-};
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif /* _VLC_MIME_H */

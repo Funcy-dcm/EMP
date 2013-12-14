@@ -1,7 +1,11 @@
 /*****************************************************************************
- * vlc_inhibit.h: VLC screen saver inhibition
+ * vlc_iso_lang.h: function to decode language code (in dvd or a52 for instance).
  *****************************************************************************
- * Copyright (C) 2009 Rémi Denis-Courmont
+ * Copyright (C) 1998-2001 VLC authors and VideoLAN
+ * $Id: f27fb665f3db2754e137610a74f14d157bb647e9 $
+ *
+ * Author: Stéphane Borel <stef@via.ecp.fr>
+ *         Arnaud de Bossoreille de Ribou <bozo@via.ecp.fr>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -20,35 +24,24 @@
 
 /**
  * \file
- * This file defines the interface for screen-saver inhibition modules
+ * This file defines functions and structures for iso639 language codes
  */
 
-#ifndef VLC_INHIBIT_H
-# define VLC_INHIBIT_H 1
-
-typedef struct vlc_inhibit vlc_inhibit_t;
-typedef struct vlc_inhibit_sys vlc_inhibit_sys_t;
-
-enum vlc_inhibit_flags
+struct iso639_lang_t
 {
-    VLC_INHIBIT_NONE=0 /*< No inhibition */,
-    VLC_INHIBIT_SUSPEND=0x1 /*< Processor is in use - do not suspend */,
-    VLC_INHIBIT_DISPLAY=0x2 /*< Display is in use - do not blank/lock */,
-#define VLC_INHIBIT_AUDIO (VLC_INHIBIT_SUSPEND)
-#define VLC_INHIBIT_VIDEO (VLC_INHIBIT_SUSPEND|VLC_INHIBIT_DISPLAY)
+    const char *psz_eng_name;    /* Description in English */
+    const char psz_iso639_1[3];  /* ISO-639-1 (2 characters) code */
+    const char psz_iso639_2T[4]; /* ISO-639-2/T (3 characters) English code */
+    const char psz_iso639_2B[4]; /* ISO-639-2/B (3 characters) native code */
 };
 
-struct vlc_inhibit
-{
-    VLC_COMMON_MEMBERS
-
-    vlc_inhibit_sys_t *p_sys;
-    void (*inhibit) (vlc_inhibit_t *, unsigned flags);
-};
-
-static inline void vlc_inhibit_Set (vlc_inhibit_t *ih, unsigned flags)
-{
-    ih->inhibit (ih, flags);
-}
-
+#if defined( __cplusplus )
+extern "C" {
 #endif
+VLC_API const iso639_lang_t * GetLang_1( const char * );
+VLC_API const iso639_lang_t * GetLang_2T( const char * );
+VLC_API const iso639_lang_t * GetLang_2B( const char * );
+#if defined( __cplusplus )
+}
+#endif
+
