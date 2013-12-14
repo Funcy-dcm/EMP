@@ -399,7 +399,7 @@ void MediaPlayer::writeSettings()
   //    }
 }
 
-/*virtual*/ void MediaPlayer::closeEvent(QCloseEvent* pe)
+/*virtual*/ void MediaPlayer::closeEvent(QCloseEvent*)
 {
   qDebug() << "closeEventStart";
 
@@ -464,7 +464,7 @@ void MediaPlayer::saveFilePos() {
   }
 }
 
-/*virtual*/ bool MediaPlayer::eventFilter(QObject* pobj, QEvent* pe)
+/*virtual*/ bool MediaPlayer::eventFilter(QObject*, QEvent* pe)
 {
   if (pe->type() == QEvent::KeyPress) {
     if (!((QKeyEvent*)pe)->modifiers()) {
@@ -663,7 +663,7 @@ void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
   }
 }
 
-/*virtual*/ void MediaPlayer::resizeEvent(QResizeEvent* pe)
+/*virtual*/ void MediaPlayer::resizeEvent(QResizeEvent*)
 {
   if (osdWidget->isVisible()) {
     QPoint pos;
@@ -674,7 +674,7 @@ void MediaPlayer::dragMoveEvent(QDragMoveEvent *e)
   }
 }
 
-/*virtual*/ void MediaPlayer::moveEvent(QMoveEvent* pe)
+/*virtual*/ void MediaPlayer::moveEvent(QMoveEvent*)
 {
   if (osdWidget->isVisible()) {
     QPoint pos;
@@ -1107,7 +1107,9 @@ void MediaPlayer::setCurrentSource(const QString &source, bool setPosOn)
 {
   sWidget.setCurrentIndex(1);
   statusLabel->setText(tr("Opening File..."));
-  libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, QUrl::fromLocalFile(source).toEncoded());
+
+  QString file = QDir::toNativeSeparators(source);
+  libvlc_media_t *vlcMedia_ = libvlc_media_new_path(vlc_instance_, file.toUtf8().data());
   libvlc_media_player_set_media(currentPlayer_, vlcMedia_);
   libvlc_media_release(vlcMedia_);
 
